@@ -20,9 +20,10 @@
 			<template v-else><i class="ti ti-chevron-down"></i></template>
 		</button>
 		<span :class="$style.title"><slot name="header"></slot></span>
+		<button v-tooltip="i18n.ts.reload" :class="$style.reload" class="_button" @click.stop="reload"><i class="ti ti-reload"></i></button>
 		<button v-tooltip="i18n.ts.settings" :class="$style.menu" class="_button" @click.stop="showSettingsMenu"><i class="ti ti-dots"></i></button>
 	</header>
-	<div v-show="active" ref="body" v-container :class="$style.body">
+	<div v-show="active" :key="reloadCount" ref="body" v-container :class="$style.body">
 		<slot></slot>
 	</div>
 </section>
@@ -62,6 +63,8 @@ watch($$(dragging), v => os.deckGlobalEvents.emit(v ? 'column.dragStart' : 'colu
 let draghover = $ref(false);
 let dropready = $ref(false);
 
+let reloadCount = $ref(0);
+
 const isMainColumn = $computed(() => props.column.type === 'main');
 const active = $computed(() => props.column.active !== false);
 watch($$(active), v => emit('change-active-state', v));
@@ -82,6 +85,10 @@ onBeforeUnmount(() => {
 	os.deckGlobalEvents.off('column.dragStart', onOtherDragStart);
 	os.deckGlobalEvents.off('column.dragEnd', onOtherDragEnd);
 });
+
+function reload() {
+	reloadCount++;
+}
 
 function onOtherDragStart() {
 	dropready = true;
@@ -334,6 +341,7 @@ function onDrop(ev) {
 }
 
 .toggleActive,
+.reload,
 .menu {
 	z-index: 1;
 	width: var(--deckColumnHeaderHeight);
@@ -351,6 +359,11 @@ function onDrop(ev) {
 
 .toggleActive {
 	margin-left: -16px;
+}
+
+.reload {
+	margin-left: auto;
+	margin-right: 0;
 }
 
 .menu {
