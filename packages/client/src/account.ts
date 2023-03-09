@@ -6,10 +6,13 @@ import { del, get, set } from '@/scripts/idb-proxy';
 import { apiUrl } from '@/config';
 import { waiting, api, popup, popupMenu, success, alert } from '@/os';
 import { unisonReload, reloadChannel } from '@/scripts/unison-reload';
+import { MenuItem, MenuUser } from '@/types/menu';
 
 // TODO: 他のタブと永続化されたstateを同期
 
-type Account = misskey.entities.MeDetailed;
+type Account = misskey.entities.MeDetailed & {
+	token: string;
+};
 
 const accountData = localStorage.getItem('account');
 
@@ -19,7 +22,9 @@ export const $i = accountData ? reactive(JSON.parse(accountData) as Account) : n
 export const iAmModerator = $i != null && ($i.isAdmin || $i.isModerator);
 export const iAmAdmin = $i != null && $i.isAdmin;
 
-export async function signout() {
+export async function signout(): Promise<void> {
+	if (!$i) return;
+
 	waiting();
 	localStorage.removeItem('account');
 
@@ -49,7 +54,9 @@ export async function signout() {
 					return Promise.all(registrations.map(registration => registration.unregister()));
 				});
 		}
-	} catch (err) {}
+	} catch (err) {
+		// empty
+	}
 	//#endregion
 
 	document.cookie = 'igi=; path=/';
@@ -62,14 +69,14 @@ export async function getAccounts(): Promise<{ id: Account['id'], token: Account
 	return (await get('accounts')) || [];
 }
 
-export async function addAccount(id: Account['id'], token: Account['token']) {
+export async function addAccount(id: Account['id'], token: Account['token']): Promise<void> {
 	const accounts = await getAccounts();
 	if (!accounts.some(x => x.id === id)) {
 		await set('accounts', accounts.concat([{ id, token }]));
 	}
 }
 
-export async function removeAccount(id: Account['id']) {
+export async function removeAccount(id: Account['id']): Promise<void> {
 	const accounts = await getAccounts();
 	accounts.splice(accounts.findIndex(x => x.id === id), 1);
 
@@ -109,18 +116,20 @@ function fetchAccount(token: string): Promise<Account> {
 	});
 }
 
-export function updateAccount(accountData) {
-	for (const [key, value] of Object.entries(accountData)) {
+export function updateAccount(accountData_: Account): void {
+	if (!$i) return;
+	for (const [key, value] of Object.entries(accountData_)) {
 		$i[key] = value;
 	}
 	localStorage.setItem('account', JSON.stringify($i));
 }
 
-export function refreshAccount() {
-	return fetchAccount($i.token).then(updateAccount);
+export function refreshAccount(): void {
+	if (!$i) return;
+	fetchAccount($i.token).then(updateAccount);
 }
 
-export async function login(token: Account['token'], redirect?: string) {
+export async function login(token: Account['token'], redirect?: string): Promise<void> {
 	waiting();
 	if (_DEV_) console.log('logging as token ', token);
 	const me = await fetchAccount(token);
@@ -144,44 +153,49 @@ export async function openAccountMenu(opts: {
 	withExtraOperation: boolean;
 	active?: misskey.entities.UserDetailed['id'];
 	onChoose?: (account: misskey.entities.UserDetailed) => void;
-}, ev: MouseEvent) {
-	function showSigninDialog() {
+}, ev: MouseEvent): Promise<void> {
+	function showSigninDialog(): void {
 		popup(defineAsyncComponent(() => import('@/components/MkSigninDialog.vue')), {}, {
-			done: res => {
+			// TODO: any潰す
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			done: (res: any) => {
 				addAccount(res.id, res.i);
 				success();
 			},
 		}, 'closed');
 	}
 
-	function createAccount() {
+	function createAccount(): void {
 		popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), {}, {
-			done: res => {
+			// TODO: any潰す
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			done: (res: any) => {
 				addAccount(res.id, res.i);
 				switchAccountWithToken(res.i);
 			},
 		}, 'closed');
 	}
 
-	async function switchAccount(account: misskey.entities.UserDetailed) {
+	async function switchAccount(account: misskey.entities.UserDetailed): Promise<void> {
 		const storedAccounts = await getAccounts();
-		const token = storedAccounts.find(x => x.id === account.id).token;
-		switchAccountWithToken(token);
+		const token = storedAccounts.find(x => x.id === account.id)?.token ?? null;
+	
+		if (token) switchAccountWithToken(token);
 	}
 
-	function switchAccountWithToken(token: string) {
+	function switchAccountWithToken(token: string): void {
 		login(token);
 	}
 
-	const storedAccounts = await getAccounts().then(accounts => accounts.filter(x => x.id !== $i.id));
+	const storedAccounts = await getAccounts().then(accounts => accounts.filter(x => x.id !== $i?.id));
 	const accountsPromise = api('users/show', { userIds: storedAccounts.map(x => x.id) });
 
-	function createItem(account: misskey.entities.UserDetailed) {
+	function createItem(account: misskey.entities.UserDetailed): MenuUser {
 		return {
 			type: 'user',
 			user: account,
-			active: opts.active != null ? opts.active === account.id : false,
-			action: () => {
+			active: opts.active != null && opts.active === account.id,
+			action: (): void => {
 				if (opts.onChoose) {
 					opts.onChoose(account);
 				} else {
@@ -191,42 +205,62 @@ export async function openAccountMenu(opts: {
 		};
 	}
 
-	const accountItemPromises = storedAccounts.map(a => new Promise(res => {
-		accountsPromise.then(accounts => {
-			const account = accounts.find(x => x.id === a.id);
-			if (account == null) return res(null);
-			res(createItem(account));
+	const accountItemPromises = storedAccounts.map(a => {
+		return new Promise<MenuUser>(res => {
+			accountsPromise.then(accounts => {
+				const account = accounts.find(x => x.id === a.id);
+				// TODO
+				// @ts-expect-error ここのnullを返す実装をどうにかしたい
+				if (account == null) return res(null);
+				res(createItem(account));
+			});
 		});
-	}));
+	});
+
+	const el = ev.currentTarget ?? ev.target;
+	if (!(el instanceof HTMLElement)) return;
+
+	const menu: MenuItem[] = [];
 
 	if (opts.withExtraOperation) {
-		popupMenu([...[{
-			type: 'link',
-			text: i18n.ts.profile,
-			to: `/@${ $i.username }`,
-			avatar: $i,
-		}, null, ...(opts.includeCurrentAccount ? [createItem($i)] : []), ...accountItemPromises, {
-			type: 'parent',
-			icon: 'ti ti-plus',
-			text: i18n.ts.addAccount,
-			children: [{
-				text: i18n.ts.existingAccount,
-				action: () => { showSigninDialog(); },
-			}, {
-				text: i18n.ts.createAccount,
-				action: () => { createAccount(); },
-			}],
-		}, {
-			type: 'link',
-			icon: 'ti ti-users',
-			text: i18n.ts.manageAccounts,
-			to: '/settings/accounts',
-		}]], ev.currentTarget ?? ev.target, {
-			align: 'left',
-		});
+		if ($i) {
+			menu.push({
+				type: 'link',
+				text: i18n.ts.profile,
+				to: `/@${ $i.username }`,
+				avatar: $i,
+			}, null);
+		}
+		if (opts.includeCurrentAccount && $i) {
+			menu.push(createItem($i));
+		}
+		menu.push(
+			...accountItemPromises,
+			{
+				type: 'parent',
+				icon: 'ti ti-plus',
+				text: i18n.ts.addAccount,
+				children: [{
+					text: i18n.ts.existingAccount,
+					action: showSigninDialog,
+				}, {
+					text: i18n.ts.createAccount,
+					action: createAccount,
+				}],
+			},
+			{
+				type: 'link',
+				icon: 'ti ti-users',
+				text: i18n.ts.manageAccounts,
+				to: '/settings/accounts',
+			},
+		);
 	} else {
-		popupMenu([...(opts.includeCurrentAccount ? [createItem($i)] : []), ...accountItemPromises], ev.currentTarget ?? ev.target, {
-			align: 'left',
-		});
+		if (opts.includeCurrentAccount && $i) {
+			menu.push(createItem($i));
+		}
+		menu.push(...accountItemPromises);
 	}
+
+	popupMenu(menu, el, { align: 'left' });
 }
