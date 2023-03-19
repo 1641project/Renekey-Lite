@@ -30,6 +30,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 
+// eslint-disable-next-line import/no-default-export
 export default defineComponent({
 	props: {
 		showHeader: {
@@ -65,18 +66,21 @@ export default defineComponent({
 		maxHeight: {
 			type: Number,
 			required: false,
-			default: null,
+			default: undefined,
 		},
 	},
 	data() {
 		return {
 			showBody: this.expanded,
-			omitted: null,
+			omitted: false,
 			ignoreOmit: false,
 		};
 	},
 	mounted() {
+		if (!(this.$refs.content instanceof HTMLElement)) return;
+
 		this.$watch('showBody', showBody => {
+			if (!(this.$refs.header instanceof HTMLElement)) return;
 			const headerHeight = this.showHeader ? this.$refs.header.offsetHeight : 0;
 			this.$el.style.minHeight = `${headerHeight}px`;
 			if (showBody) {
@@ -90,14 +94,15 @@ export default defineComponent({
 
 		this.$el.style.setProperty('--maxHeight', this.maxHeight + 'px');
 
-		const calcOmit = () => {
+		const calcOmit = (): void => {
+			if (!(this.$refs.content instanceof HTMLElement)) return;
 			if (this.omitted || this.ignoreOmit || this.maxHeight == null) return;
 			const height = this.$refs.content.offsetHeight;
 			this.omitted = height > this.maxHeight;
 		};
 
 		calcOmit();
-		new ResizeObserver((entries, observer) => {
+		new ResizeObserver(() => {
 			calcOmit();
 		}).observe(this.$refs.content);
 	},
@@ -107,23 +112,23 @@ export default defineComponent({
 			this.showBody = show;
 		},
 
-		enter(el) {
+		enter(el: HTMLElement) {
 			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = 0;
+			el.style.height = '0';
 			el.offsetHeight; // reflow
-			el.style.height = elementHeight + 'px';
+			el.style.height = `${elementHeight}px`;
 		},
-		afterEnter(el) {
-			el.style.height = null;
+		afterEnter(el: HTMLElement) {
+			el.style.height = '';
 		},
-		leave(el) {
+		leave(el: HTMLElement) {
 			const elementHeight = el.getBoundingClientRect().height;
 			el.style.height = elementHeight + 'px';
 			el.offsetHeight; // reflow
-			el.style.height = 0;
+			el.style.height = '0';
 		},
-		afterLeave(el) {
-			el.style.height = null;
+		afterLeave(el: HTMLElement) {
+			el.style.height = '';
 		},
 	},
 });
@@ -239,9 +244,6 @@ export default defineComponent({
 				padding: 8px 10px;
 				font-size: 0.9em;
 			}
-		}
-
-		> .content {
 		}
 	}
 }

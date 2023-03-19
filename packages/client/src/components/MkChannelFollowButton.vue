@@ -23,18 +23,19 @@
 import { ref } from 'vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
+import { Channel } from '@/types/tms/types';
 
 const props = withDefaults(defineProps<{
-	channel: Record<string, any>;
+	channel: Channel;
 	full?: boolean;
 }>(), {
 	full: false,
 });
 
-const isFollowing = ref<boolean>(props.channel.isFollowing);
+const isFollowing = ref<boolean>(!!props.channel.isFollowing);
 const wait = ref(false);
 
-async function onClick() {
+const onClick = async (): Promise<void> => {
 	wait.value = true;
 
 	try {
@@ -54,7 +55,7 @@ async function onClick() {
 	} finally {
 		wait.value = false;
 	}
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -92,14 +93,6 @@ async function onClick() {
 			border: 2px solid var(--focus);
 			border-radius: 32px;
 		}
-	}
-
-	&:hover {
-		//background: mix($primary, #fff, 20);
-	}
-
-	&:active {
-		//background: mix($primary, #fff, 40);
 	}
 
 	&.active {

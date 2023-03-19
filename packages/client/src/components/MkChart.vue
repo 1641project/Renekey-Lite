@@ -100,17 +100,16 @@ Chart.register(
 	//gradient,
 );
 
-const sum = (...arr) => arr.reduce((r, a) => r.map((b, i) => a[i] + b));
-const negate = arr => arr.map(x => -x);
-const alpha = (hex, a) => {
-	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)!;
-	const r = parseInt(result[1], 16);
-	const g = parseInt(result[2], 16);
-	const b = parseInt(result[3], 16);
+type Hex = `#${string}`;
+
+const sum = (...arr: number[][]): number[] => arr.reduce((r, a) => r.map((b, i) => a[i] + b));
+const negate = (arr: number[]): number[] => arr.map(x => -x);
+const alpha = (hex: Hex, a: number): string => {
+	const [r, g, b] = Array.from(hex.slice(1).match(/.{2}/g) ?? [], n => parseInt(n, 16));
 	return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 
-const colors = {
+const colors: Record<string, Hex> = {
 	blue: '#008FFB',
 	green: '#00E396',
 	yellow: '#FEB019',
@@ -120,13 +119,11 @@ const colors = {
 	lime: '#bde800',
 	cyan: '#00e0e0',
 };
-const colorSets = [colors.blue, colors.green, colors.yellow, colors.red, colors.purple];
-const getColor = (i) => {
-	return colorSets[i % colorSets.length];
-};
+const colorSets: Hex[] = [colors.blue, colors.green, colors.yellow, colors.red, colors.purple];
+const getColor = (i: number): Hex => colorSets[i % colorSets.length];
 
 const now = new Date();
-let chartInstance: Chart = null;
+let chartInstance: Chart | null = null;
 let chartData: {
 	series: {
 		name: string;
@@ -139,12 +136,12 @@ let chartData: {
 			y: number;
 		}[];
 	}[];
-} = null;
+} | null = null;
 
-const chartEl = ref<HTMLCanvasElement>(null);
+const chartEl = ref<HTMLCanvasElement | null>(null);
 const fetching = ref(true);
 
-const getDate = (ago: number) => {
+const getDate = (ago: number): Date => {
 	const y = now.getFullYear();
 	const m = now.getMonth();
 	const d = now.getDate();
@@ -153,7 +150,10 @@ const getDate = (ago: number) => {
 	return props.span === 'day' ? new Date(y, m, d - ago) : new Date(y, m, d, h - ago);
 };
 
-const format = (arr) => {
+const format = (arr: number[]): {
+	x: number;
+	y: number;
+}[] => {
 	return arr.map((v, i) => ({
 		x: getDate(i).getTime(),
 		y: v,
@@ -162,7 +162,7 @@ const format = (arr) => {
 
 const { handler: externalTooltipHandler } = useChartTooltip();
 
-const render = () => {
+const render = (): void => {
 	if (chartInstance) {
 		chartInstance.destroy();
 	}
@@ -173,7 +173,7 @@ const render = () => {
 	// フォントカラー
 	Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--fg');
 
-	const maxes = chartData.series.map((x, i) => Math.max(...x.data.map(d => d.y)));
+	// const maxes = chartData.series.map((x, i) => Math.max(...x.data.map(d => d.y)));
 
 	chartInstance = new Chart(chartEl.value, {
 		type: props.bar ? 'bar' : 'line',
@@ -190,13 +190,13 @@ const render = () => {
 				borderDash: x.dashed ? [5, 5] : [],
 				borderJoinStyle: 'round',
 				borderRadius: props.bar ? 3 : undefined,
-				backgroundColor: props.bar ? (x.color ? x.color : getColor(i)) : alpha(x.color ? x.color : getColor(i), 0.1),
+				backgroundColor: props.bar ? (x.color ? x.color : getColor(i)) : alpha(x.color ? x.color as Hex : getColor(i), 0.1),
 				/*gradient: props.bar ? undefined : {
 					backgroundColor: {
 						axis: 'y',
 						colors: {
-							0: alpha(x.color ? x.color : getColor(i), 0),
-							[maxes[i]]: alpha(x.color ? x.color : getColor(i), 0.2),
+							0: alpha(x.color ? x.color as Hex : getColor(i), 0),
+							[maxes[i]]: alpha(x.color ? x.color as Hex : getColor(i), 0.2),
 						},
 					},
 				},*/
@@ -315,7 +315,7 @@ const render = () => {
 		},
 		plugins: [{
 			id: 'vLine',
-			beforeDraw(chart, args, options) {
+			beforeDraw(chart, _args, _options): void {
 				if (chart.tooltip?._active?.length) {
 					const activePoint = chart.tooltip._active[0];
 					const ctx = chart.ctx;
@@ -337,9 +337,9 @@ const render = () => {
 	});
 };
 
-const exportData = () => {
-	// TODO
-};
+// const exportData = () => {
+// 	// TODO
+// };
 
 const fetchFederationChart = async (): Promise<typeof chartData> => {
 	const raw = await os.apiGet('charts/federation', { limit: props.limit, span: props.span });

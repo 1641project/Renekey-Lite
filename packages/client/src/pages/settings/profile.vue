@@ -1,4 +1,4 @@
-<!-- eslint-disable vue/multi-word-component-names -->
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
 <div class="_formRoot">
 	<div class="llvierxe" :style="{ backgroundImage: $i?.bannerUrl ? `url(${ $i.bannerUrl })` : undefined }">

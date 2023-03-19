@@ -1,3 +1,4 @@
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
 <MkStickyContainer>
 	<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
@@ -25,19 +26,8 @@
 							<option value="remote">{{ i18n.ts.remote }}</option>
 						</MkSelect>
 					</div>
-					<!-- TODO
-			<div class="inputs" style="display: flex; padding-top: 1.2em;">
-				<MkInput v-model="searchUsername" style="margin: 0; flex: 1;" type="text" :spellcheck="false">
-					<span>{{ i18n.ts.username }}</span>
-				</MkInput>
-				<MkInput v-model="searchHost" style="margin: 0; flex: 1;" type="text" :spellcheck="false" :disabled="pagination.params().origin === 'local'">
-					<span>{{ i18n.ts.host }}</span>
-				</MkInput>
-			</div>
-			-->
-
 					<MkPagination v-slot="{items}" ref="reports" :pagination="pagination" style="margin-top: var(--margin);">
-						<XAbuseReport v-for="report in items" :key="report.id" :report="report" @resolved="resolved"/>
+						<XAbuseReport v-for="report in items" :key="(report as Report).id" :report="(report as Report)" @resolved="resolved"/>
 					</MkPagination>
 				</div>
 			</div>
@@ -48,21 +38,19 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-
 import XHeader from './_header_.vue';
 import MkSelect from '@/components/form/select.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import XAbuseReport from '@/components/MkAbuseReport.vue';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { Report } from '@/types/tms/types';
 
 let reports = $ref<InstanceType<typeof MkPagination>>();
 
 let state = $ref('unresolved');
 let reporterOrigin = $ref('combined');
 let targetUserOrigin = $ref('combined');
-let searchUsername = $ref('');
-let searchHost = $ref('');
 
 const pagination = {
 	endpoint: 'admin/abuse-user-reports' as const,
@@ -74,9 +62,9 @@ const pagination = {
 	})),
 };
 
-function resolved(reportId) {
-	reports.removeItem(item => item.id === reportId);
-}
+const resolved = (reportId: string): void => {
+	reports?.removeItem(item => item.id === reportId);
+};
 
 const headerActions = $computed(() => []);
 

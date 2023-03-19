@@ -29,6 +29,8 @@ let zIndex = $ref<number>(os.claimZIndex('high'));
 const SCROLLBAR_THICKNESS = 16;
 
 onMounted(() => {
+	if (!rootEl) return;
+
 	let left = props.ev.pageX + 1; // 間違って右ダブルクリックした場合に意図せずアイテムがクリックされるのを防ぐため + 1
 	let top = props.ev.pageY + 1; // 間違って右ダブルクリックした場合に意図せずアイテムがクリックされるのを防ぐため + 1
 
@@ -54,20 +56,20 @@ onMounted(() => {
 	rootEl.style.top = `${top}px`;
 	rootEl.style.left = `${left}px`;
 
-	for (const el of Array.from(document.querySelectorAll('body *'))) {
+	for (const el of Array.from(document.querySelectorAll<HTMLElement>('body *'))) {
 		el.addEventListener('mousedown', onMousedown);
 	}
 });
 
 onBeforeUnmount(() => {
-	for (const el of Array.from(document.querySelectorAll('body *'))) {
+	for (const el of Array.from(document.querySelectorAll<HTMLElement>('body *'))) {
 		el.removeEventListener('mousedown', onMousedown);
 	}
 });
 
-function onMousedown(evt: Event) {
+const onMousedown = (evt: Event): void => {
 	if (!contains(rootEl, evt.target) && (rootEl !== evt.target)) emit('closed');
-}
+};
 </script>
 
 <style lang="scss" scoped>

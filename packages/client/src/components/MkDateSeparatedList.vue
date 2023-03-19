@@ -4,6 +4,7 @@ import MkAd from '@/components/global/MkAd.vue';
 import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
 
+// eslint-disable-next-line import/no-default-export
 export default defineComponent({
 	props: {
 		items: {
@@ -33,14 +34,14 @@ export default defineComponent({
 	},
 
 	setup(props, { slots, expose }) {
-		function getDateText(time: string) {
+		const getDateText = (time: string): string => {
 			const date = new Date(time).getDate();
 			const month = new Date(time).getMonth() + 1;
 			return i18n.t('monthAndDay', {
 				month: month.toString(),
 				day: date.toString(),
 			});
-		}
+		};
 
 		if (props.items.length === 0) return;
 

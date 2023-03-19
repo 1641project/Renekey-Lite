@@ -18,9 +18,12 @@ import MkPageHeader from './global/MkPageHeader.vue';
 import MkSpacer from './global/MkSpacer.vue';
 import MkStickyContainer from './global/MkStickyContainer.vue';
 
-export default function(app: App) {
+// eslint-disable-next-line import/no-default-export
+export default function(app: App): void {
+	// eslint-disable-next-line vue/multi-word-component-names
 	app.component('I18n', I18n);
 	app.component('RouterView', RouterView);
+	// eslint-disable-next-line vue/multi-word-component-names
 	app.component('Mfm', Mfm);
 	app.component('MkA', MkA);
 	app.component('MkAcct', MkAcct);

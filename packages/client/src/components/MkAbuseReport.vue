@@ -40,9 +40,10 @@ import MkSwitch from '@/components/form/switch.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
+import { Report } from '@/types/tms/types';
 
 const props = defineProps<{
-	report: any;
+	report: Report;
 }>();
 
 const emit = defineEmits<{
@@ -51,14 +52,14 @@ const emit = defineEmits<{
 
 let forward = $ref(props.report.forwarded);
 
-function resolve() {
+const resolve = (): void => {
 	os.apiWithDialog('admin/resolve-abuse-user-report', {
 		forward: forward,
 		reportId: props.report.id,
 	}).then(() => {
 		emit('resolved', props.report.id);
 	});
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -110,9 +111,6 @@ function resolve() {
 				}
 			}
 		}
-	}
-
-	> .report {
 	}
 
 	> .detail {

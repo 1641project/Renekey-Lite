@@ -5,10 +5,10 @@
 </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
-import { defaultStore } from '@/store';
-import { i18n } from '@/i18n';
+<script lang="ts">
+declare global {
+	interface Window extends CaptchaContainer { }
+}
 
 type Captcha = {
 	render(container: string | Node, options: {
@@ -25,10 +25,12 @@ type CaptchaProvider = 'hcaptcha' | 'recaptcha';
 type CaptchaContainer = {
 	readonly [_ in CaptchaProvider]?: Captcha;
 };
+</script>
 
-declare global {
-	interface Window extends CaptchaContainer { }
-}
+<script lang="ts" setup>
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { defaultStore } from '@/store';
+import { i18n } from '@/i18n';
 
 const props = defineProps<{
 	provider: CaptchaProvider;
@@ -73,11 +75,11 @@ if (loaded) {
 		.addEventListener('load', () => available.value = true);
 }
 
-function reset() {
+const reset = (): void => {
 	if (captcha.value.reset) captcha.value.reset();
-}
+};
 
-function requestRender() {
+const requestRender = (): void => {
 	if (captcha.value.render && captchaEl.value instanceof Element) {
 		captcha.value.render(captchaEl.value, {
 			sitekey: props.sitekey,
@@ -89,11 +91,11 @@ function requestRender() {
 	} else {
 		window.setTimeout(requestRender, 1);
 	}
-}
+};
 
-function callback(response?: string) {
+const callback = (response?: string): void => {
 	emit('update:modelValue', typeof response === 'string' ? response : null);
-}
+};
 
 onMounted(() => {
 	if (available.value) {
@@ -110,5 +112,4 @@ onBeforeUnmount(() => {
 defineExpose({
 	reset,
 });
-
 </script>

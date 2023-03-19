@@ -1,21 +1,21 @@
 <template>
 <div>
-	<div v-for="user in users" :key="user.id" style="display:inline-block;width:32px;height:32px;margin-right:8px;">
-		<MkAvatar :user="user" style="width:32px;height:32px;" :show-indicator="true"/>
+	<div v-for="user in users" :key="user.id" :style="$style.avatar">
+		<MkAvatar :user="user" :style="$style.inner" :show-indicator="true"/>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
-import * as misskey from 'misskey-js';
+import { UserDetailed } from 'misskey-js/built/entities';
 import * as os from '@/os';
 
 const props = defineProps<{
 	userIds: string[];
 }>();
 
-const users = ref<misskey.entities.UserDetailed[]>([]);
+const users = ref<UserDetailed[]>([]);
 
 onMounted(async () => {
 	users.value = await os.api('users/show', {
@@ -23,3 +23,17 @@ onMounted(async () => {
 	});
 });
 </script>
+
+<style lang="scss" module>
+.avatar {
+	display: inline-block;
+	width: 32px;
+	height: 32px;
+	margin-right: 8px;
+}
+
+.inner {
+	width: 32px;
+	height: 32px;
+}
+</style>

@@ -17,11 +17,11 @@
 	</ol>
 	<ol v-else-if="emojis.length > 0" ref="suggests" class="emojis">
 		<li v-for="emoji in emojis" :key="emoji.emoji" tabindex="-1" @click="complete(type, emoji.emoji)" @keydown="onKeydown">
-			<span v-if="emoji.isCustomEmoji" class="emoji"><img :src="defaultStore.state.disableShowingAnimatedImages ? getStaticImageUrl(emoji.url) : emoji.url" :alt="emoji.emoji"/></span>
+			<span v-if="emoji.isCustomEmoji" class="emoji"><img :src="defaultStore.state.disableShowingAnimatedImages && emoji.url ? getStaticImageUrl(emoji.url) : emoji.url" :alt="emoji.emoji"/></span>
 			<span v-else-if="!defaultStore.state.useOsNativeEmojis" class="emoji"><img :src="emoji.url" :alt="emoji.emoji"/></span>
 			<span v-else class="emoji">{{ emoji.emoji }}</span>
 			<!-- eslint-disable-next-line vue/no-v-html -->
-			<span class="name" v-html="emoji.name.replace(q, `<b>${q}</b>`)"></span>
+			<span class="name" v-html="q ? emoji.name.replace(q, `<b>${q}</b>`) : emoji.name"></span>
 			<span v-if="emoji.aliasOf" class="alias">({{ emoji.aliasOf }})</span>
 		</li>
 	</ol>
@@ -35,6 +35,7 @@
 
 <script lang="ts">
 import { markRaw, ref, onUpdated, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { User } from 'misskey-js/built/entities';
 import contains from '@/scripts/contains';
 import { char2filePath } from '@/scripts/twemoji-base';
 import { getStaticImageUrl } from '@/scripts/get-static-image-url';
@@ -64,15 +65,13 @@ const emjdb: EmojiDef[] = lib.map(x => ({
 }));
 
 for (const x of lib) {
-	if (x.keywords) {
-		for (const k of x.keywords) {
-			emjdb.push({
-				emoji: x.char,
-				name: k,
-				aliasOf: x.name,
-				url: char2filePath(x.char),
-			});
-		}
+	for (const k of [...x.keywords]) {
+		emjdb.push({
+			emoji: x.char,
+			name: k,
+			aliasOf: x.name,
+			url: char2filePath(x.char),
+		});
 	}
 }
 
@@ -87,19 +86,17 @@ for (const x of customEmojis) {
 		name: x.name,
 		emoji: `:${x.name}:`,
 		url: x.url,
-		isCustomEmoji: true
+		isCustomEmoji: true,
 	});
 
-	if (x.aliases) {
-		for (const alias of x.aliases) {
-			emojiDefinitions.push({
-				name: alias,
-				aliasOf: x.name,
-				emoji: `:${x.name}:`,
-				url: x.url,
-				isCustomEmoji: true
-			});
-		}
+	for (const alias of [...x.aliases]) {
+		emojiDefinitions.push({
+			name: alias,
+			aliasOf: x.name,
+			emoji: `:${x.name}:`,
+			url: x.url,
+			isCustomEmoji: true,
+		});
 	}
 }
 
@@ -108,6 +105,7 @@ emojiDefinitions.sort((a, b) => a.name.length - b.name.length);
 const emojiDb = markRaw(emojiDefinitions.concat(emjdb));
 //#endregion
 
+// eslint-disable-next-line import/no-default-export
 export default {
 	emojiDb,
 	emojiDefinitions,
@@ -127,34 +125,37 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(event: 'done', value: { type: string; value: any }): void;
+	(event: 'done', value: {
+		type: string;
+		value: unknown;
+	}): void;
 	(event: 'closed'): void;
 }>();
 
-const suggests = ref<Element>();
+const suggests = ref<HTMLElement>();
 const rootEl = ref<HTMLDivElement>();
 
 const fetching = ref(true);
-const users = ref<any[]>([]);
-const hashtags = ref<any[]>([]);
+const users = ref<User[]>([]);
+const hashtags = ref<string[]>([]);
 const emojis = ref<(EmojiDef)[]>([]);
-const items = ref<Element[] | HTMLCollection>([]);
+const items = ref<HTMLElement[]>([]);
 const mfmTags = ref<string[]>([]);
 const select = ref(-1);
 const zIndex = os.claimZIndex('high');
 
-function complete(type: string, value: any) {
+const complete = (type: string, value: unknown): void => {
 	emit('done', { type, value });
 	emit('closed');
-	if (type === 'emoji') {
+	if (type === 'emoji' && typeof value === 'string') {
 		let recents = defaultStore.state.recentlyUsedEmojis;
-		recents = recents.filter((emoji: any) => emoji !== value);
+		recents = recents.filter(recentEmoji => recentEmoji !== value);
 		recents.unshift(value);
 		defaultStore.set('recentlyUsedEmojis', recents.splice(0, 32));
 	}
-}
+};
 
-function setPosition() {
+const setPosition = (): void => {
 	if (!rootEl.value) return;
 	if (props.x + rootEl.value.offsetWidth > window.innerWidth) {
 		rootEl.value.style.left = (window.innerWidth - rootEl.value.offsetWidth) + 'px';
@@ -168,9 +169,9 @@ function setPosition() {
 		rootEl.value.style.top = props.y + 'px';
 		rootEl.value.style.marginTop = 'calc(1em + 8px)';
 	}
-}
+};
 
-function exec() {
+const exec = (): void => {
 	select.value = -1;
 	if (suggests.value) {
 		for (const el of Array.from(items.value)) {
@@ -188,15 +189,16 @@ function exec() {
 		const cache = sessionStorage.getItem(cacheKey);
 
 		if (cache) {
-			users.value = parseArray<any[]>(cache);
+			users.value = parseArray<User[]>(cache);
 			fetching.value = false;
 		} else {
 			os.api('users/search-by-username-and-host', {
 				username: props.q,
 				limit: 10,
-				detail: false
-			}).then(searchedUsers => {
-				users.value = searchedUsers as any[];
+				detail: false,
+			}).then(searchedUsers_ => {
+				const searchedUsers = searchedUsers_ as User[];
+				users.value = searchedUsers;
 				fetching.value = false;
 				// キャッシュ
 				sessionStorage.setItem(cacheKey, JSON.stringify(searchedUsers));
@@ -204,20 +206,21 @@ function exec() {
 		}
 	} else if (props.type === 'hashtag') {
 		if (!props.q || props.q === '') {
-			hashtags.value = parseArray<any[]>(localStorage.getItem('hashtags'));
+			hashtags.value = parseArray<string[]>(localStorage.getItem('hashtags'));
 			fetching.value = false;
 		} else {
 			const cacheKey = `autocomplete:hashtag:${props.q}`;
 			const cache = sessionStorage.getItem(cacheKey);
 			if (cache) {
-				hashtags.value = parseArray<any[]>(cache);
+				hashtags.value = parseArray<string[]>(cache);
 				fetching.value = false;
 			} else {
 				os.api('hashtags/search', {
 					query: props.q,
-					limit: 30
-				}).then(searchedHashtags => {
-					hashtags.value = searchedHashtags as any[];
+					limit: 30,
+				}).then(searchedHashtags_ => {
+					const searchedHashtags = searchedHashtags_ as string[];
+					hashtags.value = searchedHashtags;
 					fetching.value = false;
 					// キャッシュ
 					sessionStorage.setItem(cacheKey, JSON.stringify(searchedHashtags));
@@ -262,14 +265,14 @@ function exec() {
 
 		mfmTags.value = MFM_TAGS.filter(tag => tag.startsWith(props.q ?? ''));
 	}
-}
+};
 
-function onMousedown(event: Event) {
+const onMousedown = (event: Event): void => {
 	if (!contains(rootEl.value, event.target) && (rootEl.value !== event.target)) props.close();
-}
+};
 
-function onKeydown(event: KeyboardEvent) {
-	const cancel = () => {
+const onKeydown = (event: KeyboardEvent): void => {
+	const cancel = (): void => {
 		event.preventDefault();
 		event.stopPropagation();
 	};
@@ -278,7 +281,7 @@ function onKeydown(event: KeyboardEvent) {
 		case 'Enter':
 			if (select.value !== -1) {
 				cancel();
-				(items.value[select.value] as any).click();
+				items.value[select.value].click();
 			} else {
 				props.close();
 			}
@@ -308,41 +311,41 @@ function onKeydown(event: KeyboardEvent) {
 			event.stopPropagation();
 			props.textarea.focus();
 	}
-}
+};
 
-function selectNext() {
+const selectNext = (): void => {
 	if (++select.value >= items.value.length) select.value = 0;
 	if (items.value.length === 0) select.value = -1;
 	applySelect();
-}
+};
 
-function selectPrev() {
+const selectPrev = (): void => {
 	if (--select.value < 0) select.value = items.value.length - 1;
 	applySelect();
-}
+};
 
-function applySelect() {
+const applySelect = (): void => {
 	for (const el of Array.from(items.value)) {
 		el.removeAttribute('data-selected');
 	}
 
 	if (select.value !== -1) {
 		items.value[select.value].setAttribute('data-selected', 'true');
-		(items.value[select.value] as any).focus();
+		items.value[select.value].focus();
 	}
-}
+};
 
-function chooseUser() {
+const chooseUser = (): void => {
 	props.close();
 	os.selectUser().then(user => {
 		complete('user', user);
 		props.textarea.focus();
 	});
-}
+};
 
 onUpdated(() => {
 	setPosition();
-	items.value = suggests.value?.children ?? [];
+	items.value = Array.from(suggests.value?.children ?? []).filter((x): x is HTMLElement => x instanceof HTMLElement);
 });
 
 onMounted(() => {
@@ -462,12 +465,6 @@ onBeforeUnmount(() => {
 
 		.alias {
 			margin: 0 0 0 8px;
-		}
-	}
-
-	> .mfmTags > li {
-
-		.name {
 		}
 	}
 }

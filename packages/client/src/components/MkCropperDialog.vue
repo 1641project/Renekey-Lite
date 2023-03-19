@@ -27,7 +27,7 @@
 
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import { DriveFile } from 'misskey-js/built/entities';
 import Cropper from 'cropperjs';
 import tinycolor from 'tinycolor2';
 import XModalWindow from '@/components/MkModalWindow.vue';
@@ -39,13 +39,13 @@ import { query } from '@/scripts/url';
 import { i18n } from '@/i18n';
 
 const emit = defineEmits<{
-	(ev: 'ok', cropped: misskey.entities.DriveFile): void;
+	(ev: 'ok', cropped: DriveFile): void;
 	(ev: 'cancel'): void;
 	(ev: 'closed'): void;
 }>();
 
 const props = defineProps<{
-	file: misskey.entities.DriveFile;
+	file: DriveFile;
 	aspectRatio: number;
 }>();
 
@@ -57,10 +57,12 @@ let imgEl = $ref<HTMLImageElement>();
 let cropper: Cropper | null = null;
 let loading = $ref(true);
 
-const ok = async () => {
-	const promise = new Promise<misskey.entities.DriveFile>(async (res) => {
+const ok = async (): Promise<void> => {
+	const promise = new Promise<DriveFile>(async (res) => {
 		const croppedCanvas = await cropper?.getCropperSelection()?.$toCanvas();
-		croppedCanvas.toBlob(blob => {
+		croppedCanvas?.toBlob(blob => {
+			if (!$i || !blob) return;
+
 			const formData = new FormData();
 			formData.append('file', blob);
 			formData.append('i', $i.token);
@@ -84,43 +86,45 @@ const ok = async () => {
 	const f = await promise;
 
 	emit('ok', f);
-	dialogEl.close();
+	dialogEl?.close();
 };
 
-const cancel = () => {
+const cancel = (): void => {
 	emit('cancel');
-	dialogEl.close();
+	dialogEl?.close();
 };
 
-const onImageLoad = () => {
+const onImageLoad = (): void => {
 	loading = false;
 
 	if (cropper) {
-		cropper.getCropperImage()!.$center('contain');
-		cropper.getCropperSelection()!.$center();
+		cropper.getCropperImage()?.$center('contain');
+		cropper.getCropperSelection()?.$center();
 	}
 };
 
 onMounted(() => {
-	cropper = new Cropper(imgEl, {
-	});
+	if (!imgEl) return;
+	cropper = new Cropper(imgEl, {});
+
+	const selection = cropper.getCropperSelection();
+	if (!selection) return;
 
 	const computedStyle = getComputedStyle(document.documentElement);
 
-	const selection = cropper.getCropperSelection()!;
 	selection.themeColor = tinycolor(computedStyle.getPropertyValue('--accent')).toHexString();
 	selection.aspectRatio = props.aspectRatio;
 	selection.initialAspectRatio = props.aspectRatio;
 	selection.outlined = true;
 
 	window.setTimeout(() => {
-		cropper.getCropperImage()!.$center('contain');
+		cropper?.getCropperImage()?.$center('contain');
 		selection.$center();
 	}, 100);
 
 	// モーダルオープンアニメーションが終わったあとで再度調整
 	window.setTimeout(() => {
-		cropper.getCropperImage()!.$center('contain');
+		cropper?.getCropperImage()?.$center('contain');
 		selection.$center();
 	}, 500);
 });

@@ -36,9 +36,10 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { i18n } from '@/i18n';
+import { Channel } from '@/types/tms/types';
 
 const props = defineProps<{
-	channel: Record<string, any>;
+	channel: Channel;
 }>();
 
 const bannerStyle = computed(() => {
@@ -150,5 +151,4 @@ const bannerStyle = computed(() => {
 		}
 	}
 }
-
 </style>

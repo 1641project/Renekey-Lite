@@ -12,6 +12,7 @@ import MkSparkle from '@/components/MkSparkle.vue';
 import MkA from '@/components/global/MkA.vue';
 import { host } from '@/config';
 
+// eslint-disable-next-line import/no-default-export
 export default defineComponent({
 	props: {
 		text: {

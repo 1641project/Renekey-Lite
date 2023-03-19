@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
+import { UserDetailed } from 'misskey-js/built/entities';
 import XWindow from '@/components/MkWindow.vue';
 import MkTextarea from '@/components/form/textarea.vue';
 import MkButton from '@/components/MkButton.vue';
@@ -32,7 +32,7 @@ import * as os from '@/os';
 import { i18n } from '@/i18n';
 
 const props = defineProps<{
-	user: Misskey.entities.User;
+	user: UserDetailed;
 	initialComment?: string;
 }>();
 
@@ -43,19 +43,19 @@ const emit = defineEmits<{
 const uiWindow = ref<InstanceType<typeof XWindow>>();
 const comment = ref(props.initialComment || '');
 
-function send() {
+const send = (): void => {
 	os.apiWithDialog('users/report-abuse', {
 		userId: props.user.id,
 		comment: comment.value,
-	}, undefined).then(res => {
+	}, undefined).then(() => {
 		os.alert({
 			type: 'success',
-			text: i18n.ts.abuseReported
+			text: i18n.ts.abuseReported,
 		});
 		uiWindow.value?.close();
 		emit('closed');
 	});
-}
+};
 </script>
 
 <style lang="scss" scoped>
