@@ -7,6 +7,7 @@ import { apiUrl } from '@/config';
 import { waiting, api, popup, popupMenu, success, alert } from '@/os';
 import { unisonReload, reloadChannel } from '@/scripts/unison-reload';
 import { MenuItem, MenuUser } from '@/types/menu';
+import { parseObject } from '@/scripts/tms/parse';
 
 // TODO: 他のタブと永続化されたstateを同期
 
@@ -17,7 +18,7 @@ type Account = misskey.entities.MeDetailed & {
 const accountData = localStorage.getItem('account');
 
 // TODO: 外部からはreadonlyに
-export const $i = accountData ? reactive(JSON.parse(accountData) as Account) : null;
+export const $i = accountData ? reactive(parseObject<Account>(accountData)) : null;
 
 export const iAmModerator = $i != null && ($i.isAdmin || $i.isModerator);
 export const iAmAdmin = $i != null && $i.isAdmin;

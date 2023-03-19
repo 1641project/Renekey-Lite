@@ -19,7 +19,7 @@ import { $i } from '@/account';
 import { useTooltip } from '@/scripts/use-tooltip';
 import { i18n } from '@/i18n';
 import { pakuru, numberquote } from '@/scripts/tms/pakuru';
-import { defaultStore } from '@/store';
+import { tmsStore } from '@/tms/store';
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -29,7 +29,7 @@ const props = defineProps<{
 const buttonRef = ref<HTMLElement>();
 
 const canRenote = computed(() => ['public', 'home'].includes(props.note.visibility) || props.note.userId === $i?.id);
-const canPakuru = computed(() => defaultStore.state.tmsPakuruEnabled || defaultStore.state.tmsNumberquoteEnabled);
+const canPakuru = computed(() => tmsStore.state.usePakuru || tmsStore.state.useNumberquote);
 
 const renoteAnime = (): void => {
 	const el = buttonRef.value;
@@ -90,16 +90,16 @@ const renote = (viaKeyboard = false): void => {
 	];
 
 	const pakuruMenu = [
-		defaultStore.state.tmsPakuruEnabled ? {
-			text: 'パクる',
+		tmsStore.state.usePakuru ? {
+			text: i18n.ts._tms.pakuru,
 			icon: 'ti ti-swipe',
 			action: (): void => {
 				renoteAnime();
 				pakuru(props.note);
 			},
 		} : undefined,
-		defaultStore.state.tmsNumberquoteEnabled ? {
-			text: '数字引用する',
+		tmsStore.state.useNumberquote ? {
+			text: i18n.ts._tms.numberquote,
 			icon: 'ti ti-exposure-plus-1',
 			action: (): void => {
 				renoteAnime();
