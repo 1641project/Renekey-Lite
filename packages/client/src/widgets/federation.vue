@@ -4,7 +4,7 @@
 
 	<div class="wbrkwalb">
 		<MkLoading v-if="fetching"/>
-		<TransitionGroup v-else tag="div" :name="$store.state.animation ? 'chart' : ''" class="instances">
+		<TransitionGroup v-else tag="div" :name="defaultStore.state.animation ? 'chart' : ''" class="instances">
 			<div v-for="(instance, i) in instances" :key="instance.id" class="instance">
 				<img v-if="instance.iconUrl" :src="instance.iconUrl" alt=""/>
 				<div class="body">
@@ -27,6 +27,7 @@ import MkMiniChart from '@/components/MkMiniChart.vue';
 import * as os from '@/os';
 import { useInterval } from '@/scripts/use-interval';
 import { i18n } from '@/i18n';
+import { defaultStore } from '@/store';
 
 const name = 'federation';
 
@@ -84,7 +85,8 @@ defineExpose<WidgetComponentExpose>({
 	$bodyInfoHieght: 16px;
 
 	height: (62px + 1px) + (62px + 1px) + (62px + 1px) + (62px + 1px) + 62px;
-	overflow: hidden;
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 
 	> .instances {
 		.chart-move {
@@ -108,7 +110,8 @@ defineExpose<WidgetComponentExpose>({
 
 			> .body {
 				flex: 1;
-				overflow: hidden;
+				overflow: hidden; // fallback (overflow: clip)
+				overflow: clip;
 				font-size: 0.9em;
 				color: var(--fg);
 				padding-right: 8px;

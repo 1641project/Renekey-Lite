@@ -2,11 +2,11 @@
 <div class="mkw-calendar" :class="{ _panel: !widgetProps.transparent }">
 	<div class="calendar" :class="{ isHoliday }">
 		<p class="month-and-year">
-			<span class="year">{{ $t('yearX', { year }) }}</span>
-			<span class="month">{{ $t('monthX', { month }) }}</span>
+			<span class="year">{{ i18n.t('yearX', { year }) }}</span>
+			<span class="month">{{ i18n.t('monthX', { month }) }}</span>
 		</p>
-		<p v-if="month === 1 && day === 1" class="day">🎉{{ $t('dayX', { day }) }}<span style="display: inline-block; transform: scaleX(-1);">🎉</span></p>
-		<p v-else class="day">{{ $t('dayX', { day }) }}</p>
+		<p v-if="month === 1 && day === 1" class="day">🎉{{ i18n.t('dayX', { day }) }}<span style="display: inline-block; transform: scaleX(-1);">🎉</span></p>
+		<p v-else class="day">{{ i18n.t('dayX', { day }) }}</p>
 		<p class="week-day">{{ weekDay }}</p>
 	</div>
 	<div class="info">
@@ -180,7 +180,8 @@ defineExpose<WidgetComponentExpose>({
 
 			> .meter {
 				width: 100%;
-				overflow: hidden;
+				overflow: hidden; // fallback (overflow: clip)
+				overflow: clip;
 				background: var(--X11);
 				border-radius: 8px;
 
