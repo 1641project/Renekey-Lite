@@ -54,7 +54,7 @@
 		<button class="button post _button" @click="os.post()"><i class="icon ti ti-pencil"></i></button>
 	</div>
 
-	<Transition :name="$store.state.animation ? 'menu-back' : ''">
+	<Transition :name="defaultStore.state.animation ? 'menu-back' : ''">
 		<div
 			v-if="drawerMenuShowing"
 			class="menu-back _modalBg"
@@ -63,7 +63,7 @@
 		></div>
 	</transition>
 
-	<Transition :name="$store.state.animation ? 'menu' : ''">
+	<Transition :name="defaultStore.state.animation ? 'menu' : ''">
 		<XDrawerMenu v-if="drawerMenuShowing" class="menu"/>
 	</transition>
 
@@ -88,6 +88,7 @@ import { i18n } from '@/i18n';
 import { mainRouter } from '@/router';
 import { unisonReload } from '@/scripts/unison-reload';
 import { disableContextmenu } from '@/scripts/touch';
+import { defaultStore } from '@/store';
 const XStatusBars = defineAsyncComponent(() => import('@/ui/_common_/statusbars.vue'));
 
 const isNoMainColumn = (): boolean => !deckStore.state.columns.some(x => x.type === 'main');
@@ -268,8 +269,8 @@ async function deleteProfile() {
 	--deckDividerThickness: 5px;
 
 	display: flex;
-	// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-	height: calc(var(--vh, 1vh) * 100);
+	height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+	height: 100dvh;
 	box-sizing: border-box;
 	flex: 1;
 
@@ -287,6 +288,7 @@ async function deleteProfile() {
 			flex: 1;
 			display: flex;
 			overflow-x: auto;
+			overflow-y: hidden; // fallback (overflow: clip)
 			overflow-y: clip;
 
 			&.center {
@@ -394,7 +396,7 @@ async function deleteProfile() {
 			&:active {
 				background: var(--X2);
 			}
-			
+
 			&.post {
 				background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
 				color: var(--fgOnAccent);
@@ -433,8 +435,8 @@ async function deleteProfile() {
 		top: 0;
 		left: 0;
 		z-index: 1001;
-		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-		height: calc(var(--vh, 1vh) * 100);
+		height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		height: 100dvh;
 		width: 240px;
 		box-sizing: border-box;
 		contain: strict;

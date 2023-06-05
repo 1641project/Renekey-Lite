@@ -28,19 +28,19 @@
 		<button class="button post _button" @click="os.post()"><i class="icon ti ti-pencil"></i></button>
 	</div>
 
-	<Transition :name="$store.state.animation ? 'menuDrawer-back' : ''">
+	<Transition :name="defaultStore.state.animation ? 'menuDrawer-back' : ''">
 		<div v-if="drawerMenuShowing" class="menuDrawer-back _modalBg" @click="closeDrawerMenu()" @touchstart.passive="closeDrawerMenu()"></div>
 	</transition>
 
-	<Transition :name="$store.state.animation ? 'menuDrawer' : ''">
+	<Transition :name="defaultStore.state.animation ? 'menuDrawer' : ''">
 		<XDrawerMenu v-if="drawerMenuShowing" class="menuDrawer"/>
 	</transition>
 
-	<Transition :name="$store.state.animation ? 'widgetsDrawer-back' : ''">
+	<Transition :name="defaultStore.state.animation ? 'widgetsDrawer-back' : ''">
 		<div v-if="widgetsShowing" class="widgetsDrawer-back _modalBg" @click="closeWidgets()" @touchstart.passive="closeWidgets()"></div>
 	</transition>
 
-	<Transition :name="$store.state.animation ? 'widgetsDrawer' : ''">
+	<Transition :name="defaultStore.state.animation ? 'widgetsDrawer' : ''">
 		<XWidgets v-if="widgetsShowing" class="widgetsDrawer"/>
 	</transition>
 
@@ -273,8 +273,8 @@ const wallpaper = localStorage.getItem('wallpaper') != null;
 	$ui-font-size: 1em; // TODO: どこかに集約したい
 	$widgets-hide-threshold: 1090px;
 
-	// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-	min-height: calc(var(--vh, 1vh) * 100);
+	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+	min-height: 100dvh;
 	box-sizing: border-box;
 	display: flex;
 
@@ -326,8 +326,8 @@ const wallpaper = localStorage.getItem('wallpaper') != null;
 		top: 0;
 		right: 0;
 		z-index: 1001;
-		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-		height: calc(var(--vh, 1vh) * 100);
+		height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		height: 100dvh;
 		padding: var(--margin);
 		box-sizing: border-box;
 		overflow: auto;
@@ -408,8 +408,8 @@ const wallpaper = localStorage.getItem('wallpaper') != null;
 		top: 0;
 		left: 0;
 		z-index: 1001;
-		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-		height: calc(var(--vh, 1vh) * 100);
+		height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		height: 100dvh;
 		width: 240px;
 		box-sizing: border-box;
 		contain: strict;

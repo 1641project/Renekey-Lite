@@ -1,16 +1,16 @@
 <template>
 <div :class="$style.root">
-	<XNotification :notification="notification" class="notification _acrylic" :full="false"/>
+	<MkNotification :notification="notification" class="notification _acrylic" :full="false"/>
 </div>
 </template>
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
-import XNotification from '@/components/MkNotification.vue';
+import * as Misskey from 'misskey-js';
+import MkNotification from '@/components/MkNotification.vue';
 
 defineProps<{
-	notification: misskey.entities.Notification;
+	notification: Misskey.entities.Notification;
 }>();
 </script>
 
@@ -18,6 +18,7 @@ defineProps<{
 .root {
 	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 	border-radius: 8px;
+	overflow: hidden; // fallback (overflow: clip)
 	overflow: clip;
 	contain: content;
 }

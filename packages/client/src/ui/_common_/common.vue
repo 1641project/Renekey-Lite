@@ -9,7 +9,7 @@
 
 <XUpload v-if="uploads.length > 0"/>
 
-<TransitionGroup :name="$store.state.animation ? 'notification' : ''" tag="div" class="notification-toast">
+<TransitionGroup :name="defaultStore.state.animation ? 'notification' : ''" tag="div" class="notification-toast">
 	<XNotification v-for="notification in notifications" :key="notification.id" :notification="notification" class="notification"/>
 </TransitionGroup>
 
@@ -24,7 +24,7 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import { swInject } from './sw-inject';
 import XNotification from './notification.vue';
 import { popups, pendingApiRequestsCount } from '@/os';
@@ -33,13 +33,14 @@ import * as sound from '@/scripts/sound';
 import { $i } from '@/account';
 import { stream } from '@/stream';
 import { i18n } from '@/i18n';
+import { defaultStore } from '@/store';
 
 const XStreamIndicator = defineAsyncComponent(() => import('./stream-indicator.vue'));
 const XUpload = defineAsyncComponent(() => import('./upload.vue'));
 
 const dev = _DEV_;
 
-let notifications = $ref<misskey.entities.Notification[]>([]);
+let notifications = $ref<Misskey.entities.Notification[]>([]);
 
 function onNotification(notification) {
 	if ($i.mutingNotificationTypes.includes(notification.type)) return;

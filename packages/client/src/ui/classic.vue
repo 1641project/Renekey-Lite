@@ -21,7 +21,7 @@
 		</div>
 	</div>
 
-	<Transition :name="$store.state.animation ? 'tray-back' : ''">
+	<Transition :name="defaultStore.state.animation ? 'tray-back' : ''">
 		<div
 			v-if="widgetsShowing"
 			class="tray-back _modalBg"
@@ -30,11 +30,11 @@
 		></div>
 	</transition>
 
-	<Transition :name="$store.state.animation ? 'tray' : ''">
+	<Transition :name="defaultStore.state.animation ? 'tray' : ''">
 		<XWidgets v-if="widgetsShowing" class="tray"/>
 	</transition>
 
-	<iframe v-if="$store.state.aiChanMode" ref="live2d" class="ivnzpscs" src="https://misskey-dev.github.io/mascot-web/?scale=2&y=1.4"></iframe>
+	<iframe v-if="defaultStore.state.aiChanMode" ref="live2d" class="ivnzpscs" src="https://misskey-dev.github.io/mascot-web/?scale=2&y=1.4"></iframe>
 
 	<XCommon/>
 </div>
@@ -200,8 +200,8 @@ onMounted(() => {
 	$ui-font-size: 1em;
 	$widgets-hide-threshold: 1200px;
 
-	// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-	min-height: calc(var(--vh, 1vh) * 100);
+	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+	min-height: 100dvh;
 	box-sizing: border-box;
 
 	&.wallpaper {
@@ -217,7 +217,7 @@ onMounted(() => {
 
 		&.fullView {
 			margin: 0;
-		
+
 			> .sidebar {
 				display: none;
 			}
@@ -242,6 +242,7 @@ onMounted(() => {
 			border-left: solid 1px var(--divider);
 			border-right: solid 1px var(--divider);
 			border-radius: 0;
+			overflow: hidden; // fallback (overflow: clip)
 			overflow: clip;
 			--margin: 12px;
 		}
@@ -303,8 +304,8 @@ onMounted(() => {
 		top: 0;
 		right: 0;
 		z-index: 1001;
-		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-		height: calc(var(--vh, 1vh) * 100);
+		height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		height: 100dvh;
 		padding: var(--margin);
 		box-sizing: border-box;
 		overflow: auto;

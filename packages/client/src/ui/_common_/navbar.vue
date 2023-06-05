@@ -2,9 +2,9 @@
 <div class="mvcprjjd" :class="{ iconOnly }">
 	<div class="body">
 		<div class="top">
-			<div class="banner" :style="{ backgroundImage: `url(${ $instance.bannerUrl })` }"></div>
-			<button v-click-anime v-tooltip.noDelay.right="$instance.name ?? i18n.ts.instance" class="item _button instance" @click="openInstanceMenu">
-				<img :src="$instance.iconUrl || $instance.faviconUrl || '/favicon.ico'" alt="" class="icon"/>
+			<div class="banner" :style="{ backgroundImage: `url(${ instance.bannerUrl })` }"></div>
+			<button v-click-anime v-tooltip.noDelay.right="instance.name ?? i18n.ts.instance" class="item _button instance" @click="openInstanceMenu">
+				<img :src="instance.iconUrl || instance.faviconUrl || '/favicon.ico'" alt="" class="icon"/>
 			</button>
 		</div>
 		<div class="middle">
@@ -168,10 +168,11 @@ function more(ev: MouseEvent) {
 		left: 0;
 		z-index: 1001;
 		width: $nav-icon-only-width;
-		// ほんとは単に 100vh と書きたいところだが... https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-		height: calc(var(--vh, 1vh) * 100);
+		height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		height: 100dvh;
 		box-sizing: border-box;
 		overflow: auto;
+		overflow-x: hidden; // fallback (overflow: clip)
 		overflow-x: clip;
 		background: var(--navBg);
 		contain: strict;
