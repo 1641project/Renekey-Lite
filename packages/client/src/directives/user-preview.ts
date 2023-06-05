@@ -1,33 +1,47 @@
 import { defineAsyncComponent, Directive, ref } from 'vue';
-import autobind from 'autobind-decorator';
+import * as Misskey from 'misskey-js';
 import { popup } from '@/os';
 
-export class UserPreview {
-	private el;
-	private user;
-	private showTimer;
-	private hideTimer;
-	private checkTimer;
-	private promise;
+const mountings = new Map<HTMLElement, {
+	preview: UserPreview;
+}>();
 
-	constructor(el, user) {
+export class UserPreview {
+	private el: HTMLElement;
+	private user: Misskey.entities.User;
+	private showTimer: number | undefined;
+	private hideTimer: number | undefined;
+	private checkTimer: number | undefined;
+	private promise: {
+		cancel: () => void;
+	} | null;
+
+	constructor(el: HTMLElement, user: Misskey.entities.User) {
 		this.el = el;
 		this.user = user;
+		this.promise = null;
+
+		this.show = this.show.bind(this);
+		this.close = this.close.bind(this);
+		this.onMouseover = this.onMouseover.bind(this);
+		this.onMouseleave = this.onMouseleave.bind(this);
+		this.onClick = this.onClick.bind(this);
+		this.attach = this.attach.bind(this);
+		this.detach = this.detach.bind(this);
 
 		this.attach();
 	}
 
-	@autobind
-	private show() {
+	private show(): void {
 		if (!document.body.contains(this.el)) return;
 		if (this.promise) return;
 
 		const showing = ref(true);
 
-		popup(defineAsyncComponent(() => import('@/components/MkUserPreview.vue')), {
+		popup(defineAsyncComponent(() => import('@/components/MkUserPopup.vue')), {
 			showing,
 			q: this.user,
-			source: this.el
+			source: this.el,
 		}, {
 			mouseover: () => {
 				window.clearTimeout(this.hideTimer);
@@ -39,9 +53,9 @@ export class UserPreview {
 		}, 'closed');
 
 		this.promise = {
-			cancel: () => {
+			cancel: (): void => {
 				showing.value = false;
-			}
+			},
 		};
 
 		this.checkTimer = window.setInterval(() => {
@@ -53,8 +67,7 @@ export class UserPreview {
 		}, 1000);
 	}
 
-	@autobind
-	private close() {
+	private close(): void {
 		if (this.promise) {
 			window.clearInterval(this.checkTimer);
 			this.promise.cancel();
@@ -62,35 +75,30 @@ export class UserPreview {
 		}
 	}
 
-	@autobind
-	private onMouseover() {
+	private onMouseover(): void {
 		window.clearTimeout(this.showTimer);
 		window.clearTimeout(this.hideTimer);
 		this.showTimer = window.setTimeout(this.show, 500);
 	}
 
-	@autobind
-	private onMouseleave() {
+	private onMouseleave(): void {
 		window.clearTimeout(this.showTimer);
 		window.clearTimeout(this.hideTimer);
 		this.hideTimer = window.setTimeout(this.close, 500);
 	}
 
-	@autobind
-	private onClick() {
+	private onClick(): void {
 		window.clearTimeout(this.showTimer);
 		this.close();
 	}
 
-	@autobind
-	public attach() {
+	public attach(): void {
 		this.el.addEventListener('mouseover', this.onMouseover);
 		this.el.addEventListener('mouseleave', this.onMouseleave);
 		this.el.addEventListener('click', this.onClick);
 	}
 
-	@autobind
-	public detach() {
+	public detach(): void {
 		this.el.removeEventListener('mouseover', this.onMouseover);
 		this.el.removeEventListener('mouseleave', this.onMouseleave);
 		this.el.removeEventListener('click', this.onClick);
@@ -98,21 +106,21 @@ export class UserPreview {
 	}
 }
 
+// eslint-disable-next-line import/no-default-export
 export default {
-	mounted(el: HTMLElement, binding, vn) {
+	mounted(src, binding) {
 		if (binding.value == null) return;
 
-		// TODO: 新たにプロパティを作るのをやめMapを使う
-		// ただメモリ的には↓の方が省メモリかもしれないので検討中
-		const self = (el as any)._userPreviewDirective_ = {} as any;
-
-		self.preview = new UserPreview(el, binding.value);
+		mountings.set(src, {
+			preview: new UserPreview(src, binding.value),
+		});
 	},
 
-	unmounted(el, binding, vn) {
+	unmounted(src, binding) {
 		if (binding.value == null) return;
-
-		const self = el._userPreviewDirective_;
+		const self = mountings.get(src);
+		if (!self) return;
 		self.preview.detach();
-	}
-} as Directive;
+		mountings.delete(src);
+	},
+} as Directive<HTMLElement, Misskey.entities.User | null | undefined>;
