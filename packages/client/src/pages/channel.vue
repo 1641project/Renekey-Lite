@@ -2,16 +2,16 @@
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
 	<MkSpacer :content-max="700">
-		<div v-if="channel">
-			<div class="wpgynlbz _panel _gap" :class="{ hide: !showBanner }">
-				<XChannelFollowButton :channel="channel" :full="true" class="subscribe"/>
+		<div v-if="channel" class="_gaps">
+			<div class="wpgynlbz _panel" :class="{ hide: !showBanner }">
+				<MkChannelFollowButton :channel="channel" :full="true" class="subscribe"/>
 				<button class="_button toggle" @click="() => showBanner = !showBanner">
 					<template v-if="showBanner"><i class="ti ti-chevron-up"></i></template>
 					<template v-else><i class="ti ti-chevron-down"></i></template>
 				</button>
 				<div v-if="!showBanner" class="hideOverlay">
 				</div>
-				<div :style="{ backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : null }" class="banner">
+				<div :style="{ backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : undefined }" class="banner">
 					<div class="status">
 						<div><i class="ti ti-users ti-fw"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
 						<div><i class="ti ti-pencil ti-fw"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
@@ -23,9 +23,9 @@
 				</div>
 			</div>
 
-			<XPostForm v-if="$i" :channel="channel" class="post-form _panel _gap" fixed/>
+			<TmsPostForm v-if="$i" :channel="channel" class="post-form _panel" fixed/>
 
-			<XTimeline :key="channelId" class="_gap" src="channel" :channel="channelId" @before="before" @after="after"/>
+			<MkTimeline :key="channelId" src="channel" :channel="channelId" @before="before" @after="after"/>
 		</div>
 	</MkSpacer>
 </MkStickyContainer>
@@ -33,9 +33,10 @@
 
 <script lang="ts" setup>
 import { computed, watch } from 'vue';
-import XPostForm from '@/components/MkPostForm.vue';
-import XTimeline from '@/components/MkTimeline.vue';
-import XChannelFollowButton from '@/components/MkChannelFollowButton.vue';
+import { Channel } from 'misskey-js/built/entities';
+import TmsPostForm from '@/components/TmsPostForm.vue';
+import MkTimeline from '@/components/MkTimeline.vue';
+import MkChannelFollowButton from '@/components/MkChannelFollowButton.vue';
 import * as os from '@/os';
 import { useRouter } from '@/router';
 import { $i } from '@/account';
@@ -48,7 +49,7 @@ const props = defineProps<{
 	channelId: string;
 }>();
 
-let channel = $ref(null);
+let channel = $ref<Channel | null>(null);
 let showBanner = $ref(true);
 const pagination = {
 	endpoint: 'channels/timeline' as const,
@@ -59,14 +60,15 @@ const pagination = {
 };
 
 watch(() => props.channelId, async () => {
-	channel = await os.api('channels/show', {
+	channel = (await os.api('channels/show', {
 		channelId: props.channelId,
-	});
+	}) as Channel);
 }, { immediate: true });
 
-function edit() {
+const edit = (): void => {
+	if (!channel) return;
 	router.push(`/channels/${channel.id}/edit`);
-}
+};
 
 const headerActions = $computed(() => channel && channel.userId ? [{
 	icon: 'ti ti-settings',
@@ -104,12 +106,12 @@ definePageMetadata(computed(() => channel ? {
 		color: #fff;
 		background: rgba(0, 0, 0, 0.5);
 		border-radius: 100%;
-		
+
 		> i {
 			vertical-align: middle;
 		}
 	}
-	
+
 	> .banner {
 		position: relative;
 		height: 200px;

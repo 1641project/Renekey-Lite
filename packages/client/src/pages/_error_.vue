@@ -1,6 +1,6 @@
 <template>
 <MkLoading v-if="!loaded"/>
-<Transition :name="$store.state.animation ? 'zoom' : ''" appear>
+<Transition :name="defaultStore.state.animation ? 'zoom' : ''" appear>
 	<div v-show="loaded" class="mjndxjch">
 		<img src="https://xn--931a.moe/assets/error.jpg" class="_ghost"/>
 		<p><b><i class="ti ti-alert-triangle"></i> {{ i18n.ts.pageLoadError }}</b></p>
@@ -19,22 +19,22 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import { version } from '@/config';
 import * as os from '@/os';
 import { unisonReload } from '@/scripts/unison-reload';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { defaultStore } from '@/store';
 
-const props = withDefaults(defineProps<{
+defineProps<{
 	error?: Error;
-}>(), {
-});
+}>();
 
 let loaded = $ref(false);
 let serverIsDead = $ref(false);
-let meta = $ref<misskey.entities.LiteInstanceMetadata | null>(null);
+let meta = $ref<Misskey.entities.LiteInstanceMetadata | null>(null);
 
 os.api('meta', {
 	detail: false,
@@ -48,13 +48,9 @@ os.api('meta', {
 	serverIsDead = true;
 });
 
-function reload() {
+const reload = (): void => {
 	unisonReload();
-}
-
-const headerActions = $computed(() => []);
-
-const headerTabs = $computed(() => []);
+};
 
 definePageMetadata({
 	title: i18n.ts.error,

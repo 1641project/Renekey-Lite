@@ -1,7 +1,7 @@
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<div style="overflow: clip;">
+	<div :class="$style.container">
 		<MkSpacer :content-max="600" :margin-min="20">
 			<div class="_formRoot znqjceqz">
 				<div id="debug"></div>
@@ -9,7 +9,7 @@
 					<img src="/client-assets/about-icon.png" alt="" class="icon" draggable="false" @load="iconLoaded" @click="gravity"/>
 					<div class="misskey">Misskey</div>
 					<div class="version">v{{ version }}</div>
-					<span v-for="emoji in easterEggEmojis" :key="emoji.id" class="emoji" :data-physics-x="emoji.left" :data-physics-y="emoji.top" :class="{ _physics_circle_: !emoji.emoji.startsWith(':') }"><MkEmoji class="emoji" :emoji="emoji.emoji" :custom-emojis="$instance.emojis" :is-reaction="false" :normal="true" :no-style="true"/></span>
+					<span v-for="emoji in easterEggEmojis" :key="emoji.id" class="emoji" :data-physics-x="emoji.left" :data-physics-y="emoji.top" :class="{ _physics_circle_: !emoji.emoji.startsWith(':') }"><MkEmoji class="emoji" :emoji="emoji.emoji" :custom-emojis="instance.emojis ?? []" :is-reaction="false" :normal="true" :no-style="true"/></span>
 				</div>
 				<div class="_formBlock" style="text-align: center;">
 					{{ i18n.ts._aboutMisskey.about }}<br><a href="https://misskey-hub.net/docs/misskey.html" target="_blank" class="_link">{{ i18n.ts.learnMore }}</a>
@@ -79,6 +79,7 @@ import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
 import * as os from '@/os';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { instance } from '@/instance';
 
 const patrons = [
 	'まっちゃとーにゅ',
@@ -265,5 +266,12 @@ definePageMetadata({
 			}
 		}
 	}
+}
+</style>
+
+<style lang="scss" module>
+.container {
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 }
 </style>

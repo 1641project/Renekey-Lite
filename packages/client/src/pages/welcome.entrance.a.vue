@@ -14,7 +14,7 @@
 			<MkEmoji :normal="true" :no-style="true" emoji="🍮"/>
 		</div>
 		<div class="main">
-			<img :src="$instance.iconUrl || $instance.faviconUrl || '/favicon.ico'" alt="" class="icon"/>
+			<img :src="instance.iconUrl || instance.faviconUrl || '/favicon.ico'" alt="" class="icon"/>
 			<button class="_button _acrylic menu" @click="showMenu"><i class="ti ti-dots"></i></button>
 			<div class="fg">
 				<h1>
@@ -49,13 +49,14 @@
 import { } from 'vue';
 import XTimeline from './welcome.timeline.vue';
 import MarqueeText from '@/components/MkMarquee.vue';
-import XSigninDialog from '@/components/MkSigninDialog.vue';
-import XSignupDialog from '@/components/MkSignupDialog.vue';
+import MkSigninDialog from '@/components/MkSigninDialog.vue';
+import MkSignupDialog from '@/components/MkSignupDialog.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFeaturedPhotos from '@/components/MkFeaturedPhotos.vue';
 import { instanceName } from '@/config';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
+import { instance } from '@/instance';
 
 let meta = $ref();
 let stats = $ref();
@@ -90,13 +91,13 @@ os.api('federation/instances', {
 });
 
 function signin() {
-	os.popup(XSigninDialog, {
+	os.popup(MkSigninDialog, {
 		autoSet: true,
 	}, {}, 'closed');
 }
 
 function signup() {
-	os.popup(XSignupDialog, {
+	os.popup(MkSignupDialog, {
 		autoSet: true,
 	}, {}, 'closed');
 }
@@ -129,7 +130,8 @@ function showMenu(ev) {
 	> .top {
 		display: flex;
 		text-align: center;
-		min-height: 100vh;
+		min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		min-height: 100dvh;
 		box-sizing: border-box;
 		padding: 16px;
 
@@ -149,7 +151,8 @@ function showMenu(ev) {
 			margin: auto;
 			width: 500px;
 			height: calc(100% - 128px);
-			overflow: hidden;
+			overflow: hidden; // fallback (overflow: clip)
+			overflow: clip;
 			-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
 			mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
 
@@ -273,6 +276,7 @@ function showMenu(ev) {
 			-webkit-backdrop-filter: var(--blur, blur(15px));
 			backdrop-filter: var(--blur, blur(15px));
 			border-radius: 999px;
+			overflow: hidden; // fallback (overflow: clip)
 			overflow: clip;
 			width: 800px;
 			padding: 8px 0;

@@ -43,7 +43,7 @@
 	</MkSpacer>
 </MkStickyContainer>
 </template>
-	
+
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import MkPagination from '@/components/MkPagination.vue';
@@ -62,14 +62,17 @@ let tab = $ref('owned');
 
 const ownedPagination = {
 	endpoint: 'users/groups/owned' as const,
+	noPaging: true,
 	limit: 10,
 };
 const joinedPagination = {
 	endpoint: 'users/groups/joined' as const,
+	noPaging: true,
 	limit: 10,
 };
 const invitationPagination = {
 	endpoint: 'i/user-group-invites' as const,
+	noPaging: true,
 	limit: 10,
 };
 

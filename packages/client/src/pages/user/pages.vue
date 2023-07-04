@@ -1,19 +1,22 @@
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
-<div>
-	<MkPagination v-slot="{items}" ref="list" :pagination="pagination">
-		<MkPagePreview v-for="page in items" :key="page.id" :page="page" class="_gap"/>
+<MkSpacer :content-max="700">
+	<MkPagination v-slot="{items}" :pagination="pagination">
+		<div :class="$style.pages">
+			<MkPagePreview v-for="page in items" :key="page.id" :page="(page as any /* 定義されていないため */)"/>
+		</div>
 	</MkPagination>
-</div>
+</MkSpacer>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkPagePreview from '@/components/MkPagePreview.vue';
 import MkPagination from '@/components/MkPagination.vue';
 
 const props = defineProps<{
-	user: misskey.entities.User;
+	user: Misskey.entities.User;
 }>();
 
 const pagination = {
@@ -25,6 +28,11 @@ const pagination = {
 };
 </script>
 
-<style lang="scss" scoped>
-
+<style lang="scss" module>
+.pages {
+	display: grid;
+	grid-auto-flow: row;
+	grid-template-columns: 100%;
+	gap: var(--margin);
+}
 </style>

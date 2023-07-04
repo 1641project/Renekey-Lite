@@ -1,20 +1,19 @@
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
-<div class="iltifgqe">
-	<div class="editor _panel _gap">
-		<PrismEditor v-model="code" class="_code code" :highlight="highlighter" :line-numbers="false"/>
-		<MkButton style="position: absolute; top: 8px; right: 8px;" primary @click="run()"><i class="ti ti-player-play"></i></MkButton>
+<div :class="[$style.root, '_gaps']">
+	<MkInfo v-if="logs.length === 0">{{ i18n.ts.scratchpadDescription }}</MkInfo>
+
+	<div :class="[$style.code, '_code']">
+		<PrismEditor v-model="code" :highlight="highlighter" :line-numbers="false"/>
+		<MkButton primary @click="run()"><i class="ti ti-player-play"></i></MkButton>
 	</div>
 
-	<MkContainer :foldable="true" class="_gap">
+	<MkContainer :foldable="true">
 		<template #header>{{ i18n.ts.output }}</template>
 		<div class="bepmlvbi">
 			<div v-for="log in logs" :key="log.id" class="log" :class="{ print: log.print }">{{ log.text }}</div>
 		</div>
 	</MkContainer>
-
-	<div class="_gap">
-		{{ i18n.ts.scratchpadDescription }}
-	</div>
 </div>
 </template>
 
@@ -31,6 +30,7 @@ import { v4 as uuid } from 'uuid';
 import { AiScript, parse, utils } from '@syuilo/aiscript';
 import MkContainer from '@/components/MkContainer.vue';
 import MkButton from '@/components/MkButton.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import { createAiScriptEnv } from '@/scripts/aiscript/api';
 import * as os from '@/os';
 import { $i } from '@/account';
@@ -38,7 +38,11 @@ import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
 
 const code = ref('');
-const logs = ref<any[]>([]);
+const logs = ref<{
+	id: string;
+	text: string;
+	print: boolean;
+}[]>([]);
 
 const saved = localStorage.getItem('scratchpad');
 if (saved) {
@@ -49,41 +53,40 @@ watch(code, () => {
 	localStorage.setItem('scratchpad', code.value);
 });
 
-async function run() {
+const run = async (): Promise<void> => {
 	logs.value = [];
 	const aiscript = new AiScript(createAiScriptEnv({
 		storageKey: 'scratchpad',
 		token: $i?.token,
 	}), {
-		in: (q) => {
+		in: (q: any): Promise<any> => {
 			return new Promise(ok => {
 				os.inputText({
 					title: q,
-				}).then(({ canceled, result: a }) => {
+				}).then(({ result: a }) => {
 					ok(a);
 				});
 			});
 		},
-		out: (value) => {
+		out: (value: any): void => {
 			logs.value.push({
 				id: uuid(),
 				text: value.type === 'str' ? value.value : utils.valToString(value),
 				print: true,
 			});
 		},
-		log: (type, params) => {
-			switch (type) {
-				case 'end': logs.value.push({
+		log: (type: any, params: any): void => {
+			if (type === 'end') {
+				logs.value.push({
 					id: uuid(),
 					text: utils.valToString(params.val, true),
 					print: false,
-				}); break;
-				default: break;
+				});
 			}
 		},
 	});
 
-	let ast;
+	let ast: any;
 	try {
 		ast = parse(code.value);
 	} catch (error) {
@@ -101,21 +104,30 @@ async function run() {
 			text: error.message,
 		});
 	}
-}
+};
 
-function highlighter(code) {
-	return highlight(code, languages.js, 'javascript');
-}
-
-const headerActions = $computed(() => []);
-
-const headerTabs = $computed(() => []);
+const highlighter = (code_: string): string => {
+	return highlight(code_, languages.js, 'javascript');
+};
 
 definePageMetadata({
 	title: i18n.ts.scratchpad,
 	icon: 'ti ti-terminal-2',
 });
 </script>
+
+<style lang="scss" module>
+.root {
+	padding: 16px;
+}
+
+.code {
+	display: flex;
+	gap: 4px;
+	padding: 8px;
+	box-sizing: border-box;
+}
+</style>
 
 <style lang="scss" scoped>
 .iltifgqe {

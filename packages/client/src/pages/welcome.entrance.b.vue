@@ -10,22 +10,22 @@
 			</h1>
 			<div class="about">
 				<!-- eslint-disable-next-line vue/no-v-html -->
-				<div class="desc" v-html="meta.description || $ts.headlineMisskey"></div>
+				<div class="desc" v-html="meta.description || i18n.ts.headlineMisskey"></div>
 			</div>
 			<div class="action">
-				<MkButton class="signup" inline gradate @click="signup()">{{ $ts.signup }}</MkButton>
-				<MkButton class="signin" inline @click="signin()">{{ $ts.login }}</MkButton>
+				<MkButton class="signup" inline gradate @click="signup()">{{ i18n.ts.signup }}</MkButton>
+				<MkButton class="signin" inline @click="signin()">{{ i18n.ts.login }}</MkButton>
 			</div>
 			<div v-if="onlineUsersCount && stats" class="status">
 				<div>
-					<I18n :src="$ts.nUsers" text-tag="span" class="users">
+					<I18n :src="i18n.ts.nUsers" text-tag="span" class="users">
 						<template #n><b>{{ number(stats.originalUsersCount) }}</b></template>
 					</I18n>
-					<I18n :src="$ts.nNotes" text-tag="span" class="notes">
+					<I18n :src="i18n.ts.nNotes" text-tag="span" class="notes">
 						<template #n><b>{{ number(stats.originalNotesCount) }}</b></template>
 					</I18n>
 				</div>
-				<I18n :src="$ts.onlineUsersCount" text-tag="span" class="online">
+				<I18n :src="i18n.ts.onlineUsersCount" text-tag="span" class="online">
 					<template #n><b>{{ onlineUsersCount }}</b></template>
 				</I18n>
 			</div>
@@ -39,19 +39,20 @@
 import { defineComponent } from 'vue';
 import { toUnicode } from 'punycode/';
 import XTimeline from './welcome.timeline.vue';
-import XSigninDialog from '@/components/MkSigninDialog.vue';
-import XSignupDialog from '@/components/MkSignupDialog.vue';
+import MkSigninDialog from '@/components/MkSigninDialog.vue';
+import MkSignupDialog from '@/components/MkSignupDialog.vue';
 import MkButton from '@/components/MkButton.vue';
-import XNote from '@/components/MkNote.vue';
+import MkNote from '@/components/MkNote.vue';
 import MkFeaturedPhotos from '@/components/MkFeaturedPhotos.vue';
 import { host, instanceName } from '@/config';
 import * as os from '@/os';
 import number from '@/filters/number';
+import { i18n } from '@/i18n';
 
 export default defineComponent({
 	components: {
 		MkButton,
-		XNote,
+		MkNote,
 		XTimeline,
 		MkFeaturedPhotos,
 	},
@@ -64,6 +65,7 @@ export default defineComponent({
 			stats: null,
 			tags: [],
 			onlineUsersCount: null,
+			i18n,
 		};
 	},
 
@@ -82,7 +84,7 @@ export default defineComponent({
 
 		os.api('hashtags/list', {
 			sort: '+mentionedLocalUsers',
-			limit: 8
+			limit: 8,
 		}).then(tags => {
 			this.tags = tags;
 		});
@@ -90,48 +92,49 @@ export default defineComponent({
 
 	methods: {
 		signin() {
-			os.popup(XSigninDialog, {
-				autoSet: true
+			os.popup(MkSigninDialog, {
+				autoSet: true,
 			}, {}, 'closed');
 		},
 
 		signup() {
-			os.popup(XSignupDialog, {
-				autoSet: true
+			os.popup(MkSignupDialog, {
+				autoSet: true,
 			}, {}, 'closed');
 		},
 
 		showMenu(ev) {
 			os.popupMenu([{
-				text: this.$t('aboutX', { x: instanceName }),
+				text: i18n.t('aboutX', { x: instanceName }),
 				icon: 'ti ti-info-circle',
-				action: () => {
+				action: (): void => {
 					os.pageWindow('/about');
-				}
+				},
 			}, {
-				text: this.$ts.aboutMisskey,
+				text: i18n.ts.aboutMisskey,
 				icon: 'ti ti-info-circle',
-				action: () => {
+				action: (): void => {
 					os.pageWindow('/about-misskey');
-				}
+				},
 			}, null, {
-				text: this.$ts.help,
+				text: i18n.ts.help,
 				icon: 'ti ti-question-circle',
-				action: () => {
+				action: (): void => {
 					window.open(`https://misskey-hub.net/help.md`, '_blank');
-				}
+				},
 			}], ev.currentTarget ?? ev.target);
 		},
 
-		number
-	}
+		number,
+	},
 });
 </script>
 
 <style lang="scss" scoped>
 .rsqzvsbo {
 	> .top {
-		min-height: 100vh;
+		min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+		min-height: 100dvh;
 		box-sizing: border-box;
 
 		> .bg {
@@ -150,7 +153,8 @@ export default defineComponent({
 			margin: auto;
 			width: 500px;
 			height: calc(100% - 128px);
-			overflow: hidden;
+			overflow: hidden; // fallback (overflow: clip)
+			overflow: clip;
 			-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
 			mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
 		}

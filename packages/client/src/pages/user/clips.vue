@@ -1,21 +1,22 @@
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
-<div>
-	<MkPagination v-slot="{items}" ref="list" :pagination="pagination">
-		<MkA v-for="item in items" :key="item.id" :to="`/clips/${item.id}`" class="item _panel _gap">
-			<b>{{ item.name }}</b>
-			<div v-if="item.description" class="description">{{ item.description }}</div>
-		</MkA>
+<MkSpacer :content-max="700">
+	<MkPagination v-slot="{items}" :pagination="pagination">
+		<div :class="$style.clips">
+			<TmsClipPreview v-for="clip in items" :key="clip.id" :clip="(clip as any /* 定義されていないため */)"/>
+		</div>
 	</MkPagination>
-</div>
+</MkSpacer>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
+import TmsClipPreview from '@/components/TmsClipPreview.vue';
 import MkPagination from '@/components/MkPagination.vue';
 
 const props = defineProps<{
-	user: misskey.entities.User;
+	user: Misskey.entities.User;
 }>();
 
 const pagination = {
@@ -27,6 +28,11 @@ const pagination = {
 };
 </script>
 
-<style lang="scss" scoped>
-
+<style lang="scss" module>
+.clips {
+	display: grid;
+	grid-auto-flow: row;
+	grid-template-columns: 100%;
+	gap: var(--margin);
+}
 </style>

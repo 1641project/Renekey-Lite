@@ -13,10 +13,10 @@
 
 		<div v-if="searchType === 'note'">
 			<Transition
-				:enter-active-class="$store.state.animation ? $style.transition_x_enterActive : ''"
-				:leave-active-class="$store.state.animation ? $style.transition_x_leaveActive : ''"
-				:enter-from-class="$store.state.animation ? $style.transition_x_enterFrom : ''"
-				:leave-to-class="$store.state.animation ? $style.transition_x_leaveTo : ''"
+				:enter-active-class="defaultStore.state.animation ? $style.transition_x_enterActive : ''"
+				:leave-active-class="defaultStore.state.animation ? $style.transition_x_leaveActive : ''"
+				:enter-from-class="defaultStore.state.animation ? $style.transition_x_enterFrom : ''"
+				:leave-to-class="defaultStore.state.animation ? $style.transition_x_leaveTo : ''"
 			>
 				<div v-if="pickup" :class="$style.pickup">
 					<div :class="$style.pickupLabel">Pickup</div>
@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import * as mfm from 'mfm-js';
 import { v4 as uuid } from 'uuid';
 import MkNote from '@/components/MkNote.vue';
@@ -57,6 +57,7 @@ import FormRadios from '@/components/form/radios.vue';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import * as os from '@/os';
+import { defaultStore } from '@/store';
 
 type SearchType = 'note' | 'user';
 type SearchOrigin = 'combined' | 'local' | 'remote';
@@ -76,10 +77,10 @@ let currentId = $ref(uuid());
 
 let pickup = $ref<{
 	type: 'note';
-	value: misskey.entities.Note;
+	value: Misskey.entities.Note;
 } | {
 	type: 'user';
-	value: misskey.entities.UserDetailed;
+	value: Misskey.entities.UserDetailed;
 } | {
 	type: 'fetch';
 	value: string | null;
@@ -155,7 +156,7 @@ const search = async (): Promise<void> => {
 			break;
 		}
 	}
-	
+
 	if (location.pathname === '/search') {
 		window.history.replaceState(null, '', `/search?q=${encodeURIComponent(query)}&type=${searchType}${searchType === 'user' ? `&origin=${searchOrigin}` : ''}`);
 	}
@@ -205,7 +206,8 @@ definePageMetadata(computed(() => ({
 }
 
 .pickup {
-	overflow: hidden;
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 	background: var(--panel);
 	border-radius: var(--radius);
 	margin-bottom: var(--margin);

@@ -10,13 +10,13 @@
 </template>
 
 <script lang="ts" setup>
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkMiniChart from '@/components/MkMiniChart.vue';
 import * as os from '@/os';
 import { acct } from '@/filters/user';
 
 const props = defineProps<{
-	user: misskey.entities.User;
+	user: Misskey.entities.User;
 }>();
 
 let chart = $ref(null);
@@ -43,7 +43,8 @@ os.apiGet('charts/user/notes', { userId: props.user.id, limit: 16, span: 'day' }
 
 	> :global(.body) {
 		flex: 1;
-		overflow: hidden;
+		overflow: hidden; // fallback (overflow: clip)
+		overflow: clip;
 		font-size: 0.9em;
 		color: var(--fg);
 		padding-right: 8px;

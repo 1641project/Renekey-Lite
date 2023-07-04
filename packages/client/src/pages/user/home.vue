@@ -2,12 +2,13 @@
 <MkSpacer :content-max="narrow ? 800 : 1100">
 	<div ref="rootEl" v-size="{ max: [500] }" class="ftskorzw" :class="{ wide: !narrow }">
 		<div class="main">
-			<!-- TODO -->
-			<!-- <div class="punished" v-if="user.isSuspended"><i class="ti ti-alert-triangle" style="margin-right: 8px;"></i> {{ i18n.ts.userSuspended }}</div> -->
-			<!-- <div class="punished" v-if="user.isSilenced"><i class="ti ti-alert-triangle" style="margin-right: 8px;"></i> {{ i18n.ts.userSilenced }}</div> -->
-
 			<div class="profile">
-				<MkRemoteCaution v-if="user.host != null" :href="user.url" class="warn"/>
+				<template v-if="iAmModerator">
+					<MkInfo v-if="user.isSilenced">{{ i18n.ts.userSilenced }}</MkInfo>
+					<MkInfo v-if="user.isSuspended">{{ i18n.ts.userSuspended }}</MkInfo>
+				</template>
+
+				<MkRemoteCaution v-if="user.host != null" :href="user.url" class="warn _block"/>
 
 				<div :key="user.id" class="_block main">
 					<div class="banner-container" :style="style">
@@ -51,7 +52,7 @@
 						</dl>
 						<dl v-if="user.birthday" class="field">
 							<dt class="name"><i class="ti ti-cake ti-fw"></i> {{ i18n.ts.birthday }}</dt>
-							<dd class="value">{{ user.birthday.replace('-', '/').replace('-', '/') }} ({{ $t('yearsOld', { age }) }})</dd>
+							<dd class="value">{{ user.birthday.replace('-', '/').replace('-', '/') }} ({{ i18n.t('yearsOld', { age }) }})</dd>
 						</dl>
 						<dl class="field">
 							<dt class="name"><i class="ti ti-calendar ti-fw"></i> {{ i18n.ts.registeredDate }}</dt>
@@ -87,7 +88,7 @@
 
 			<div class="contents">
 				<div v-if="user.pinnedNotes.length > 0" class="_gap">
-					<XNote v-for="note in user.pinnedNotes" :key="note.id" class="note _block" :note="note" :pinned="true"/>
+					<MkNote v-for="note in user.pinnedNotes" :key="note.id" class="note _block" :note="note" :pinned="true"/>
 				</div>
 				<MkInfo v-else-if="$i && $i.id === user.id">{{ i18n.ts.userPagePinTip }}</MkInfo>
 				<template v-if="narrow">
@@ -110,9 +111,9 @@
 <script lang="ts" setup>
 import { defineAsyncComponent, onMounted, onUnmounted } from 'vue';
 import calcAge from 's-age';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import XUserTimeline from './index.timeline.vue';
-import XNote from '@/components/MkNote.vue';
+import MkNote from '@/components/MkNote.vue';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
 import MkInfo from '@/components/MkInfo.vue';
@@ -123,13 +124,13 @@ import { userPage } from '@/filters/user';
 import * as os from '@/os';
 import { useRouter } from '@/router';
 import { i18n } from '@/i18n';
-import { $i } from '@/account';
+import { $i, iAmModerator } from '@/account';
 
 const XPhotos = defineAsyncComponent(() => import('./index.photos.vue'));
 const XActivity = defineAsyncComponent(() => import('./index.activity.vue'));
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.UserDetailed;
+	user: Misskey.entities.UserDetailed;
 }>(), {
 });
 
@@ -189,22 +190,18 @@ onUnmounted(() => {
 .ftskorzw {
 
 	> .main {
-
-		> .punished {
-			font-size: 0.8em;
-			padding: 16px;
-		}
-
 		> .profile {
 
 			> .main {
 				position: relative;
-				overflow: hidden;
+				overflow: hidden; // fallback (overflow: clip)
+				overflow: clip;
 
 				> .banner-container {
 					position: relative;
 					height: 250px;
-					overflow: hidden;
+					overflow: hidden; // fallback (overflow: clip)
+					overflow: clip;
 					background-size: cover;
 					background-position: center;
 

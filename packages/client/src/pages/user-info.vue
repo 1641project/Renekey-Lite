@@ -158,7 +158,7 @@
 
 <script lang="ts" setup>
 import { computed, watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkChart from '@/components/MkChart.vue';
 import MkObjectView from '@/components/MkObjectView.vue';
 import FormTextarea from '@/components/form/textarea.vue';
@@ -178,7 +178,7 @@ import { url } from '@/config';
 import { userPage, acct } from '@/filters/user';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
-import { iAmAdmin, iAmModerator } from '@/account';
+import { $i, iAmAdmin, iAmModerator } from '@/account';
 import { instance } from '@/instance';
 
 const props = defineProps<{
@@ -187,7 +187,7 @@ const props = defineProps<{
 
 let tab = $ref('overview');
 let chartSrc = $ref('per-user-notes');
-let user = $ref<null | misskey.entities.UserDetailed>();
+let user = $ref<null | Misskey.entities.UserDetailed>();
 let init = $ref<ReturnType<typeof createFetcher>>();
 let info = $ref();
 let ips = $ref(null);
@@ -442,7 +442,8 @@ definePageMetadata(computed(() => ({
 
 	> .body {
 		flex: 1;
-		overflow: hidden;
+		overflow: hidden; // fallback (overflow: clip)
+		overflow: clip;
 
 		> .name {
 			display: block;

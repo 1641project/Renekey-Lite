@@ -1,6 +1,6 @@
 <template>
 <MkContainer :max-height="300" :foldable="true">
-	<template #header><i class="ti ti-photo" style="margin-right: 0.5em;"></i>{{ $ts.images }}</template>
+	<template #header><i class="ti ti-photo" style="margin-right: 0.5em;"></i>{{ i18n.ts.images }}</template>
 	<div class="ujigsodd">
 		<MkLoading v-if="fetching"/>
 		<div v-if="!fetching && images.length > 0" class="stream">
@@ -13,32 +13,33 @@
 				<ImgWithBlurhash :hash="image.file.blurhash" :src="thumbnail(image.file)" :title="image.file.name"/>
 			</MkA>
 		</div>
-		<p v-if="!fetching && images.length == 0" class="empty">{{ $ts.nothing }}</p>
+		<p v-if="!fetching && images.length == 0" class="empty">{{ i18n.ts.nothing }}</p>
 	</div>
 </MkContainer>
 </template>
 
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import { getStaticImageUrl } from '@/scripts/get-static-image-url';
 import { notePage } from '@/filters/note';
 import * as os from '@/os';
 import MkContainer from '@/components/MkContainer.vue';
 import ImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
 import { defaultStore } from '@/store';
+import { i18n } from '@/i18n';
 
 const props = defineProps<{
-	user: misskey.entities.UserDetailed;
+	user: Misskey.entities.UserDetailed;
 }>();
 
 let fetching = $ref(true);
 let images = $ref<{
-	note: misskey.entities.Note;
-	file: misskey.entities.DriveFile;
+	note: Misskey.entities.Note;
+	file: Misskey.entities.DriveFile;
 }[]>([]);
 
-function thumbnail(image: misskey.entities.DriveFile): string {
+function thumbnail(image: Misskey.entities.DriveFile): string {
 	return defaultStore.state.disableShowingAnimatedImages
 		? getStaticImageUrl(image.thumbnailUrl)
 		: image.thumbnailUrl;
@@ -83,6 +84,7 @@ onMounted(() => {
 		> .img {
 			height: 128px;
 			border-radius: 6px;
+			overflow: hidden; // fallback (overflow: clip)
 			overflow: clip;
 		}
 	}
