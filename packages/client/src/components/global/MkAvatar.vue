@@ -1,9 +1,9 @@
 <template>
-<span v-if="disableLink" v-user-preview="disablePreview ? undefined : user.id" class="eiwwqkts _noSelect" :class="{ cat: user.isCat, square: $store.state.squareAvatars }" :style="{ color }" :title="acct(user)" @click="onClick">
+<span v-if="disableLink" v-user-preview="disablePreview ? undefined : user.id" class="eiwwqkts _noSelect" :class="{ cat: user.isCat, square: defaultStore.state.squareAvatars }" :style="{ color }" :title="acct(user)" @click="onClick">
 	<img class="inner" :src="url" decoding="async"/>
 	<MkUserOnlineIndicator v-if="showIndicator" class="indicator" :user="user"/>
 </span>
-<MkA v-else v-user-preview="disablePreview ? undefined : user.id" class="eiwwqkts _noSelect" :class="{ cat: user.isCat, square: $store.state.squareAvatars }" :style="{ color }" :to="userPage(user)" :title="acct(user)" :target="target">
+<MkA v-else v-user-preview="disablePreview ? undefined : user.id" class="eiwwqkts _noSelect" :class="{ cat: user.isCat, square: defaultStore.state.squareAvatars }" :style="{ color }" :to="userPage(user)" :title="acct(user)" :target="target">
 	<img class="inner" :src="url" decoding="async"/>
 	<MkUserOnlineIndicator v-if="showIndicator" class="indicator" :user="user"/>
 </MkA>
@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 import { watch } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import { getStaticImageUrl } from '@/scripts/get-static-image-url';
 import { extractAvgColorFromBlurhash } from '@/scripts/extract-avg-color-from-blurhash';
 import { acct, userPage } from '@/filters/user';
@@ -19,7 +19,7 @@ import MkUserOnlineIndicator from '@/components/MkUserOnlineIndicator.vue';
 import { defaultStore } from '@/store';
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.User;
+	user: Misskey.entities.User;
 	target?: string | null;
 	disableLink?: boolean;
 	disablePreview?: boolean;
@@ -85,7 +85,8 @@ watch(() => props.user.avatarBlurhash, () => {
 		top: 0;
 		border-radius: 100%;
 		z-index: 1;
-		overflow: hidden;
+		overflow: hidden; // fallback (overflow: clip)
+		overflow: clip;
 		object-fit: cover;
 		width: 100%;
 		height: 100%;
