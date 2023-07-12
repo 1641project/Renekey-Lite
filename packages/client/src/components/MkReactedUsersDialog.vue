@@ -27,8 +27,8 @@
 					</button>
 				</div>
 				<div class="users">
-					<MkUserCardMiniList v-if="tab === RENOTE_TAB" :pagination="renotedUsers" :with-chart="false" :use-user-page="true"></MkUserCardMiniList>
-					<MkUserCardMiniList v-else :pagination="reactedUsers" :with-chart="false" :use-user-page="true"></MkUserCardMiniList>
+					<TmsUserCardMiniList v-if="tab === RENOTE_TAB" :pagination="renotedUsers" :with-chart="false" :use-user-page="true"/>
+					<TmsUserCardMiniList v-else :pagination="reactedUsers" :with-chart="false" :use-user-page="true"/>
 				</div>
 			</template>
 		</div>
@@ -41,10 +41,10 @@
 
 <script lang="ts" setup>
 import { onMounted, computed } from 'vue';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
-import MkUserCardMiniList from '@/components/MkUserCardMiniList.vue';
+import TmsUserCardMiniList from '@/components/TmsUserCardMiniList.vue';
 import { i18n } from '@/i18n';
 import * as os from '@/os';
 
@@ -53,7 +53,7 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-	noteId: misskey.entities.Note['id'];
+	noteId: Misskey.entities.Note['id'];
 	initialTab?: string | null;
 }>();
 
@@ -62,7 +62,7 @@ const dialog = $shallowRef<InstanceType<typeof MkModalWindow>>();
 const RENOTE_TAB = 'RENOTE_TAB';
 let hasRenote = $ref<boolean>(false);
 
-let note = $ref<misskey.entities.Note>();
+let note = $ref<Misskey.entities.Note>();
 let tab = $ref<typeof RENOTE_TAB | string>();
 let reactions = $ref<string[]>();
 

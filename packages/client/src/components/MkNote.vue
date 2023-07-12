@@ -38,12 +38,12 @@
 	<article v-else ref="articleEl" class="article" :style="{ '--articleTop': `${(el?.clientHeight ?? 0) - (articleEl?.clientHeight ?? 0)}px` }" @contextmenu.stop="onContextmenu">
 		<MkAvatar class="avatar" :user="appearNote.user"/>
 		<div class="main">
-			<XNoteHeader class="header" :note="appearNote" :mini="true"/>
+			<MkNoteHeader class="header" :note="appearNote" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance"/>
 			<div class="body">
 				<p v-if="appearNote.cw != null" class="cw">
 					<Mfm v-if="appearNote.cw != ''" class="text" :text="appearNote.cw" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
-					<XCwButton v-model="showContent" :note="appearNote"/>
+					<MkCwButton v-model="showContent" :note="appearNote"/>
 				</p>
 				<div v-show="appearNote.cw == null || showContent" class="content" :class="{ collapsed, isLong }">
 					<div ref="textEl" class="text">
@@ -54,17 +54,17 @@
 						<div v-if="translating || translation" class="translation">
 							<MkLoading v-if="translating" mini/>
 							<div v-else class="translated">
-								<b>{{ $t('translatedFrom', { x: (translation as any /* 定義されていないため */).sourceLang }) }}: </b>
+								<b>{{ i18n.t('translatedFrom', { x: (translation as any /* 定義されていないため */).sourceLang }) }}: </b>
 								<Mfm :text="(translation as any /* 定義されていないため */).text" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
 							</div>
 						</div>
 					</div>
 					<div v-if="appearNote.files.length > 0" class="files">
-						<XMediaList :media-list="appearNote.files"/>
+						<MkMediaList :media-list="appearNote.files"/>
 					</div>
-					<XPoll v-if="appearNote.poll" ref="pollViewer" :note="appearNote" class="poll"/>
+					<MkPoll v-if="appearNote.poll" ref="pollViewer" :note="appearNote" class="poll"/>
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" class="url-preview"/>
-					<div v-if="appearNote.renote" class="renote"><XNoteSimple :note="appearNote.renote"/></div>
+					<div v-if="appearNote.renote" class="renote"><MkNoteSimple :note="appearNote.renote"/></div>
 					<button v-if="isLong && collapsed" class="fade _button" @click="collapsedFlag = false">
 						<span>{{ i18n.ts.showMore }}</span>
 					</button>
@@ -74,13 +74,13 @@
 				</div>
 				<MkA v-if="(appearNote as any /* 定義されていないため */).channel && !inChannel" class="channel" :to="`/channels/${(appearNote as any /* 定義されていないため */).channel.id}`"><i class="ti ti-device-tv"></i> {{ (appearNote as any /* 定義されていないため */).channel.name }}</MkA>
 			</div>
-			<XReactionsViewer ref="reactionsViewer" :note="appearNote"/>
+			<MkReactionsViewer ref="reactionsViewer" :note="appearNote"/>
 			<footer class="footer">
 				<button class="button _button" @click="reply()">
 					<i class="ti ti-arrow-back-up"></i>
 					<p v-if="appearNote.repliesCount > 0" class="count">{{ appearNote.repliesCount }}</p>
 				</button>
-				<XRenoteButton ref="renoteButton" class="button" :note="appearNote" :count="appearNote.renoteCount"/>
+				<MkRenoteButton ref="renoteButton" class="button" :note="appearNote" :count="appearNote.renoteCount"/>
 				<button v-if="appearNote.myReaction == null" ref="reactButton" class="button _button" @click="react()">
 					<i class="ti ti-plus"></i>
 				</button>
@@ -112,15 +112,15 @@
 import { inject, onMounted, ref, Ref, computed } from 'vue';
 import { ReactiveVariable } from 'vue/macros';
 import * as mfm from 'mfm-js';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkNoteSub from '@/components/MkNoteSub.vue';
-import XNoteHeader from '@/components/MkNoteHeader.vue';
-import XNoteSimple from '@/components/MkNoteSimple.vue';
-import XReactionsViewer from '@/components/MkReactionsViewer.vue';
-import XMediaList from '@/components/MkMediaList.vue';
-import XCwButton from '@/components/MkCwButton.vue';
-import XPoll from '@/components/MkPoll.vue';
-import XRenoteButton from '@/components/MkRenoteButton.vue';
+import MkNoteHeader from '@/components/MkNoteHeader.vue';
+import MkNoteSimple from '@/components/MkNoteSimple.vue';
+import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
+import MkMediaList from '@/components/MkMediaList.vue';
+import MkCwButton from '@/components/MkCwButton.vue';
+import MkPoll from '@/components/MkPoll.vue';
+import MkRenoteButton from '@/components/MkRenoteButton.vue';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import MkInstanceTicker from '@/components/MkInstanceTicker.vue';
 import MkVisibility from '@/components/MkVisibility.vue';
@@ -146,20 +146,20 @@ import { tmsStore } from '@/tms/store';
 import { isPureRenote } from '@/scripts/tms/is-pure-renote';
 
 const props = defineProps<{
-	note: misskey.entities.Note;
+	note: Misskey.entities.Note;
 	pinned?: boolean;
 }>();
 
 const inChannel = inject('inChannel', null);
 
-let note = $ref<misskey.entities.Note>(deepClone(props.note));
+let note = $ref<Misskey.entities.Note>(deepClone(props.note));
 
 // plugin
 if (noteViewInterruptors.length > 0) {
 	onMounted(async () => {
 		let result = deepClone(note);
 		for (const interruptor of noteViewInterruptors) {
-			result = await interruptor.handler(result) as ReactiveVariable<misskey.entities.Note>; // unknownのため
+			result = await interruptor.handler(result) as ReactiveVariable<Misskey.entities.Note>; // unknownのため
 		}
 		note = result;
 	});
@@ -181,7 +181,7 @@ onMounted(() => {
 const el = ref<HTMLElement>();
 const articleEl = ref<HTMLElement>();
 const menuButton = ref<HTMLElement>();
-const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
+const renoteButton = ref<InstanceType<typeof MkRenoteButton>>();
 const renoteTime = ref<HTMLElement>();
 const reactButton = ref<HTMLElement>();
 let appearNote = $computed(() => isPureRenote(note) ? note.renote : note); // 本当はisRenoteを使いたいけど型推論してくれない
@@ -191,7 +191,7 @@ const urls = appearNote.text ? extractUrlFromMfm(mfm.parse(appearNote.text)) : n
 const { collapseNote, collapseNoteHeight, collapseNoteFile, collapseNoteUrl, collapseNotePoll } = tmsStore.state;
 const isLong = $computed(() => {
 	return collapseNote && !!(
-		appearNote.cw == null && 
+		appearNote.cw == null &&
 		appearNote.text != null && (
 			// textElHeight: null の場合は文字数で判定する
 			(!!collapseNoteHeight && (textElHeight == null ? appearNote.text.length > 500 : textElHeight >= collapseNoteHeight)) ||
@@ -249,7 +249,7 @@ const react = (_viaKeyboard = false): void => {
 	}, focus);
 };
 
-const undoReact = (note_: misskey.entities.Note): void => {
+const undoReact = (note_: Misskey.entities.Note): void => {
 	const oldReaction = note_.myReaction;
 	if (!oldReaction) return;
 	os.api('notes/reactions/delete', {
@@ -257,7 +257,7 @@ const undoReact = (note_: misskey.entities.Note): void => {
 	});
 };
 
-const currentClipPage = inject<Ref<misskey.entities.Clip> | null>('currentClipPage', null);
+const currentClipPage = inject<Ref<Misskey.entities.Clip> | null>('currentClipPage', null);
 
 const onContextmenu = (ev: MouseEvent): void => {
 	if (disableContextmenu) return;
@@ -352,6 +352,7 @@ const readPromo = (): void => {
 	position: relative;
 	transition: box-shadow 0.1s ease;
 	font-size: 1.05em;
+	overflow: hidden; // fallback (overflow: clip)
 	overflow: clip;
 	contain: content;
 
@@ -582,7 +583,8 @@ const readPromo = (): void => {
 					&.collapsed {
 						position: relative;
 						max-height: 9em;
-						overflow: hidden;
+						overflow: hidden; // fallback (overflow: clip)
+						overflow: clip;
 
 						> .fade {
 							display: block;

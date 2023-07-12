@@ -21,7 +21,7 @@
 			<span v-else-if="!defaultStore.state.useOsNativeEmojis" class="emoji"><img :src="emoji.url" :alt="emoji.emoji"/></span>
 			<span v-else class="emoji">{{ emoji.emoji }}</span>
 			<!-- eslint-disable-next-line vue/no-v-html -->
-			<span class="name" v-html="emoji.name.replace(q, `<b>${q}</b>`)"></span>
+			<span class="name" v-html="q ? emoji.name.replace(q, `<b>${q}</b>`) : ''"></span>
 			<span v-if="emoji.aliasOf" class="alias">({{ emoji.aliasOf }})</span>
 		</li>
 	</ol>
@@ -285,6 +285,7 @@ function onKeydown(event: KeyboardEvent) {
 			break;
 
 		case 'Escape':
+		case 'Esc':
 			cancel();
 			props.close();
 			break;
@@ -379,7 +380,8 @@ onBeforeUnmount(() => {
 	position: fixed;
 	max-width: 100%;
 	margin-top: calc(1em + 8px);
-	overflow: hidden;
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 	transition: top 0.1s ease, left 0.1s ease;
 
 	> ol {
@@ -396,7 +398,8 @@ onBeforeUnmount(() => {
 			align-items: center;
 			padding: 4px 12px;
 			white-space: nowrap;
-			overflow: hidden;
+			overflow: hidden; // fallback (overflow: clip)
+			overflow: clip;
 			font-size: 0.9em;
 			cursor: default;
 
@@ -405,7 +408,8 @@ onBeforeUnmount(() => {
 			}
 
 			* {
-				overflow: hidden;
+				overflow: hidden; // fallback (overflow: clip)
+				overflow: clip;
 				text-overflow: ellipsis;
 			}
 

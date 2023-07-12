@@ -50,7 +50,7 @@
 			<div class="body">
 				<p v-if="appearNote.cw != null" class="cw">
 					<Mfm v-if="appearNote.cw != ''" class="text" :text="appearNote.cw" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
-					<XCwButton v-model="showContent" :note="appearNote"/>
+					<MkCwButton v-model="showContent" :note="appearNote"/>
 				</p>
 				<div v-show="appearNote.cw == null || showContent" class="content">
 					<div class="text">
@@ -61,17 +61,17 @@
 						<div v-if="translating || translation" class="translation">
 							<MkLoading v-if="translating" mini/>
 							<div v-else class="translated">
-								<b>{{ $t('translatedFrom', { x: (translation as any /* 定義されていないため */).sourceLang }) }}: </b>
+								<b>{{ i18n.t('translatedFrom', { x: (translation as any /* 定義されていないため */).sourceLang }) }}: </b>
 								<Mfm :text="(translation as any /* 定義されていないため */).text" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
 							</div>
 						</div>
 					</div>
 					<div v-if="appearNote.files.length > 0" class="files">
-						<XMediaList :media-list="appearNote.files"/>
+						<MkMediaList :media-list="appearNote.files"/>
 					</div>
-					<XPoll v-if="appearNote.poll" ref="pollViewer" :note="appearNote" class="poll"/>
+					<MkPoll v-if="appearNote.poll" ref="pollViewer" :note="appearNote" class="poll"/>
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="true" class="url-preview"/>
-					<div v-if="appearNote.renote" class="renote"><XNoteSimple :note="appearNote.renote"/></div>
+					<div v-if="appearNote.renote" class="renote"><MkNoteSimple :note="appearNote.renote"/></div>
 				</div>
 				<MkA v-if="(appearNote as any /* 定義されていないため */).channel && !inChannel" class="channel" :to="`/channels/${(appearNote as any /* 定義されていないため */).channel.id}`"><i class="ti ti-device-tv"></i> {{ (appearNote as any /* 定義されていないため */).channel.name }}</MkA>
 			</div>
@@ -81,12 +81,12 @@
 						<MkTime :time="appearNote.createdAt" mode="detail"/>
 					</MkA>
 				</div>
-				<XReactionsViewer ref="reactionsViewer" :note="appearNote"/>
+				<MkReactionsViewer ref="reactionsViewer" :note="appearNote"/>
 				<button class="button _button" @click="reply()">
 					<i class="ti ti-arrow-back-up"></i>
 					<p v-if="appearNote.repliesCount > 0" class="count">{{ appearNote.repliesCount }}</p>
 				</button>
-				<XRenoteButton ref="renoteButton" class="button" :note="appearNote" :count="appearNote.renoteCount"/>
+				<MkRenoteButton ref="renoteButton" class="button" :note="appearNote" :count="appearNote.renoteCount"/>
 				<button v-if="appearNote.myReaction == null" ref="reactButton" class="button _button" @click="react()">
 					<i class="ti ti-plus"></i>
 				</button>
@@ -116,14 +116,14 @@
 import { inject, onMounted, ref, Ref } from 'vue';
 import { ReactiveVariable } from 'vue/macros';
 import * as mfm from 'mfm-js';
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import MkNoteSub from '@/components/MkNoteSub.vue';
-import XNoteSimple from '@/components/MkNoteSimple.vue';
-import XReactionsViewer from '@/components/MkReactionsViewer.vue';
-import XMediaList from '@/components/MkMediaList.vue';
-import XCwButton from '@/components/MkCwButton.vue';
-import XPoll from '@/components/MkPoll.vue';
-import XRenoteButton from '@/components/MkRenoteButton.vue';
+import MkNoteSimple from '@/components/MkNoteSimple.vue';
+import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
+import MkMediaList from '@/components/MkMediaList.vue';
+import MkCwButton from '@/components/MkCwButton.vue';
+import MkPoll from '@/components/MkPoll.vue';
+import MkRenoteButton from '@/components/MkRenoteButton.vue';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import MkInstanceTicker from '@/components/MkInstanceTicker.vue';
 import MkVisibility from '@/components/MkVisibility.vue';
@@ -144,20 +144,20 @@ import { disableContextmenu } from '@/scripts/touch';
 import { isPureRenote } from '@/scripts/tms/is-pure-renote';
 
 const props = defineProps<{
-	note: misskey.entities.Note;
+	note: Misskey.entities.Note;
 	pinned?: boolean;
 }>();
 
 const inChannel = inject('inChannel', null);
 
-let note = $ref<misskey.entities.Note>(deepClone(props.note));
+let note = $ref<Misskey.entities.Note>(deepClone(props.note));
 
 // plugin
 if (noteViewInterruptors.length > 0) {
 	onMounted(async () => {
 		let result = deepClone(note);
 		for (const interruptor of noteViewInterruptors) {
-			result = await interruptor.handler(result) as ReactiveVariable<misskey.entities.Note>; // unknownのため
+			result = await interruptor.handler(result) as ReactiveVariable<Misskey.entities.Note>; // unknownのため
 		}
 		note = result;
 	});
@@ -167,7 +167,7 @@ const isRenote = isPureRenote(note);
 
 const el = ref<HTMLElement>();
 const menuButton = ref<HTMLElement>();
-const renoteButton = ref<InstanceType<typeof XRenoteButton>>();
+const renoteButton = ref<InstanceType<typeof MkRenoteButton>>();
 const renoteTime = ref<HTMLElement>();
 const reactButton = ref<HTMLElement>();
 let appearNote = $computed(() => isPureRenote(note) ? note.renote : note); // 本当はisRenoteを使いたいけど型推論してくれない
@@ -179,8 +179,8 @@ const translation = ref(null);
 const translating = ref(false);
 const urls = appearNote.text ? extractUrlFromMfm(mfm.parse(appearNote.text)) : null;
 const showTicker = (defaultStore.state.instanceTicker === 'always') || (defaultStore.state.instanceTicker === 'remote' && appearNote.user.instance);
-const conversation = ref<misskey.entities.Note[]>([]);
-const replies = ref<misskey.entities.Note[]>([]);
+const conversation = ref<Misskey.entities.Note[]>([]);
+const replies = ref<Misskey.entities.Note[]>([]);
 
 const keymap = {
 	'r': (): void => reply(true),
@@ -217,7 +217,7 @@ const react = (_viaKeyboard = false): void => {
 	}, focus);
 };
 
-const undoReact = (note_: misskey.entities.Note): void => {
+const undoReact = (note_: Misskey.entities.Note): void => {
 	const oldReaction = note_.myReaction;
 	if (!oldReaction) return;
 	os.api('notes/reactions/delete', {
@@ -306,7 +306,7 @@ if (appearNote.replyId) {
 	os.api('notes/conversation', {
 		noteId: appearNote.replyId,
 	}).then(res => {
-		const resTyped = res as misskey.entities.Note[]; // TODO型のため
+		const resTyped = res as Misskey.entities.Note[]; // TODO型のため
 		conversation.value = resTyped.reverse();
 	});
 }
@@ -316,7 +316,8 @@ if (appearNote.replyId) {
 .lxwezrsl {
 	position: relative;
 	transition: box-shadow 0.1s ease;
-	overflow: hidden;
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 	contain: content;
 
 	&:focus-visible {

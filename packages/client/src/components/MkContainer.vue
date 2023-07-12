@@ -1,148 +1,145 @@
 <template>
-<div v-size="{ max: [380] }" class="ukygtjoj _panel" :class="{ naked, thin, hideHeader: !showHeader, scrollable, closed: !showBody }">
-	<header v-if="showHeader" ref="header">
-		<div class="title"><slot name="header"></slot></div>
-		<div class="sub">
-			<slot name="func"></slot>
-			<button v-if="foldable" class="_button" @click="() => showBody = !showBody">
+<div ref="rootEl" class="_panel" :class="[$style.root, { [$style.naked]: naked, [$style.thin]: thin, [$style.hideHeader]: !showHeader, [$style.scrollable]: scrollable, [$style.closed]: !showBody }]">
+	<header v-if="showHeader" ref="headerEl" :class="$style.header">
+		<div :class="$style.title">
+			<span :class="$style.titleIcon"><slot name="icon"></slot></span>
+			<slot name="header"></slot>
+		</div>
+		<div :class="$style.headerSub">
+			<slot name="func" :button-style-class="$style.headerButton"></slot>
+			<button v-if="foldable" :class="$style.headerButton" class="_button" @click="() => showBody = !showBody">
 				<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
 				<template v-else><i class="ti ti-chevron-down"></i></template>
 			</button>
 		</div>
 	</header>
 	<Transition
-		:name="$store.state.animation ? 'container-toggle' : ''"
+		:enter-active-class="defaultStore.state.animation ? $style.transition_toggle_enterActive : ''"
+		:leave-active-class="defaultStore.state.animation ? $style.transition_toggle_leaveActive : ''"
+		:enter-from-class="defaultStore.state.animation ? $style.transition_toggle_enterFrom : ''"
+		:leave-to-class="defaultStore.state.animation ? $style.transition_toggle_leaveTo : ''"
 		@enter="enter"
 		@after-enter="afterEnter"
 		@leave="leave"
 		@after-leave="afterLeave"
 	>
-		<div v-show="showBody" ref="content" class="content" :class="{ omitted }">
+		<div v-show="showBody" ref="contentEl" :class="[$style.content, { [$style.omitted]: omitted }]">
 			<slot></slot>
-			<button v-if="omitted" class="fade _button" @click="() => { ignoreOmit = true; omitted = false; }">
-				<span>{{ $ts.showMore }}</span>
+			<button v-if="omitted" :class="$style.fade" class="_button" @click="() => { ignoreOmit = true; omitted = false; }">
+				<span :class="$style.fadeLabel">{{ i18n.ts.showMore }}</span>
 			</button>
 		</div>
 	</Transition>
 </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
+import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
+import { defaultStore } from '@/store';
+import { i18n } from '@/i18n';
 
-export default defineComponent({
-	props: {
-		showHeader: {
-			type: Boolean,
-			required: false,
-			default: true,
-		},
-		thin: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		naked: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		foldable: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		expanded: {
-			type: Boolean,
-			required: false,
-			default: true,
-		},
-		scrollable: {
-			type: Boolean,
-			required: false,
-			default: false,
-		},
-		maxHeight: {
-			type: Number,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
-		return {
-			showBody: this.expanded,
-			omitted: null,
-			ignoreOmit: false,
-		};
-	},
-	mounted() {
-		this.$watch('showBody', showBody => {
-			const headerHeight = this.showHeader ? this.$refs.header.offsetHeight : 0;
-			this.$el.style.minHeight = `${headerHeight}px`;
-			if (showBody) {
-				this.$el.style.flexBasis = 'auto';
+const props = withDefaults(defineProps<{
+	showHeader?: boolean;
+	thin?: boolean;
+	naked?: boolean;
+	foldable?: boolean;
+	scrollable?: boolean;
+	expanded?: boolean;
+	maxHeight?: number | null;
+}>(), {
+	showHeader: true,
+	thin: false,
+	naked: false,
+	foldable: false,
+	scrollable: false,
+	expanded: true,
+	maxHeight: null,
+});
+
+const rootEl = shallowRef<HTMLElement>();
+const contentEl = shallowRef<HTMLElement>();
+const headerEl = shallowRef<HTMLElement>();
+const showBody = ref(props.expanded);
+const ignoreOmit = ref(false);
+const omitted = ref(false);
+
+const enter = (el: HTMLElement): void => {
+	const { height: elementHeight } = el.getBoundingClientRect();
+	el.style.height = '0';
+	el.offsetHeight; // reflow
+	el.style.height = `${Math.min(elementHeight, props.maxHeight ?? Infinity)}px`;
+};
+
+const afterEnter = (el: HTMLElement): void => {
+	el.style.height = '';
+};
+
+const leave = (el: HTMLElement): void => {
+	const { height: elementHeight } = el.getBoundingClientRect();
+	el.style.height = `${elementHeight}px`;
+	el.offsetHeight; // reflow
+	el.style.height = '0';
+};
+
+const afterLeave = (el: HTMLElement): void => {
+	el.style.height = '';
+};
+
+const calcOmit = (): void => {
+	if (omitted.value || ignoreOmit.value || props.maxHeight == null) return;
+	const height = contentEl.value?.offsetHeight ?? 0;
+	omitted.value = height > props.maxHeight;
+};
+
+let contentRo: ResizeObserver | null = null;
+
+onMounted(() => {
+	watch(showBody, v => {
+		const headerHeight = props.showHeader ? headerEl.value?.offsetHeight ?? 0 : 0;
+		if (rootEl.value) {
+			rootEl.value.style.minHeight = `${headerHeight}px`;
+			if (v) {
+				rootEl.value.style.flexBasis = 'auto';
 			} else {
-				this.$el.style.flexBasis = `${headerHeight}px`;
+				rootEl.value.style.flexBasis = `${headerHeight}px`;
 			}
-		}, {
-			immediate: true,
-		});
+		}
+	}, {
+		immediate: true,
+	});
 
-		this.$el.style.setProperty('--maxHeight', this.maxHeight + 'px');
+	if (rootEl.value && props.maxHeight != null) {
+		rootEl.value.style.setProperty('--maxHeight', `${props.maxHeight}px`);
+	}
 
-		const calcOmit = () => {
-			if (this.omitted || this.ignoreOmit || this.maxHeight == null) return;
-			const height = this.$refs.content.offsetHeight;
-			this.omitted = height > this.maxHeight;
-		};
+	calcOmit();
 
-		calcOmit();
-		new ResizeObserver((entries, observer) => {
-			calcOmit();
-		}).observe(this.$refs.content);
-	},
-	methods: {
-		toggleContent(show: boolean) {
-			if (!this.foldable) return;
-			this.showBody = show;
-		},
+	if (contentEl.value) {
+		contentRo = new ResizeObserver(calcOmit);
+		contentRo.observe(contentEl.value);
+	}
+});
 
-		enter(el) {
-			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = 0;
-			el.offsetHeight; // reflow
-			el.style.height = elementHeight + 'px';
-		},
-		afterEnter(el) {
-			el.style.height = null;
-		},
-		leave(el) {
-			const elementHeight = el.getBoundingClientRect().height;
-			el.style.height = elementHeight + 'px';
-			el.offsetHeight; // reflow
-			el.style.height = 0;
-		},
-		afterLeave(el) {
-			el.style.height = null;
-		},
-	},
+onUnmounted(() => {
+	if (contentRo) {
+		contentRo.disconnect();
+		contentRo = null;
+	}
 });
 </script>
 
-<style lang="scss" scoped>
-.container-toggle-enter-active, .container-toggle-leave-active {
-	overflow-y: hidden;
+<style lang="scss" module>
+.transition_toggle_enterActive, .transition_toggle_leaveActive {
+	overflow-y: clip;
 	transition: opacity 0.5s, height 0.5s !important;
 }
-.container-toggle-enter-from {
-	opacity: 0;
-}
-.container-toggle-leave-to {
+.transition_toggle_enterFrom, .transition_toggle_leaveTo {
 	opacity: 0;
 }
 
-.ukygtjoj {
+.root {
 	position: relative;
+	overflow: hidden; // fallback (overflow: clip)
 	overflow: clip;
 	contain: content;
 
@@ -160,105 +157,93 @@ export default defineComponent({
 		}
 	}
 
-	> header {
-		position: sticky;
-		top: var(--stickyTop, 0px);
-		left: 0;
-		color: var(--panelHeaderFg);
-		background: var(--panelHeaderBg);
-		border-bottom: solid 0.5px var(--panelHeaderDivider);
-		z-index: 2;
-		line-height: 1.4em;
-
-		> .title {
-			margin: 0;
-			padding: 12px 16px;
-
-			> ::v-deep(i) {
-				margin-right: 6px;
-			}
-
-			&:empty {
-				display: none;
-			}
-		}
-
-		> .sub {
-			position: absolute;
-			z-index: 2;
-			top: 0;
-			right: 0;
-			height: 100%;
-
-			> ::v-deep(button) {
-				width: 42px;
-				height: 100%;
-			}
-		}
-	}
-
-	> .content {
-		--stickyTop: 0px;
-
-		&.omitted {
-			position: relative;
-			max-height: var(--maxHeight);
-			overflow: hidden;
-
-			> .fade {
-				display: block;
-				position: absolute;
-				z-index: 10;
-				bottom: 0;
-				left: 0;
-				width: 100%;
-				height: 64px;
-				background: linear-gradient(0deg, var(--panel), var(--X15));
-
-				> span {
-					display: inline-block;
-					background: var(--panel);
-					padding: 6px 10px;
-					font-size: 0.8em;
-					border-radius: 999px;
-					box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
-				}
-
-				&:hover {
-					> span {
-						background: var(--panelHighlight);
-					}
-				}
-			}
-		}
-	}
-
-	&.max-width_380px, &.thin {
-		> header {
+	&.thin {
+		> .header {
 			> .title {
 				padding: 8px 10px;
 				font-size: 0.9em;
 			}
 		}
+	}
+}
 
-		> .content {
+.header {
+	position: sticky;
+	top: var(--stickyTop, 0px);
+	left: 0;
+	color: var(--panelHeaderFg);
+	background: var(--panelHeaderBg);
+	border-bottom: solid 0.5px var(--panelHeaderDivider);
+	z-index: 2;
+	line-height: 1.4em;
+}
+
+.title {
+	margin: 0;
+	padding: 12px 16px;
+
+	&:empty {
+		display: none;
+	}
+}
+
+.titleIcon {
+	margin-right: 6px;
+}
+
+.headerSub {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	right: 0;
+	height: 100%;
+}
+
+.headerButton {
+	width: 42px;
+	height: 100%;
+}
+
+.content {
+	--stickyTop: 0px;
+
+	&.omitted {
+		position: relative;
+		max-height: var(--maxHeight);
+		overflow: hidden;
+
+		> .fade {
+			display: block;
+			position: absolute;
+			z-index: 10;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 64px;
+			background: linear-gradient(0deg, var(--panel), var(--X15));
+
+			> .fadeLabel {
+				display: inline-block;
+				background: var(--panel);
+				padding: 6px 10px;
+				font-size: 0.8em;
+				border-radius: 999px;
+				box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+			}
+
+			&:hover {
+				> .fadeLabel {
+					background: var(--panelHighlight);
+				}
+			}
 		}
 	}
 }
 
-._forceContainerFull_ .ukygtjoj {
-	> header {
-		> .title {
-			padding: 12px 16px !important;
-		}
-	}
-}
-
-._forceContainerFull_.ukygtjoj {
-	> header {
-		> .title {
-			padding: 12px 16px !important;
-		}
+:global(.max-width_380px) {
+	.title {
+		padding: 8px 10px;
+		font-size: 0.9em;
 	}
 }
 </style>

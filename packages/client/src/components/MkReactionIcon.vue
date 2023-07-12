@@ -1,13 +1,16 @@
 <template>
-<MkEmoji :emoji="reaction" :custom-emojis="customEmojis || []" :is-reaction="true" :normal="true" :no-style="noStyle" :use-fallback-icon="useFallbackIcon"/>
+<MkEmoji :emoji="reaction" :custom-emojis="customEmojis ?? []" :is-reaction="true" :normal="true" :no-style="noStyle" :use-fallback-icon="useFallbackIcon"/>
 </template>
 
 <script lang="ts" setup>
 import { } from 'vue';
 
-const props = defineProps<{
+defineProps<{
 	reaction: string;
-	customEmojis?: any[]; // TODO
+	customEmojis?: {
+		name: string;
+		url: string;
+	}[];
 	noStyle?: boolean;
 	useFallbackIcon?: boolean;
 }>();

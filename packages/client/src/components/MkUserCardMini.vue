@@ -1,5 +1,5 @@
 <template>
-<div :class="[$style.root, { yellow: user.isSilenced, red: user.isSuspended, gray: false }]">
+<div v-adaptive-bg :class="[$style.root, { yellow: user.isSilenced, red: user.isSuspended, gray: false }]">
 	<MkAvatar class="avatar" :user="user" :disable-link="true" :show-indicator="true"/>
 	<div class="body">
 		<span class="name"><MkUserName class="name" :user="user"/></span>
@@ -10,14 +10,14 @@
 </template>
 
 <script lang="ts" setup>
-import * as misskey from 'misskey-js';
+import * as Misskey from 'misskey-js';
 import { onMounted } from 'vue';
 import MkMiniChart from '@/components/MkMiniChart.vue';
 import * as os from '@/os';
 import { acct } from '@/filters/user';
 
 const props = withDefaults(defineProps<{
-	user: misskey.entities.User;
+	user: Misskey.entities.User;
 	withChart: boolean;
 }>(), {
 	withChart: true,
@@ -56,7 +56,8 @@ onMounted(() => {
 
 	> :global(.body) {
 		flex: 1;
-		overflow: hidden;
+		overflow: hidden; // fallback (overflow: clip)
+		overflow: clip;
 		font-size: 0.9em;
 		color: var(--fg);
 		padding-right: 8px;

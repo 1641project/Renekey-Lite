@@ -1,7 +1,7 @@
 <template>
 <form class="eppvobhk _monolithic_" :class="{ signing, totpLogin }" @submit.prevent="onSubmit">
 	<div class="auth _section _formRoot">
-		<div v-show="withAvatar" class="avatar" :style="{ backgroundImage: user ? `url('${ user.avatarUrl }')` : null, marginBottom: message ? '1.5em' : null }"></div>
+		<div v-show="withAvatar" class="avatar" :style="{ backgroundImage: user ? `url('${ user.avatarUrl }')` : undefined, marginBottom: message ? '1.5em' : undefined }"></div>
 		<MkInfo v-if="message">
 			{{ message }}
 		</MkInfo>
@@ -41,9 +41,9 @@
 		</div>
 	</div>
 	<div class="social _section">
-		<a v-if="meta && meta.enableTwitterIntegration" class="_borderButton _gap" :href="`${apiUrl}/signin/twitter`"><i class="ti ti-brand-twitter" style="margin-right: 4px;"></i>{{ $t('signinWith', { x: 'Twitter' }) }}</a>
-		<a v-if="meta && meta.enableGithubIntegration" class="_borderButton _gap" :href="`${apiUrl}/signin/github`"><i class="ti ti-brand-github" style="margin-right: 4px;"></i>{{ $t('signinWith', { x: 'GitHub' }) }}</a>
-		<a v-if="meta && meta.enableDiscordIntegration" class="_borderButton _gap" :href="`${apiUrl}/signin/discord`"><i class="ti ti-brand-discord" style="margin-right: 4px;"></i>{{ $t('signinWith', { x: 'Discord' }) }}</a>
+		<a v-if="meta && meta.enableTwitterIntegration" class="_borderButton _margin" :href="`${apiUrl}/signin/twitter`"><i class="ti ti-brand-twitter" style="margin-right: 4px;"></i>{{ i18n.t('signinWith', { x: 'Twitter' }) }}</a>
+		<a v-if="meta && meta.enableGithubIntegration" class="_borderButton _margin" :href="`${apiUrl}/signin/github`"><i class="ti ti-brand-github" style="margin-right: 4px;"></i>{{ i18n.t('signinWith', { x: 'GitHub' }) }}</a>
+		<a v-if="meta && meta.enableDiscordIntegration" class="_borderButton _margin" :href="`${apiUrl}/signin/discord`"><i class="ti ti-brand-discord" style="margin-right: 4px;"></i>{{ i18n.t('signinWith', { x: 'Discord' }) }}</a>
 	</div>
 </form>
 </template>

@@ -9,7 +9,7 @@
 		</button>
 	</header>
 	<Transition
-		:name="$store.state.animation ? 'folder-toggle' : ''"
+		:name="defaultStore.state.animation ? 'folder-toggle' : ''"
 		@enter="enter"
 		@after-enter="afterEnter"
 		@leave="leave"
@@ -25,6 +25,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import tinycolor from 'tinycolor2';
+import { defaultStore } from '@/store';
 
 const localStoragePrefix = 'ui:folder:';
 
@@ -44,10 +45,12 @@ export default defineComponent({
 	data(): ({
 		bg: string | null;
 		showBody: boolean;
+		defaultStore: typeof defaultStore;
 	}) {
 		return {
 			bg: null,
 			showBody: (this.persistKey && localStorage.getItem(localStoragePrefix + this.persistKey)) ? localStorage.getItem(localStoragePrefix + this.persistKey) === 't' : this.expanded,
+			defaultStore,
 		};
 	},
 	watch: {
@@ -100,7 +103,8 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .folder-toggle-enter-active, .folder-toggle-leave-active {
-	overflow-y: hidden;
+	overflow-y: hidden; // fallback (overflow: clip)
+	overflow-y: clip;
 	transition: opacity 0.5s, height 0.5s !important;
 }
 .folder-toggle-enter-from {
