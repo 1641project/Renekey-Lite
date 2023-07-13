@@ -6,61 +6,61 @@
 	</MkTab>
 	<div v-if="origin === 'local'">
 		<template v-if="tag == null">
-			<MkFolder class="_margin" persist-key="explore-pinned-users">
+			<MkFoldableSection class="_margin" persist-key="explore-pinned-users">
 				<template #header><i class="ti ti-bookmark ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedUsers }}</template>
 				<MkUserList :pagination="pinnedUsers"/>
-			</MkFolder>
-			<MkFolder class="_margin" persist-key="explore-popular-users">
+			</MkFoldableSection>
+			<MkFoldableSection class="_margin" persist-key="explore-popular-users">
 				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularUsers }}</template>
 				<MkUserList :pagination="popularUsers"/>
-			</MkFolder>
-			<MkFolder class="_margin" persist-key="explore-recently-updated-users">
+			</MkFoldableSection>
+			<MkFoldableSection class="_margin" persist-key="explore-recently-updated-users">
 				<template #header><i class="ti ti-message ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyUpdatedUsers }}</template>
 				<MkUserList :pagination="recentlyUpdatedUsers"/>
-			</MkFolder>
-			<MkFolder class="_margin" persist-key="explore-recently-registered-users">
+			</MkFoldableSection>
+			<MkFoldableSection class="_margin" persist-key="explore-recently-registered-users">
 				<template #header><i class="ti ti-plus ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyRegisteredUsers }}</template>
 				<MkUserList :pagination="recentlyRegisteredUsers"/>
-			</MkFolder>
+			</MkFoldableSection>
 		</template>
 	</div>
 	<div v-else>
-		<MkFolder ref="tagsEl" :foldable="true" :expanded="false" class="_margin">
+		<MkFoldableSection ref="tagsEl" :foldable="true" :expanded="false" class="_margin">
 			<template #header><i class="ti ti-hash ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularTags }}</template>
 
-			<div class="vxjfqztj">
-				<MkA v-for="tagLocal in tagsLocal" :key="`local:${tagLocal.tag}`" :to="`/explore/tags/${tagLocal.tag}`" class="local">{{ tagLocal.tag }}</MkA>
-				<MkA v-for="tagRemote in tagsRemote" :key="`remote:${tagRemote.tag}`" :to="`/explore/tags/${tagRemote.tag}`">{{ tagRemote.tag }}</MkA>
+			<div>
+				<MkA v-for="tagLocal in tagsLocal" :key="`local:${tagLocal.tag}`" :to="`/explore/tags/${tagLocal.tag}`" style="margin-right: 16px; font-weight: bold;">{{ tagLocal.tag }}</MkA>
+				<MkA v-for="tagRemote in tagsRemote" :key="`remote:${tagRemote.tag}`" :to="`/explore/tags/${tagRemote.tag}`" style="margin-right: 16px;">{{ tagRemote.tag }}</MkA>
 			</div>
-		</MkFolder>
+		</MkFoldableSection>
 
-		<MkFolder v-if="tag != null" :key="`${tag}`" class="_margin">
+		<MkFoldableSection v-if="tag != null" :key="`${tag}`" class="_margin">
 			<template #header><i class="ti ti-hash ti-fw" style="margin-right: 0.5em;"></i>{{ tag }}</template>
 			<MkUserList :pagination="tagUsers"/>
-		</MkFolder>
+		</MkFoldableSection>
 
 		<template v-if="tag == null">
-			<MkFolder class="_margin">
+			<MkFoldableSection class="_margin">
 				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularUsers }}</template>
 				<MkUserList :pagination="popularUsersF"/>
-			</MkFolder>
-			<MkFolder class="_margin">
+			</MkFoldableSection>
+			<MkFoldableSection class="_margin">
 				<template #header><i class="ti ti-message ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyUpdatedUsers }}</template>
 				<MkUserList :pagination="recentlyUpdatedUsersF"/>
-			</MkFolder>
-			<MkFolder class="_margin">
+			</MkFoldableSection>
+			<MkFoldableSection class="_margin">
 				<template #header><i class="ti ti-rocket ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyDiscoveredUsers }}</template>
 				<MkUserList :pagination="recentlyRegisteredUsersF"/>
-			</MkFolder>
+			</MkFoldableSection>
 		</template>
 	</div>
 </MkSpacer>
 </template>
 
 <script lang="ts" setup>
-import { watch } from 'vue';
+import { } from 'vue';
 import MkUserList from '@/components/MkUserList.vue';
-import MkFolder from '@/components/MkFolder.vue';
+import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkTab from '@/components/MkTab.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
@@ -70,14 +70,19 @@ const props = defineProps<{
 }>();
 
 let origin = $ref('local');
-let tagsEl = $ref<InstanceType<typeof MkFolder>>();
 
-let tagsLocal = $ref<{ tag: string; }[]>([]);
-let tagsRemote = $ref<{ tag: string; }[]>([]);
+let tagsLocal = $ref<TagEntity[]>([]);
+let tagsRemote = $ref<TagEntity[]>([]);
 
-watch(() => props.tag, () => {
-	if (tagsEl) tagsEl.toggleContent(props.tag == null);
-});
+type TagEntity = {
+	tag: string;
+	mentionedUsersCount: number;
+	mentionedLocalUsersCount: number;
+	mentionedRemoteUsersCount: number;
+	attachedUsersCount: number;
+	attachedLocalUsersCount: number;
+	attachedRemoteUsersCount: number;
+};
 
 const tagUsers = $computed(() => ({
 	endpoint: 'hashtags/users' as const,
@@ -96,6 +101,7 @@ const pinnedUsers = {
 
 const popularUsers = {
 	endpoint: 'users' as const,
+	limit: 10,
 	noPaging: true,
 	params: {
 		state: 'alive',
@@ -106,6 +112,7 @@ const popularUsers = {
 
 const recentlyUpdatedUsers = {
 	endpoint: 'users' as const,
+	limit: 10,
 	noPaging: true,
 	params: {
 		origin: 'local',
@@ -115,6 +122,7 @@ const recentlyUpdatedUsers = {
 
 const recentlyRegisteredUsers = {
 	endpoint: 'users' as const,
+	limit: 10,
 	noPaging: true,
 	params: {
 		origin: 'local',
@@ -125,6 +133,7 @@ const recentlyRegisteredUsers = {
 
 const popularUsersF = {
 	endpoint: 'users' as const,
+	limit: 10,
 	noPaging: true,
 	params: {
 		state: 'alive',
@@ -135,6 +144,7 @@ const popularUsersF = {
 
 const recentlyUpdatedUsersF = {
 	endpoint: 'users' as const,
+	limit: 10,
 	noPaging: true,
 	params: {
 		origin: 'combined',
@@ -144,6 +154,7 @@ const recentlyUpdatedUsersF = {
 
 const recentlyRegisteredUsersF = {
 	endpoint: 'users' as const,
+	limit: 10,
 	noPaging: true,
 	params: {
 		origin: 'combined',
@@ -156,7 +167,8 @@ os.api('hashtags/list', {
 	attachedToLocalUserOnly: true,
 	limit: 30,
 }).then(tags => {
-	tagsLocal = tags as { tag: string; }[];
+	const typedTags = tags as TagEntity[];
+	tagsLocal = typedTags;
 });
 
 os.api('hashtags/list', {
@@ -164,18 +176,7 @@ os.api('hashtags/list', {
 	attachedToRemoteUserOnly: true,
 	limit: 30,
 }).then(tags => {
-	tagsRemote = tags as { tag: string; }[];
+	const typedTags = tags as TagEntity[];
+	tagsRemote = typedTags;
 });
 </script>
-
-<style lang="scss" scoped>
-.vxjfqztj {
-	> * {
-		margin-right: 16px;
-
-		&.local {
-			font-weight: bold;
-		}
-	}
-}
-</style>

@@ -1,7 +1,9 @@
 <template>
 <MkStickyContainer>
-	<template #header><MkPageHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs"/></template>
-	<div class="lznhrdub">
+	<template #header>
+		<MkPageHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs"/>
+	</template>
+	<div>
 		<div v-if="tab === 'featured'">
 			<XFeatured/>
 		</div>
@@ -13,26 +15,22 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
-import XFeatured from './explore.featured.vue';
-import XUsers from './explore.users.vue';
-import MkFolder from '@/components/MkFolder.vue';
+import { defineAsyncComponent, computed } from 'vue';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
+
+const XFeatured = defineAsyncComponent(() => import('./explore.featured.vue'));
+const XUsers = defineAsyncComponent(() => import('./explore.users.vue'));
 
 const props = withDefaults(defineProps<{
 	tag?: string;
 	initialTab?: string;
 }>(), {
+	tag: undefined,
 	initialTab: 'featured',
 });
 
 let tab = $ref(props.initialTab);
-let tagsEl = $shallowRef<InstanceType<typeof MkFolder>>();
-
-watch(() => props.tag, () => {
-	if (tagsEl) tagsEl.toggleContent(props.tag == null);
-});
 
 const headerActions = $computed(() => []);
 
