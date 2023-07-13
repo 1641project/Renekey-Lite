@@ -1,16 +1,16 @@
 <template>
 <MkSpacer :content-max="narrow ? 800 : 1100">
-	<div ref="rootEl" v-size="{ max: [500] }" class="ftskorzw" :class="{ wide: !narrow }">
-		<div class="main">
-			<div class="profile">
+	<div ref="rootEl" v-size="{ max: [500] }" class="ftskorzw" :class="{ wide: !narrow }" style="container-type: inline-size;">
+		<div class="main _gaps">
+			<div class="profile _gaps">
 				<template v-if="iAmModerator">
 					<MkInfo v-if="user.isSilenced">{{ i18n.ts.userSilenced }}</MkInfo>
 					<MkInfo v-if="user.isSuspended">{{ i18n.ts.userSuspended }}</MkInfo>
 				</template>
 
-				<MkRemoteCaution v-if="user.host != null" :href="user.url" class="warn _block"/>
+				<MkRemoteCaution v-if="user.host != null" :href="user.url ?? user.uri!" class="warn"/>
 
-				<div :key="user.id" class="_block main">
+				<div :key="user.id" class="main _panel">
 					<div class="banner-container" :style="style">
 						<div ref="bannerEl" class="banner" :style="style"></div>
 						<div class="fade"></div>
@@ -42,7 +42,7 @@
 						</div>
 					</div>
 					<div class="description">
-						<Mfm v-if="user.description" :text="user.description" :is-note="false" :author="user" :i="$i" :custom-emojis="user.emojis"/>
+						<Mfm v-if="user.description" :text="user.description" :is-note="false" :author="user" :i="$i ?? undefined" :custom-emojis="user.emojis"/>
 						<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
 					</div>
 					<div class="fields system">
@@ -62,23 +62,23 @@
 					<div v-if="user.fields.length > 0" class="fields">
 						<dl v-for="(field, i) in user.fields" :key="i" class="field">
 							<dt class="name">
-								<Mfm :text="field.name" :plain="true" :custom-emojis="user.emojis" :colored="false"/>
+								<Mfm :text="field.name" :plain="true" :custom-emojis="user.emojis"/>
 							</dt>
 							<dd class="value">
-								<Mfm :text="field.value" :author="user" :i="$i" :custom-emojis="user.emojis" :colored="false"/>
+								<Mfm :text="field.value" :author="user" :i="$i ?? undefined" :custom-emojis="user.emojis"/>
 							</dd>
 						</dl>
 					</div>
 					<div class="status">
-						<MkA v-click-anime :to="userPage(user)" :class="{ active: page === 'index' }">
+						<MkA v-click-anime :to="userPage(user)">
 							<b>{{ number(user.notesCount) }}</b>
 							<span>{{ i18n.ts.notes }}</span>
 						</MkA>
-						<MkA v-click-anime :to="userPage(user, 'following')" :class="{ active: page === 'following' }">
+						<MkA v-click-anime :to="userPage(user, 'following')">
 							<b>{{ number(user.followingCount) }}</b>
 							<span>{{ i18n.ts.following }}</span>
 						</MkA>
-						<MkA v-click-anime :to="userPage(user, 'followers')" :class="{ active: page === 'followers' }">
+						<MkA v-click-anime :to="userPage(user, 'followers')">
 							<b>{{ number(user.followersCount) }}</b>
 							<span>{{ i18n.ts.followers }}</span>
 						</MkA>
@@ -86,33 +86,31 @@
 				</div>
 			</div>
 
-			<div class="contents">
-				<div v-if="user.pinnedNotes.length > 0" class="_gap">
-					<MkNote v-for="note in user.pinnedNotes" :key="note.id" class="note _block" :note="note" :pinned="true"/>
+			<div class="contents _gaps">
+				<div v-if="user.pinnedNotes.length > 0" class="_gaps">
+					<MkNote v-for="note in user.pinnedNotes" :key="note.id" class="note _panel" :note="note" :pinned="true"/>
 				</div>
 				<MkInfo v-else-if="$i && $i.id === user.id">{{ i18n.ts.userPagePinTip }}</MkInfo>
 				<template v-if="narrow">
 					<XPhotos :key="user.id" :user="user"/>
-					<XActivity :key="user.id" :user="user" style="margin-top: var(--margin);"/>
+					<XActivity :key="user.id" :user="user"/>
 				</template>
-			</div>
-			<div>
-				<XUserTimeline :user="user"/>
+				<MkNotes v-if="!disableNotes" :class="$style.tl" :no-gap="true" :pagination="pagination"/>
 			</div>
 		</div>
-		<div v-if="!narrow" class="sub">
+		<div v-if="!narrow" class="sub _gaps" style="container-type: inline-size;">
 			<XPhotos :key="user.id" :user="user"/>
-			<XActivity :key="user.id" :user="user" style="margin-top: var(--margin);"/>
+			<XActivity :key="user.id" :user="user"/>
 		</div>
 	</div>
 </MkSpacer>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, onMounted, onUnmounted } from 'vue';
+import { defineAsyncComponent, computed, onMounted, onUnmounted } from 'vue';
 import calcAge from 's-age';
 import * as Misskey from 'misskey-js';
-import XUserTimeline from './index.timeline.vue';
+import MkNotes from '@/components/MkNotes.vue';
 import MkNote from '@/components/MkNote.vue';
 import MkFollowButton from '@/components/MkFollowButton.vue';
 import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
@@ -125,13 +123,16 @@ import * as os from '@/os';
 import { useRouter } from '@/router';
 import { i18n } from '@/i18n';
 import { $i, iAmModerator } from '@/account';
+import { confetti } from '@/scripts/confetti';
 
 const XPhotos = defineAsyncComponent(() => import('./index.photos.vue'));
 const XActivity = defineAsyncComponent(() => import('./index.activity.vue'));
 
 const props = withDefaults(defineProps<{
 	user: Misskey.entities.UserDetailed;
+	disableNotes: boolean;
 }>(), {
+	disableNotes: false,
 });
 
 const router = useRouter();
@@ -141,6 +142,14 @@ let narrow = $ref<null | boolean>(null);
 let rootEl = $ref<null | HTMLElement>(null);
 let bannerEl = $ref<null | HTMLElement>(null);
 
+const pagination = {
+	endpoint: 'users/notes' as const,
+	limit: 10,
+	params: computed(() => ({
+		userId: props.user.id,
+	})),
+};
+
 const style = $computed(() => {
 	if (props.user.bannerUrl == null) return {};
 	return {
@@ -149,7 +158,7 @@ const style = $computed(() => {
 });
 
 const age = $computed(() => {
-	return calcAge(props.user.birthday);
+	return calcAge(props.user.birthday) as unknown as number;
 });
 
 function menu(ev) {
@@ -177,6 +186,18 @@ function parallax() {
 onMounted(() => {
 	window.requestAnimationFrame(parallaxLoop);
 	narrow = rootEl!.clientWidth < 1000;
+
+	if (props.user.birthday) {
+		const m = new Date().getMonth() + 1;
+		const d = new Date().getDate();
+		const bm = parseInt(props.user.birthday.split('-')[1]);
+		const bd = parseInt(props.user.birthday.split('-')[2]);
+		if (m === bm && d === bd) {
+			confetti({
+				duration: 1000 * 4,
+			});
+		}
+	}
 });
 
 onUnmounted(() => {
@@ -361,9 +382,6 @@ onUnmounted(() => {
 							margin: 0;
 						}
 					}
-
-					&.system > .field > .name {
-					}
 				}
 
 				> .status {
@@ -468,5 +486,14 @@ onUnmounted(() => {
 			margin-left: var(--margin);
 		}
 	}
+}
+</style>
+
+<style lang="scss" module>
+.tl {
+	background: var(--bg);
+	border-radius: var(--radius);
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 }
 </style>

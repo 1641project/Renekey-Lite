@@ -49,9 +49,6 @@ export type Tab = {
 	icon?: string;
 	iconOnly?: boolean;
 	onClick?: (ev: MouseEvent) => void;
-} & {
-	iconOnly: true;
-	icon: string;
 };
 
 const props = withDefaults(defineProps<{
@@ -112,7 +109,7 @@ const onTabWheel = (ev: WheelEvent): boolean => {
 		ev.stopPropagation();
 		ev.currentTarget.scrollBy({
 			left: ev.deltaY,
-			behavior: 'instant' as ScrollBehavior,
+			behavior: 'instant',
 		});
 	}
 	return false;

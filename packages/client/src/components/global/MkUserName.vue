@@ -6,7 +6,7 @@
 import { } from 'vue';
 import * as Misskey from 'misskey-js';
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
 	user: Misskey.entities.User;
 	nowrap?: boolean;
 }>(), {
