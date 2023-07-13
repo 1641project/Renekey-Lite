@@ -1,6 +1,7 @@
 <template>
 <MkContainer>
-	<template #header><i class="ti ti-chart-line" style="margin-right: 0.5em;"></i>{{ i18n.ts.activity }}</template>
+	<template #icon><i class="ti ti-chart-line"></i></template>
+	<template #header>{{ i18n.ts.activity }}</template>
 	<template #func>
 		<button class="_button" @click="showMenu">
 			<i class="ti ti-dots"></i>
