@@ -1,12 +1,12 @@
 <template>
-<MkPostForm class="_panel mkw-postForm" :fixed="true" :autofocus="false"/>
+<TmsPostForm class="_panel mkw-postForm" :fixed="true" :autofocus="false"/>
 </template>
 
 <script lang="ts" setup>
 import { } from 'vue';
 import { useWidgetPropsManager, Widget, WidgetComponentExpose } from './widget';
 import { GetFormResultType } from '@/scripts/form';
-import MkPostForm from '@/components/MkPostForm.vue';
+import TmsPostForm from '@/components/TmsPostForm.vue';
 
 const name = 'postForm';
 
