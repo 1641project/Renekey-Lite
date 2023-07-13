@@ -5,6 +5,7 @@ import MkA from './global/MkA.vue';
 import MkAcct from './global/MkAcct.vue';
 import MkAvatar from './global/MkAvatar.vue';
 import MkEmoji from './global/MkEmoji.vue';
+import MkCondensedLine from './global/MkCondensedLine.vue';
 import MkUserName from './global/MkUserName.vue';
 import MkEllipsis from './global/MkEllipsis.vue';
 import MkTime from './global/MkTime.vue';
@@ -18,25 +19,33 @@ import MkPageHeader from './global/MkPageHeader.vue';
 import MkSpacer from './global/MkSpacer.vue';
 import MkStickyContainer from './global/MkStickyContainer.vue';
 
-export default function(app: App) {
-	app.component('I18n', I18n);
-	app.component('RouterView', RouterView);
-	app.component('Mfm', Mfm);
-	app.component('MkA', MkA);
-	app.component('MkAcct', MkAcct);
-	app.component('MkAvatar', MkAvatar);
-	app.component('MkEmoji', MkEmoji);
-	app.component('MkUserName', MkUserName);
-	app.component('MkEllipsis', MkEllipsis);
-	app.component('MkTime', MkTime);
-	app.component('MkUrl', MkUrl);
-	app.component('MkLoading', MkLoading);
-	app.component('MkError', MkError);
-	app.component('MkAd', MkAd);
-	app.component('MkPageHeader', MkPageHeader);
-	app.component('MkSpacer', MkSpacer);
-	app.component('MkStickyContainer', MkStickyContainer);
+// eslint-disable-next-line import/no-default-export
+export default function(app: App): void {
+	for (const [key, value] of Object.entries(components)) {
+		app.component(key, value);
+	}
 }
+
+export const components = {
+	I18n: I18n,
+	RouterView: RouterView,
+	Mfm: Mfm,
+	MkA: MkA,
+	MkAcct: MkAcct,
+	MkAvatar: MkAvatar,
+	MkEmoji: MkEmoji,
+	MkCondensedLine: MkCondensedLine,
+	MkUserName: MkUserName,
+	MkEllipsis: MkEllipsis,
+	MkTime: MkTime,
+	MkUrl: MkUrl,
+	MkLoading: MkLoading,
+	MkError: MkError,
+	MkAd: MkAd,
+	MkPageHeader: MkPageHeader,
+	MkSpacer: MkSpacer,
+	MkStickyContainer: MkStickyContainer,
+};
 
 declare module '@vue/runtime-core' {
 	export interface GlobalComponents {
@@ -47,6 +56,7 @@ declare module '@vue/runtime-core' {
 		MkAcct: typeof MkAcct;
 		MkAvatar: typeof MkAvatar;
 		MkEmoji: typeof MkEmoji;
+		MkCondensedLine: typeof MkCondensedLine;
 		MkUserName: typeof MkUserName;
 		MkEllipsis: typeof MkEllipsis;
 		MkTime: typeof MkTime;
