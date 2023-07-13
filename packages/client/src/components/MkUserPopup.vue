@@ -40,8 +40,10 @@
 					<div>{{ number(user.followersCount) }}</div>
 				</div>
 			</div>
-			<button class="_button" :class="$style.menu" @click="showMenu"><i class="ti ti-dots"></i></button>
-			<MkFollowButton v-if="$i && user.id != $i.id" :class="$style.koudoku" :user="user" mini/>
+			<div :class="$style.actions">
+				<button class="_button" :class="$style.menu" @click="showMenu"><i class="ti ti-dots"></i></button>
+				<MkFollowButton v-if="$i && user.id != $i.id" :user="user"/>
+			</div>
 		</div>
 		<div v-else>
 			<MkLoading/>
@@ -227,18 +229,22 @@ onMounted(() => {
 	color: var(--fgTransparentWeak);
 }
 
-.menu {
+.actions {
 	position: absolute;
 	top: 8px;
-	right: 44px;
-	padding: 6px;
-	background: var(--panel);
-	border-radius: 999px;
+	right: 8px;
+	display: flex;
+	gap: 6px;
 }
 
-.koudoku {
-	position: absolute !important;
-	top: 8px;
-	right: 8px;
+.menu {
+	position: relative;
+	display: inline-block;
+	padding: 0;
+	width: 31px;
+	height: 31px;
+	font-size: 16px;
+	border-radius: 32px;
+	background: var(--panel);
 }
 </style>
