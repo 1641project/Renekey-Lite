@@ -165,8 +165,8 @@ onMounted(() => {
 }
 
 .avatar {
-	display: block;
-	position: absolute;
+	display: block !important;
+	position: absolute !important;
 	top: 38px;
 	left: 0;
 	right: 0;
