@@ -96,7 +96,7 @@ onMounted(() => {
 
 <style lang="scss" module>
 .folder_toggle_enterActive, .folder_toggle_leaveActive {
-	overflow-y: hidden; // fallback (overflow-y: clip)
+	overflow-y: hidden; // fallback (overflow: clip)
 	overflow-y: clip;
 	transition: opacity 0.5s, height 0.5s !important;
 }
