@@ -4,26 +4,26 @@
 	<MkSpacer :content-max="1400">
 		<div class="_root">
 			<div v-if="tab === 'explore'">
-				<MkFolder class="_gap">
+				<MkFoldableSection class="_margin">
 					<template #header><i class="ti ti-clock"></i>{{ i18n.ts.recentPosts }}</template>
 					<MkPagination v-slot="{items}" :pagination="recentPostsPagination" :disable-auto-load="true">
-						<div class="vfpdbgtk">
+						<div :class="$style.items">
 							<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>
 						</div>
 					</MkPagination>
-				</MkFolder>
-				<MkFolder class="_gap">
+				</MkFoldableSection>
+				<MkFoldableSection class="_margin">
 					<template #header><i class="ti ti-comet"></i>{{ i18n.ts.popularPosts }}</template>
 					<MkPagination v-slot="{items}" :pagination="popularPostsPagination" :disable-auto-load="true">
-						<div class="vfpdbgtk">
+						<div :class="$style.items">
 							<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>
 						</div>
 					</MkPagination>
-				</MkFolder>
+				</MkFoldableSection>
 			</div>
 			<div v-else-if="tab === 'liked'">
 				<MkPagination v-slot="{items}" :pagination="likedPostsPagination">
-					<div class="vfpdbgtk">
+					<div :class="$style.items">
 						<MkGalleryPostPreview v-for="like in items" :key="like.id" :post="like.post" class="post"/>
 					</div>
 				</MkPagination>
@@ -31,7 +31,7 @@
 			<div v-else-if="tab === 'my'">
 				<MkA to="/gallery/new" class="_link" style="margin: 16px;"><i class="ti ti-plus"></i> {{ i18n.ts.postToGallery }}</MkA>
 				<MkPagination v-slot="{items}" :pagination="myPostsPagination">
-					<div class="vfpdbgtk">
+					<div :class="$style.items">
 						<MkGalleryPostPreview v-for="post in items" :key="post.id" :post="post" class="post"/>
 					</div>
 				</MkPagination>
@@ -43,7 +43,7 @@
 
 <script lang="ts" setup>
 import { watch } from 'vue';
-import MkFolder from '@/components/MkFolder.vue';
+import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkGalleryPostPreview from '@/components/MkGalleryPostPreview.vue';
 import { definePageMetadata } from '@/scripts/page-metadata';
@@ -57,8 +57,8 @@ const props = defineProps<{
 }>();
 
 let tab = $ref('explore');
-let tags = $ref([]);
-let tagsRef = $ref();
+// let tags = $ref([]);
+// let tagsRef = $ref();
 
 const recentPostsPagination = {
 	endpoint: 'gallery/posts' as const,
@@ -66,7 +66,7 @@ const recentPostsPagination = {
 };
 const popularPostsPagination = {
 	endpoint: 'gallery/featured' as const,
-	limit: 5,
+	noPaging: true,
 };
 const myPostsPagination = {
 	endpoint: 'i/gallery/posts' as const,
@@ -77,24 +77,24 @@ const likedPostsPagination = {
 	limit: 5,
 };
 
-const tagUsersPagination = $computed(() => ({
-	endpoint: 'hashtags/users' as const,
-	limit: 30,
-	params: {
-		tag: this.tag,
-		origin: 'combined',
-		sort: '+follower',
-	},
-}));
+// const tagUsersPagination = $computed(() => ({
+// 	endpoint: 'hashtags/users' as const,
+// 	limit: 30,
+// 	params: {
+// 		tag: this.tag,
+// 		origin: 'combined',
+// 		sort: '+follower',
+// 	},
+// }));
 
-watch(() => props.tag, () => {
-	if (tagsRef) tagsRef.tags.toggleContent(props.tag == null);
-});
+// watch(() => props.tag, () => {
+// 	if (tagsRef) tagsRef.tags.toggleContent(props.tag == null);
+// });
 
 const headerActions = $computed(() => [{
 	icon: 'ti ti-plus',
 	text: i18n.ts.create,
-	handler: () => {
+	handler: (): void => {
 		router.push('/gallery/new');
 	},
 }]);
@@ -119,15 +119,11 @@ definePageMetadata({
 });
 </script>
 
-<style lang="scss" scoped>
-.vfpdbgtk {
+<style lang="scss" module>
+.items {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 	grid-gap: 12px;
 	margin: 0 var(--margin);
-
-	> .post {
-
-	}
 }
 </style>

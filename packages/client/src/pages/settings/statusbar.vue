@@ -1,10 +1,10 @@
 <template>
 <div class="_formRoot">
-	<FormFolder v-for="x in statusbars" :key="x.id" class="_formBlock">
+	<MkFolder v-for="x in statusbars" :key="x.id" class="_formBlock">
 		<template #label>{{ x.type ?? i18n.ts.notSet }}</template>
 		<template #suffix>{{ x.name }}</template>
 		<XStatusbar :_id="x.id" :user-lists="userLists"/>
-	</FormFolder>
+	</MkFolder>
 	<FormButton primary @click="add">{{ i18n.ts.add }}</FormButton>
 </div>
 </template>
@@ -13,7 +13,7 @@
 import { onMounted } from 'vue';
 import { v4 as uuid } from 'uuid';
 import XStatusbar from './statusbar.statusbar.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import FormButton from '@/components/MkButton.vue';
 import * as os from '@/os';
 import { defaultStore } from '@/store';

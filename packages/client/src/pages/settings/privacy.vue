@@ -31,7 +31,7 @@
 
 	<FormSection>
 		<FormSwitch v-model="rememberNoteVisibility" class="_formBlock" @update:model-value="save()">{{ i18n.ts.rememberNoteVisibility }}</FormSwitch>
-		<FormFolder v-if="!rememberNoteVisibility" class="_formBlock">
+		<MkFolder v-if="!rememberNoteVisibility" class="_formBlock">
 			<template #label>{{ i18n.ts.defaultNoteVisibility }}</template>
 			<template v-if="defaultNoteVisibility === 'public'" #suffix>{{ i18n.ts._visibility.public }}</template>
 			<template v-else-if="defaultNoteVisibility === 'home'" #suffix>{{ i18n.ts._visibility.home }}</template>
@@ -45,7 +45,7 @@
 				<option value="specified">{{ i18n.ts._visibility.specified }}</option>
 			</FormSelect>
 			<FormSwitch v-model="defaultNoteLocalOnly" class="_formBlock">{{ i18n.ts._visibility.disableFederationDescription }}</FormSwitch>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 
 	<FormSwitch v-model="keepCw" class="_formBlock" @update:model-value="save()">{{ i18n.ts.keepCw }}</FormSwitch>
@@ -57,7 +57,7 @@ import { } from 'vue';
 import FormSwitch from '@/components/form/switch.vue';
 import FormSelect from '@/components/form/select.vue';
 import FormSection from '@/components/form/section.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';

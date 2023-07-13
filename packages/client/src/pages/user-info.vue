@@ -77,12 +77,12 @@
 
 					<FormButton v-if="user.host != null" class="_formBlock" @click="updateRemoteUser"><i class="ti ti-refresh"></i> {{ i18n.ts.updateRemoteUser }}</FormButton>
 
-					<FormFolder class="_formBlock">
+					<MkFolder class="_formBlock">
 						<template #label>Raw</template>
 
 						<MkObjectView v-if="ap" tall :value="ap">
 						</MkObjectView>
-					</FormFolder>
+					</MkFolder>
 				</FormSection>
 			</div>
 			<div v-else-if="tab === 'moderation'" class="_formRoot">
@@ -101,7 +101,7 @@
 				<FormTextarea v-model="moderationNote" manual-save class="_formBlock">
 					<template #label>Moderation note</template>
 				</FormTextarea>
-				<FormFolder class="_formBlock">
+				<MkFolder class="_formBlock">
 					<template #label>IP</template>
 					<MkInfo v-if="!iAmAdmin" warn>{{ i18n.ts.requireAdminForView }}</MkInfo>
 					<MkInfo v-else>The date is the IP address was first acknowledged.</MkInfo>
@@ -111,12 +111,12 @@
 							<span class="ip">{{ record.ip }}</span>
 						</div>
 					</template>
-				</FormFolder>
-				<FormFolder class="_formBlock">
+				</MkFolder>
+				<MkFolder class="_formBlock">
 					<template #label>{{ i18n.ts.files }}</template>
 
 					<MkFileListForAdmin :pagination="filesPagination" view-mode="grid"/>
-				</FormFolder>
+				</MkFolder>
 				<FormSection>
 					<template #label>Drive Capacity Override</template>
 
@@ -168,7 +168,7 @@ import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
 import FormButton from '@/components/MkButton.vue';
 import FormInput from '@/components/form/input.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import FormSuspense from '@/components/form/suspense.vue';
 import MkFileListForAdmin from '@/components/MkFileListForAdmin.vue';

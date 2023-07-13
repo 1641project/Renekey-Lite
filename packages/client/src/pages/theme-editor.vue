@@ -3,7 +3,7 @@
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
 	<MkSpacer :content-max="800" :margin-min="16" :margin-max="32">
 		<div class="cwepdizn _formRoot">
-			<FormFolder :default-open="true" class="_formBlock">
+			<MkFolder :default-open="true" class="_formBlock">
 				<template #label>{{ i18n.ts.backgroundColor }}</template>
 				<div class="cwepdizn-colors">
 					<div class="row">
@@ -17,9 +17,9 @@
 						</button>
 					</div>
 				</div>
-			</FormFolder>
+			</MkFolder>
 
-			<FormFolder :default-open="true" class="_formBlock">
+			<MkFolder :default-open="true" class="_formBlock">
 				<template #label>{{ i18n.ts.accentColor }}</template>
 				<div class="cwepdizn-colors">
 					<div class="row">
@@ -28,9 +28,9 @@
 						</button>
 					</div>
 				</div>
-			</FormFolder>
+			</MkFolder>
 
-			<FormFolder :default-open="true" class="_formBlock">
+			<MkFolder :default-open="true" class="_formBlock">
 				<template #label>{{ i18n.ts.textColor }}</template>
 				<div class="cwepdizn-colors">
 					<div class="row">
@@ -39,9 +39,9 @@
 						</button>
 					</div>
 				</div>
-			</FormFolder>
+			</MkFolder>
 
-			<FormFolder :default-open="false" class="_formBlock">
+			<MkFolder :default-open="false" class="_formBlock">
 				<template #icon><i class="ti ti-code"></i></template>
 				<template #label>{{ i18n.ts.editCode }}</template>
 
@@ -51,9 +51,9 @@
 					</FormTextarea>
 					<FormButton primary class="_formBlock" @click="applyThemeCode">{{ i18n.ts.apply }}</FormButton>
 				</div>
-			</FormFolder>
+			</MkFolder>
 
-			<FormFolder :default-open="false" class="_formBlock">
+			<MkFolder :default-open="false" class="_formBlock">
 				<template #label>{{ i18n.ts.addDescription }}</template>
 
 				<div class="_formRoot">
@@ -61,7 +61,7 @@
 						<template #label>{{ i18n.ts._theme.description }}</template>
 					</FormTextarea>
 				</div>
-			</FormFolder>
+			</MkFolder>
 		</div>
 	</MkSpacer>
 </MkStickyContainer>
@@ -76,7 +76,7 @@ import JSON5 from 'json5';
 
 import FormButton from '@/components/MkButton.vue';
 import FormTextarea from '@/components/form/textarea.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 
 import { $i } from '@/account';
 import { Theme, applyTheme } from '@/scripts/theme';

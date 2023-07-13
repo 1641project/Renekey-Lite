@@ -2,15 +2,15 @@
 <div class="_formRoot">
 	<FormSection>
 		<template #label>{{ i18n.ts._exportOrImport.allNotes }}</template>
-		<FormFolder>
+		<MkFolder>
 			<template #label>{{ i18n.ts.export }}</template>
 			<template #icon><i class="ti ti-download"></i></template>
 			<MkButton primary :class="$style.button" inline @click="exportNotes()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 	<FormSection>
 		<template #label>{{ i18n.ts._exportOrImport.followingList }}</template>
-		<FormFolder class="_formBlock">
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.export }}</template>
 			<template #icon><i class="ti ti-download"></i></template>
 			<FormSwitch v-model="excludeMutingUsers" class="_formBlock">
@@ -20,51 +20,51 @@
 				{{ i18n.ts._exportOrImport.excludeInactiveUsers }}
 			</FormSwitch>
 			<MkButton primary :class="$style.button" inline @click="exportFollowing()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
-		</FormFolder>
-		<FormFolder class="_formBlock">
+		</MkFolder>
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.import }}</template>
 			<template #icon><i class="ti ti-upload"></i></template>
 			<MkButton primary :class="$style.button" inline @click="importFollowing($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 	<FormSection>
 		<template #label>{{ i18n.ts._exportOrImport.userLists }}</template>
-		<FormFolder class="_formBlock">
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.export }}</template>
 			<template #icon><i class="ti ti-download"></i></template>
 			<MkButton primary :class="$style.button" inline @click="exportUserLists()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
-		</FormFolder>
-		<FormFolder class="_formBlock">
+		</MkFolder>
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.import }}</template>
 			<template #icon><i class="ti ti-upload"></i></template>
 			<MkButton primary :class="$style.button" inline @click="importUserLists($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 	<FormSection>
 		<template #label>{{ i18n.ts._exportOrImport.muteList }}</template>
-		<FormFolder class="_formBlock">
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.export }}</template>
 			<template #icon><i class="ti ti-download"></i></template>
 			<MkButton primary :class="$style.button" inline @click="exportMuting()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
-		</FormFolder>
-		<FormFolder class="_formBlock">
+		</MkFolder>
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.import }}</template>
 			<template #icon><i class="ti ti-upload"></i></template>
 			<MkButton primary :class="$style.button" inline @click="importMuting($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 	<FormSection>
 		<template #label>{{ i18n.ts._exportOrImport.blockingList }}</template>
-		<FormFolder class="_formBlock">
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.export }}</template>
 			<template #icon><i class="ti ti-download"></i></template>
 			<MkButton primary :class="$style.button" inline @click="exportBlocking()"><i class="ti ti-download"></i> {{ i18n.ts.export }}</MkButton>
-		</FormFolder>
-		<FormFolder class="_formBlock">
+		</MkFolder>
+		<MkFolder class="_formBlock">
 			<template #label>{{ i18n.ts.import }}</template>
 			<template #icon><i class="ti ti-upload"></i></template>
 			<MkButton primary :class="$style.button" inline @click="importBlocking($event)"><i class="ti ti-upload"></i> {{ i18n.ts.import }}</MkButton>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 </div>
 </template>
@@ -73,7 +73,7 @@
 import { ref } from 'vue';
 import MkButton from '@/components/MkButton.vue';
 import FormSection from '@/components/form/section.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import FormSwitch from '@/components/form/switch.vue';
 import * as os from '@/os';
 import { selectFile } from '@/scripts/select-file';

@@ -73,7 +73,7 @@ import MkButton from '@/components/MkButton.vue';
 import MkSelect from '@/components/form/select.vue';
 import MkInput from '@/components/form/input.vue';
 import MkContainer from '@/components/MkContainer.vue';
-import MkFolder from '@/components/MkFolder.vue';
+import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import { version, url } from '@/config';
 import bytes from '@/filters/bytes';
 import number from '@/filters/number';
@@ -111,7 +111,7 @@ export default defineComponent({
 		MkSelect,
 		MkInput,
 		MkContainer,
-		MkFolder,
+		MkFoldableSection,
 		MkwFederation,
 	},
 

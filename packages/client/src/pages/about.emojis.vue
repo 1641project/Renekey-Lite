@@ -12,40 +12,35 @@
 		-->
 	</div>
 
-	<MkFolder v-if="searchEmojis" class="emojis">
+	<MkFoldableSection v-if="searchEmojis" class="emojis">
 		<template #header>{{ i18n.ts.searchResult }}</template>
 		<div class="zuvgdzyt">
 			<XEmoji v-for="emoji in searchEmojis" :key="emoji.name" class="emoji" :emoji="emoji"/>
 		</div>
-	</MkFolder>
+	</MkFoldableSection>
 
-	<MkFolder v-for="category in customEmojiCategories" :key="category" class="emojis">
+	<MkFoldableSection v-for="category in customEmojiCategories" :key="category" class="emojis">
 		<template #header>{{ category || i18n.ts.other }}</template>
 		<div class="zuvgdzyt">
 			<XEmoji v-for="emoji in customEmojis.filter(e => e.category === category)" :key="emoji.name" class="emoji" :emoji="emoji"/>
 		</div>
-	</MkFolder>
+	</MkFoldableSection>
 </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import XEmoji from './emojis.emoji.vue';
-import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/form/input.vue';
-import MkSelect from '@/components/form/select.vue';
-import MkFolder from '@/components/MkFolder.vue';
-import MkTab from '@/components/MkTab.vue';
+import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import { instance, emojiCategories, emojiTags } from '@/instance';
 import { i18n } from '@/i18n';
 
+// eslint-disable-next-line import/no-default-export
 export default defineComponent({
 	components: {
-		MkButton,
 		MkInput,
-		MkSelect,
-		MkFolder,
-		MkTab,
+		MkFoldableSection,
 		XEmoji,
 	},
 

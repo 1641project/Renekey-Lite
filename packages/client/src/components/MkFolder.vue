@@ -1,163 +1,225 @@
 <template>
-<div v-size="{ max: [500] }" class="ssazuxis">
-	<header class="_button" :style="{ background: bg ?? undefined }" @click="showBody = !showBody">
-		<div class="title"><slot name="header"></slot></div>
-		<div class="divider"></div>
-		<button class="_button">
-			<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
-			<template v-else><i class="ti ti-chevron-down"></i></template>
-		</button>
-	</header>
-	<Transition
-		:name="defaultStore.state.animation ? 'folder-toggle' : ''"
-		@enter="enter"
-		@after-enter="afterEnter"
-		@leave="leave"
-		@after-leave="afterLeave"
-	>
-		<div v-show="showBody">
-			<slot></slot>
+<div ref="rootEl" :class="$style.root" role="group" :aria-expanded="opened">
+	<MkStickyContainer>
+		<template #header>
+			<div :class="[$style.header, { [$style.opened]: opened }]" class="_button" role="button" data-cy-folder-header @click="toggle">
+				<div :class="$style.headerIcon"><slot name="icon"></slot></div>
+				<div :class="$style.headerText">
+					<div>
+						<MkCondensedLine :min-scale="2 / 3"><slot name="label"></slot></MkCondensedLine>
+					</div>
+					<div :class="$style.headerTextSub">
+						<slot name="caption"></slot>
+					</div>
+				</div>
+				<div :class="$style.headerRight">
+					<span :class="$style.headerRightText"><slot name="suffix"></slot></span>
+					<i v-if="opened" class="ti ti-chevron-up icon"></i>
+					<i v-else class="ti ti-chevron-down icon"></i>
+				</div>
+			</div>
+		</template>
+
+		<div v-if="openedAtLeastOnce" :class="[$style.body, { [$style.bgSame]: bgSame }]" :style="{ maxHeight: maxHeight ? `${maxHeight}px` : undefined, overflow: maxHeight ? 'auto' : undefined }" :aria-hidden="!opened">
+			<Transition
+				:enter-active-class="defaultStore.state.animation ? $style.transition_toggle_enterActive : ''"
+				:leave-active-class="defaultStore.state.animation ? $style.transition_toggle_leaveActive : ''"
+				:enter-from-class="defaultStore.state.animation ? $style.transition_toggle_enterFrom : ''"
+				:leave-to-class="defaultStore.state.animation ? $style.transition_toggle_leaveTo : ''"
+				@enter="enter"
+				@after-enter="afterEnter"
+				@leave="leave"
+				@after-leave="afterLeave"
+			>
+				<KeepAlive>
+					<div v-show="opened">
+						<MkSpacer :margin-min="14" :margin-max="22">
+							<slot></slot>
+						</MkSpacer>
+					</div>
+				</KeepAlive>
+			</Transition>
 		</div>
-	</Transition>
+	</MkStickyContainer>
 </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import tinycolor from 'tinycolor2';
+<script lang="ts" setup>
+import { nextTick, onMounted } from 'vue';
 import { defaultStore } from '@/store';
+import { isHtmlElement } from '@/scripts/tms/utils';
 
-const localStoragePrefix = 'ui:folder:';
+const props = withDefaults(defineProps<{
+	defaultOpen?: boolean;
+	maxHeight?: number | null;
+}>(), {
+	defaultOpen: false,
+	maxHeight: null,
+});
 
-export default defineComponent({
-	props: {
-		expanded: {
-			type: Boolean,
-			required: false,
-			default: true,
-		},
-		persistKey: {
-			type: String,
-			required: false,
-			default: null,
-		},
-	},
-	data(): ({
-		bg: string | null;
-		showBody: boolean;
-		defaultStore: typeof defaultStore;
-	}) {
-		return {
-			bg: null,
-			showBody: (this.persistKey && localStorage.getItem(localStoragePrefix + this.persistKey)) ? localStorage.getItem(localStoragePrefix + this.persistKey) === 't' : this.expanded,
-			defaultStore,
-		};
-	},
-	watch: {
-		showBody() {
-			if (this.persistKey) {
-				localStorage.setItem(localStoragePrefix + this.persistKey, this.showBody ? 't' : 'f');
-			}
-		},
-	},
-	mounted() {
-		function getParentBg(el: HTMLElement | null): string {
-			if (el == null || el.tagName === 'BODY') return 'var(--bg)';
-			const bg = el.style.background || el.style.backgroundColor;
-			if (bg) {
-				return bg;
-			} else {
-				return getParentBg(el.parentElement);
-			}
-		}
-		const rawBg = getParentBg(this.$el);
-		const bg = tinycolor(rawBg.startsWith('var(') ? getComputedStyle(document.documentElement).getPropertyValue(rawBg.slice(4, -1)) : rawBg);
-		bg.setAlpha(0.85);
-		this.bg = bg.toRgbString();
-	},
-	methods: {
-		toggleContent(show: boolean) {
-			this.showBody = show;
-		},
-		enter(el: HTMLElement) {
-			const { height: elementHeight } = el.getBoundingClientRect();
-			el.style.height = '0';
-			el.offsetHeight; // reflow
-			el.style.height = `${elementHeight}px`;
-		},
-		afterEnter(el: HTMLElement) {
-			el.style.height = '';
-		},
-		leave(el: HTMLElement) {
-			const { height: elementHeight } = el.getBoundingClientRect();
-			el.style.height = `${elementHeight}px`;
-			el.offsetHeight; // reflow
-			el.style.height = '0';
-		},
-		afterLeave(el: HTMLElement) {
-			el.style.height = '';
-		},
-	},
+const isTransparent = (color?: string | null): boolean => {
+	if (!color) return false;
+	if (color === 'transparent') return true;
+	const [_r, _g, _b, alpha = null] = [...color.match(/\d+/g) ?? []];
+	return alpha === '0';
+};
+
+const getBgColor = (el: HTMLElement | null): string => {
+	if (!el) return 'transparent';
+	const { backgroundColor } = window.getComputedStyle(el);
+	if (backgroundColor && !isTransparent(backgroundColor)) {
+		return backgroundColor;
+	} else {
+		return getBgColor(el.parentElement);
+	}
+};
+
+let rootEl = $shallowRef<HTMLElement>();
+let bgSame = $ref(false);
+let opened = $ref(props.defaultOpen);
+let openedAtLeastOnce = $ref(props.defaultOpen);
+
+const enter = (el: Element): void => {
+	if (!isHtmlElement(el)) return;
+	const { height } = el.getBoundingClientRect();
+	el.style.height = '0';
+	el.offsetHeight; // reflow
+	el.style.height = `${Math.min(height, props.maxHeight ?? Infinity)}px`;
+};
+
+const afterEnter = (el: Element): void => {
+	if (!isHtmlElement(el)) return;
+	el.style.height = '';
+};
+
+const leave = (el: Element): void => {
+	if (!isHtmlElement(el)) return;
+	const { height } = el.getBoundingClientRect();
+	el.style.height = `${height}px`;
+	el.offsetHeight; // reflow
+	el.style.height = '0';
+};
+
+const afterLeave = (el: Element): void => {
+	if (!isHtmlElement(el)) return;
+	el.style.height = '';
+};
+
+const toggle = (): void => {
+	if (!opened) {
+		openedAtLeastOnce = true;
+	}
+
+	nextTick(() => {
+		opened = !opened;
+	});
+};
+
+onMounted(() => {
+	const computedStyle = getComputedStyle(document.documentElement);
+	const parentBg = getBgColor(rootEl?.parentElement ?? null);
+	const myBg = computedStyle.getPropertyValue('--panel');
+	bgSame = parentBg === myBg;
 });
 </script>
 
-<style lang="scss" scoped>
-.folder-toggle-enter-active, .folder-toggle-leave-active {
-	overflow-y: hidden; // fallback (overflow: clip)
+<style lang="scss" module>
+.transition_toggle_enterActive,
+.transition_toggle_leaveActive {
 	overflow-y: clip;
-	transition: opacity 0.5s, height 0.5s !important;
+	transition: opacity 0.3s, height 0.3s, transform 0.3s !important;
 }
-.folder-toggle-enter-from {
+.transition_toggle_enterFrom,
+.transition_toggle_leaveTo {
 	opacity: 0;
 }
-.folder-toggle-leave-to {
-	opacity: 0;
+
+.root {
+	display: block;
 }
 
-.ssazuxis {
-	position: relative;
+.header {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 9px 12px 9px 12px;
+	background: var(--buttonBg);
+	-webkit-backdrop-filter: var(--blur, blur(15px));
+	backdrop-filter: var(--blur, blur(15px));
+	border-radius: 6px;
+	transition: border-radius 0.3s;
 
-	> header {
-		display: flex;
-		position: relative;
-		z-index: 10;
-		position: sticky;
-		top: var(--stickyTop, 0px);
-		padding: var(--x-padding);
-		-webkit-backdrop-filter: var(--blur, blur(8px));
-		backdrop-filter: var(--blur, blur(20px));
-
-		> .title {
-			margin: 0;
-			padding: 12px 16px 12px 0;
-
-			> i {
-				margin-right: 6px;
-			}
-
-			&:empty {
-				display: none;
-			}
-		}
-
-		> .divider {
-			flex: 1;
-			margin: auto;
-			height: 1px;
-			background: var(--divider);
-		}
-
-		> button {
-			padding: 12px 0 12px 16px;
-		}
+	&:hover {
+		text-decoration: none;
+		background: var(--buttonHoverBg);
 	}
 
-	&.max-width_500px {
-		> header {
-			> .title {
-				padding: 8px 10px 8px 0;
-			}
+	&.active {
+		color: var(--accent);
+		background: var(--buttonHoverBg);
+	}
+
+	&.opened {
+		border-radius: 6px 6px 0 0;
+	}
+}
+
+.headerUpper {
+	display: flex;
+	align-items: center;
+}
+
+.headerLower {
+	color: var(--fgTransparentWeak);
+	font-size: .85em;
+	padding-left: 4px;
+}
+
+.headerIcon {
+	margin-right: 0.75em;
+	flex-shrink: 0;
+	text-align: center;
+	opacity: 0.8;
+
+	&:empty {
+		display: none;
+
+		& + .headerText {
+			padding-left: 4px;
 		}
+	}
+}
+
+.headerText {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	padding-right: 12px;
+}
+
+.headerTextSub {
+	color: var(--fgTransparentWeak);
+	font-size: .85em;
+}
+
+.headerRight {
+	margin-left: auto;
+	color: var(--fgTransparentWeak);
+	white-space: nowrap;
+}
+
+.headerRightText:not(:empty) {
+	margin-right: 0.75em;
+}
+
+.body {
+	background: var(--panel);
+	border-radius: 0 0 6px 6px;
+	container-type: inline-size;
+
+	&.bgSame {
+		background: var(--bg);
 	}
 }
 </style>

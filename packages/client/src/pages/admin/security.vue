@@ -4,7 +4,7 @@
 	<MkSpacer :content-max="700" :margin-min="16" :margin-max="32">
 		<FormSuspense :p="init">
 			<div class="_formRoot">
-				<FormFolder class="_formBlock">
+				<MkFolder class="_formBlock">
 					<template #icon><i class="ti ti-shield"></i></template>
 					<template #label>{{ i18n.ts.botProtection }}</template>
 					<template v-if="enableHcaptcha" #suffix>hCaptcha</template>
@@ -12,9 +12,9 @@
 					<template v-else #suffix>{{ i18n.ts.none }} ({{ i18n.ts.notRecommended }})</template>
 
 					<XBotProtection/>
-				</FormFolder>
+				</MkFolder>
 
-				<FormFolder class="_formBlock">
+				<MkFolder class="_formBlock">
 					<template #icon><i class="ti ti-eye-off"></i></template>
 					<template #label>{{ i18n.ts.sensitiveMediaDetection }}</template>
 					<template v-if="sensitiveMediaDetection === 'all'" #suffix>{{ i18n.ts.all }}</template>
@@ -55,9 +55,9 @@
 
 						<FormButton primary class="_formBlock" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</FormButton>
 					</div>
-				</FormFolder>
+				</MkFolder>
 
-				<FormFolder class="_formBlock">
+				<MkFolder class="_formBlock">
 					<template #label>Active Email Validation</template>
 					<template v-if="enableActiveEmailValidation" #suffix>Enabled</template>
 					<template v-else #suffix>Disabled</template>
@@ -68,9 +68,9 @@
 							<template #label>Enable</template>
 						</FormSwitch>
 					</div>
-				</FormFolder>
+				</MkFolder>
 
-				<FormFolder class="_formBlock">
+				<MkFolder class="_formBlock">
 					<template #label>Log IP address</template>
 					<template v-if="enableIpLogging" #suffix>Enabled</template>
 					<template v-else #suffix>Disabled</template>
@@ -80,9 +80,9 @@
 							<template #label>Enable</template>
 						</FormSwitch>
 					</div>
-				</FormFolder>
+				</MkFolder>
 
-				<FormFolder class="_formBlock">
+				<MkFolder class="_formBlock">
 					<template #label>Summaly Proxy</template>
 
 					<div class="_formRoot">
@@ -93,7 +93,7 @@
 
 						<FormButton primary class="_formBlock" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</FormButton>
 					</div>
-				</FormFolder>
+				</MkFolder>
 			</div>
 		</FormSuspense>
 	</MkSpacer>
@@ -104,7 +104,7 @@
 import { } from 'vue';
 import XBotProtection from './bot-protection.vue';
 import XHeader from './_header_.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import FormRadios from '@/components/form/radios.vue';
 import FormSwitch from '@/components/form/switch.vue';
 import FormSuspense from '@/components/form/suspense.vue';

@@ -107,7 +107,7 @@
 			ノートを畳む
 			<template #caption>タイムライン上のノートが特定の条件の場合、畳んで表示します。無効にすると常に展開して表示します。</template>
 		</FormSwitch>
-		<FormFolder>
+		<MkFolder>
 			<template #label>ノートを畳む条件</template>
 			<template #suffix>{{ tmsCollapseNote ? i18n.ts.enabled : i18n.ts.disabled }}</template>
 
@@ -134,7 +134,7 @@
 					<template #caption>タイムライン上のノートのアンケートの選択肢がこの個数を超えた場合、畳んで表示します。</template>
 				</FormInput>
 			</div>
-		</FormFolder>
+		</MkFolder>
 
 		<FormSwitch v-model="tmsCollapseRenote" class="_formBlock">
 			一度見たノートのRenoteを畳む
@@ -159,7 +159,7 @@
 			「いまのなし」機能を有効にする
 			<template #caption>消せ消せ消せ消せ消せ</template>
 		</FormSwitch>
-		<FormFolder>
+		<MkFolder>
 			<template #label>削除する条件</template>
 			<template #suffix>{{ tmsUseImanonashi ? i18n.ts.enabled : i18n.ts.disabled }}</template>
 
@@ -177,7 +177,7 @@
 					<template #caption>ノートを削除するときに、同時にいまのなしも削除します。</template>
 				</FormSwitch>
 			</div>
-		</FormFolder>
+		</MkFolder>
 	</FormSection>
 
 	<FormSection>
@@ -195,7 +195,7 @@ import FormSwitch from '@/components/form/switch.vue';
 import FormInput from '@/components/form/input.vue';
 import FormTextarea from '@/components/form/textarea.vue';
 import FormSection from '@/components/form/section.vue';
-import FormFolder from '@/components/form/folder.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkInfo from '@/components/MkInfo.vue';
