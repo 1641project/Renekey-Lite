@@ -48,7 +48,7 @@ const languages = [
 	// 'si-LK',
 	'sk-SK',
 	// 'sv-SE',
-	// 'th-TH',
+	'th-TH',
 	// 'tr-TR',
 	'ug-CN',
 	'uk-UA',
