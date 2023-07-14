@@ -712,7 +712,7 @@ no: "あかん"
 driveFilesCount: "ドライブのファイル数"
 driveUsage: "ドライブ使用量やで"
 noCrawle: "クローラーによるインデックスを拒否するで"
-noCrawleDescription: "外部の検索エンジンにあんたのユーザーページ、ノート、Pagesとかのコンテンツを登録(インデックス)せぇへんように頼むで。
+noCrawleDescription: "外部の検索エンジンにあんたのユーザーページ、ノート、Pagesとかのコンテンツを登録(インデックス)せぇへんように頼むで。"
 lockedAccountInfo: "フォローを承認制にしとっても、ノートの公開範囲を「フォロワー」にせぇへん限り、誰でもあんたのノートを見れるで。"
 alwaysMarkSensitive: "デフォルトでメディアを閲覧注意にするで"
 loadRawImages: "添付画像のサムネイルをオリジナル画質にするで"
