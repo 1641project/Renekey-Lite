@@ -36,14 +36,14 @@ let showing = $ref(true);
 onMounted(() => {
 	window.setTimeout(() => {
 		showing = false;
-	}, 4000);
+	}, 3000);
 });
 </script>
 
 <style lang="scss" module>
 .transition_toast_enterActive,
 .transition_toast_leaveActive {
-	transition: opacity 0.15s !important;
+	transition: opacity 0.3s !important;
 }
 .transition_toast_enterFrom,
 .transition_toast_leaveTo {
@@ -54,7 +54,7 @@ onMounted(() => {
 	position: fixed;
 	left: 0;
 	right: 0;
-	top: 50px;
+	bottom: 50px;
 	margin: 0 auto;
 	margin-top: 16px;
 	min-width: 300px;
