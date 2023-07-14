@@ -1,9 +1,9 @@
 <template>
-<img v-if="errored && useFallbackIcon" class="mk-emoji mk-emoji-fallback" src="/static-assets/emoji-unknown.png" alt="unknown" title="unknown" decoding="async"/>
+<img v-if="errored && useFallbackIcon" class="mk-emoji mk-emoji-fallback" :class="$style.normalEmoji" src="/static-assets/emoji-unknown.png" alt="unknown" title="unknown" decoding="async"/>
 <span v-else-if="errored" class="mk-emoji-fallback">{{ emoji.replace('@.', '') }}</span>
-<img v-else-if="emo.type === 'custom'" class="mk-emoji custom" :class="{ normal, noStyle }" :src="emo.url" :alt="emo.alt" :title="emo.emoji" decoding="async" @error="errored = true" @load="errored = false"/>
+<img v-else-if="emo.type === 'custom'" class="mk-emoji custom" :class="[{ normal, noStyle, [$style.noStyle]: noStyle }, normal ? $style.normalEmoji : $style.customEmoji]" :src="emo.url" :alt="emo.alt" :title="emo.emoji" decoding="async" @error="errored = true" @load="errored = false"/>
 <span v-else-if="emo.type === 'emoji' && useOsNativeEmojis" :data-emoji="emo.char" class="mk-emoji-native" :alt="emo.alt" @pointerenter="computeTitle">{{ emo.char }}</span>
-<img v-else-if="emo.type === 'emoji'" :data-emoji="emo.char" class="mk-emoji" :src="emo.url" :alt="emo.alt" decoding="async" @pointerenter="computeTitle" @error="errored = true" @load="errored = false"/>
+<img v-else-if="emo.type === 'emoji'" :data-emoji="emo.char" class="mk-emoji" :class="$style.normalEmoji" :src="emo.url" :alt="emo.alt" decoding="async" @pointerenter="computeTitle" @error="errored = true" @load="errored = false"/>
 </template>
 
 <script lang="ts" setup>
@@ -88,32 +88,23 @@ const computeTitle = (ev: MouseEvent): void => {
 };
 </script>
 
-<style lang="scss" scoped>
-.mk-emoji {
+<style lang="scss" module>
+.normalEmoji {
 	height: 1.25em;
 	vertical-align: -0.25em;
+}
 
-	&.custom {
-		height: 2em;
-		vertical-align: middle;
-		transition: transform 0.2s ease;
+.customEmoji {
+	height: 2em;
+	vertical-align: middle;
+	transition: transform 0.2s ease;
 
-		&:hover {
-			transform: scale(1.2);
-		}
-
-		&.normal {
-			height: 1.25em;
-			vertical-align: -0.25em;
-
-			&:hover {
-				transform: none;
-			}
-		}
+	&:hover {
+		transform: scale(1.2);
 	}
+}
 
-	&.noStyle {
-		height: auto !important;
-	}
+.noStyle {
+	height: auto !important;
 }
 </style>
