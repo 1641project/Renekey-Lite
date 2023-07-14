@@ -20,6 +20,7 @@ import { useTooltip } from '@/scripts/use-tooltip';
 import { i18n } from '@/i18n';
 import { pakuru, numberquote } from '@/scripts/tms/pakuru';
 import { tmsStore } from '@/tms/store';
+import { MenuItem } from '@/types/menu';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -62,57 +63,106 @@ useTooltip(buttonRef, async (showing) => {
 });
 
 const renote = (viaKeyboard = false): void => {
-	if (!canRenote.value && !canPakuru.value) return;
-
 	pleaseLogin();
 
-	const renoteMenu = [
-		{
-			text: i18n.ts.renote,
-			icon: 'ti ti-repeat',
-			action: (): void => {
-				renoteAnime();
+	const menuList: MenuItem[][] = [];
 
-				os.api('notes/create', {
-					renoteId: props.note.id,
-				});
-			},
-		},
-		{
-			text: i18n.ts.quote,
-			icon: 'ti ti-quote',
-			action: (): void => {
-				os.post({
-					renote: props.note,
-				});
-			},
-		},
-	];
+	// チャンネル
+	if ((props.note as any).channel) {
+		menuList.push([
+			// チャンネル内Renote
+			{
+				text: i18n.ts.inChannelRenote,
+				icon: 'ti ti-repeat',
+				action: (): void => {
+					renoteAnime();
 
-	const pakuruMenu = [
-		tmsStore.state.usePakuru ? {
-			text: i18n.ts._tms.pakuru,
-			icon: 'ti ti-swipe',
-			action: (): void => {
-				renoteAnime();
-				pakuru(props.note);
+					os.api('notes/create', {
+						renoteId: props.note.id,
+						channelId: (props.note as any).channelId,
+					}).then(() => {
+						os.toast(i18n.ts.renoted);
+					});
+				},
 			},
-		} : undefined,
-		tmsStore.state.useNumberquote ? {
-			text: i18n.ts._tms.numberquote,
-			icon: 'ti ti-exposure-plus-1',
-			action: (): void => {
-				renoteAnime();
-				numberquote(props.note);
+			// チャンネル内引用
+			{
+				text: i18n.ts.inChannelQuote,
+				icon: 'ti ti-quote',
+				action: (): void => {
+					os.post({
+						renote: props.note,
+						channel: (props.note as any).channel,
+					});
+				},
 			},
-		} : undefined,
-	];
+		]);
+	}
 
-	const menu = [
-		...canRenote.value ? renoteMenu : [],
-		canRenote.value && canPakuru.value ? null : undefined,
-		...canPakuru.value ? pakuruMenu : [],
-	];
+	// Renote
+	if (canRenote.value) {
+		menuList.push([
+			// Renote
+			{
+				text: i18n.ts.renote,
+				icon: 'ti ti-repeat',
+				action: (): void => {
+					renoteAnime();
+
+					os.api('notes/create', {
+						renoteId: props.note.id,
+					}).then(() => {
+						os.toast(i18n.ts.renoted);
+					});
+				},
+			},
+			// 引用
+			{
+				text: i18n.ts.quote,
+				icon: 'ti ti-quote',
+				action: (): void => {
+					os.post({
+						renote: props.note,
+					});
+				},
+			},
+		]);
+	}
+
+	// パクる
+	if (canPakuru.value) {
+		menuList.push([
+			// パクる
+			tmsStore.state.usePakuru ? {
+				text: i18n.ts._tms.pakuru,
+				icon: 'ti ti-swipe',
+				action: (): void => {
+					renoteAnime();
+					pakuru(props.note).then(({ canceled }) => {
+						if (!canceled) os.toast(i18n.ts._tms.pakured);
+					});
+				},
+			} : undefined,
+			// 数字引用
+			tmsStore.state.useNumberquote ? {
+				text: i18n.ts._tms.numberquote,
+				icon: 'ti ti-exposure-plus-1',
+				action: (): void => {
+					renoteAnime();
+					numberquote(props.note).then(({ canceled }) => {
+						if (!canceled) os.toast(i18n.ts._tms.numberquoted);
+					});
+				},
+			} : undefined,
+		]);
+	}
+
+	const menu = menuList
+		.map(m => m.filter(v => typeof v !== 'undefined'))
+		.filter(m => m.filter(v => v != null).length !== 0)
+		.flatMap((m, i) => i === 0 ? m : [null, ...m]);
+
+	if (menu.length === 0) return;
 
 	os.popupMenu(menu, buttonRef.value, { viaKeyboard });
 };
