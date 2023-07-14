@@ -1,16 +1,23 @@
 <template>
-<Transition :name="defaultStore.state.animation ? 'tooltip' : ''" appear @after-leave="emit('closed')">
-	<div v-show="showing" ref="el" class="buebdbiu _acrylic _shadow" :style="{ zIndex, maxWidth: maxWidth + 'px' }">
+<Transition
+	:enter-active-class="defaultStore.state.animation ? $style.transition_tooltip_enterActive : ''"
+	:leave-active-class="defaultStore.state.animation ? $style.transition_tooltip_leaveActive : ''"
+	:enter-from-class="defaultStore.state.animation ? $style.transition_tooltip_enterFrom : ''"
+	:leave-to-class="defaultStore.state.animation ? $style.transition_tooltip_leaveTo : ''"
+	appear
+	@after-leave="emit('closed')"
+>
+	<div v-show="showing" ref="el" :class="$style.root" class="buebdbiu _acrylic _shadow" :style="{ zIndex, maxWidth: `${maxWidth}px` }">
 		<slot>
-			<Mfm v-if="asMfm" :text="text"/>
-			<span v-else>{{ text }}</span>
+			<Mfm v-if="asMfm" :text="text ?? ''"/>
+			<span v-else>{{ text ?? '' }}</span>
 		</slot>
 	</div>
 </Transition>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, shallowRef } from 'vue';
 import * as os from '@/os';
 import { calcPopupPosition } from '@/scripts/popup-position';
 import { defaultStore } from '@/store';
@@ -35,12 +42,17 @@ const emit = defineEmits<{
 	(ev: 'closed'): void;
 }>();
 
-const el = ref<HTMLElement>();
+// タイミングによっては最初から showing = false な場合があり、その場合に closed 扱いにしないと永久にDOMに残ることになる
+if (!props.showing) emit('closed');
+
+const el = shallowRef<HTMLElement>();
 const zIndex = os.claimZIndex('high');
 
-function setPosition() {
-	const data = calcPopupPosition(el.value, {
-		anchorElement: props.targetElement,
+const setPosition = (): void => {
+	if (!el.value) return;
+
+	const { transformOrigin, left, top } = calcPopupPosition(el.value, {
+		anchorElement: props.targetElement ?? null,
 		direction: props.direction,
 		align: 'center',
 		innerMargin: props.innerMargin,
@@ -48,22 +60,20 @@ function setPosition() {
 		y: props.y,
 	});
 
-	el.value.style.transformOrigin = data.transformOrigin;
-	el.value.style.left = data.left + 'px';
-	el.value.style.top = data.top + 'px';
-}
+	el.value.style.transformOrigin = transformOrigin;
+	el.value.style.left = `${left}px`;
+	el.value.style.top = `${top}px`;
+};
 
-let loopHandler;
+let loopHandler: number | undefined;
 
 onMounted(() => {
 	nextTick(() => {
 		setPosition();
 
-		const loop = () => {
-			loopHandler = window.requestAnimationFrame(() => {
-				setPosition();
-				loop();
-			});
+		const loop = (): void => {
+			setPosition();
+			loopHandler = window.requestAnimationFrame(loop);
 		};
 
 		loop();
@@ -71,24 +81,24 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	window.cancelAnimationFrame(loopHandler);
+	if (loopHandler) window.cancelAnimationFrame(loopHandler);
 });
 </script>
 
-<style lang="scss" scoped>
-.tooltip-enter-active,
-.tooltip-leave-active {
+<style lang="scss" module>
+.transition_tooltip_enterActive,
+.transition_tooltip_leaveActive {
 	opacity: 1;
 	transform: scale(1);
 	transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-.tooltip-enter-from,
-.tooltip-leave-active {
+.transition_tooltip_enterFrom,
+.transition_tooltip_leaveTo {
 	opacity: 0;
 	transform: scale(0.75);
 }
 
-.buebdbiu {
+.root {
 	position: absolute;
 	font-size: 0.8em;
 	padding: 8px 12px;

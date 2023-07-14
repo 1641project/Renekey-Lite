@@ -1,16 +1,16 @@
 <template>
 <MkTooltip ref="tooltip" :showing="showing" :target-element="targetElement" :max-width="340" @closed="emit('closed')">
-	<div class="bqxuuuey">
-		<div class="reaction">
-			<MkReactionIcon :reaction="reaction" :custom-emojis="emojis" class="icon" :no-style="true"/>
-			<div class="name">{{ getReactionName(reaction) }}</div>
+	<div :class="$style.root">
+		<div :class="$style.reaction">
+			<MkReactionIcon :reaction="reaction" :custom-emojis="emojis" :class="$style.reactionIcon" :no-style="true"/>
+			<div :class="$style.reactionName">{{ getReactionName(reaction) }}</div>
 		</div>
-		<div class="users">
-			<div v-for="u in users" :key="u.id" class="user">
-				<MkAvatar class="avatar" :user="u"/>
-				<MkUserName class="name" :user="u" :nowrap="true"/>
+		<div :class="$style.users">
+			<div v-for="u in users" :key="u.id" :class="$style.user">
+				<MkAvatar :class="$style.avatar" :user="u"/>
+				<MkUserName :user="u" :nowrap="true"/>
 			</div>
-			<div v-if="users.length > 10" class="omitted">+{{ count - 10 }}</div>
+			<div v-if="users.length > 10" :class="$style.more">+{{ count - 10 }}</div>
 		</div>
 	</div>
 </MkTooltip>
@@ -18,17 +18,19 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import { UserDetailed, CustomEmoji } from 'misskey-js/built/entities';
-import MkTooltip from './MkTooltip.vue';
+import MkTooltip from '@/components/MkTooltip.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import { getEmojiName } from '@/scripts/emojilist';
 
 defineProps<{
 	showing: boolean;
 	reaction: string;
-	users: UserDetailed[];
+	users: any[]; // TODO
 	count: number;
-	emojis: CustomEmoji[];
+	emojis: {
+		name: string;
+		url: string;
+	}[];
 	targetElement: HTMLElement;
 }>();
 
@@ -45,56 +47,54 @@ const getReactionName = (reaction: string): string => {
 };
 </script>
 
-<style lang="scss" scoped>
-.bqxuuuey {
+<style lang="scss" module>
+.root {
 	display: flex;
+}
 
-	> .reaction {
-		max-width: 100px;
-		text-align: center;
+.reaction {
+	max-width: 100px;
+	padding-right: 10px;
+	text-align: center;
+	border-right: solid 0.5px var(--divider);
+}
 
-		> .icon {
-			display: block;
-			width: 60px;
-			font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
-			margin: 0 auto;
-		}
+.reactionIcon {
+	display: block;
+	width: 60px;
+	font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
+	object-fit: contain;
+	margin: 0 auto;
+}
 
-		> .mk-emoji-fallback {
-			display: none;
-		}
+.reactionName {
+	font-size: 1em;
+}
 
-		> .name {
-			font-size: 1em;
-		}
-	}
+.users {
+	contain: content;
+	flex: 1;
+	min-width: 0;
+	margin: -4px 14px 0 10px;
+	font-size: 0.95em;
+	text-align: left;
+}
 
-	> .users {
-		flex: 1;
-		min-width: 0;
-		font-size: 0.95em;
-		border-left: solid 0.5px var(--divider);
-		padding-left: 10px;
-		margin-left: 10px;
-		margin-right: 14px;
-		text-align: left;
+.user {
+	line-height: 24px;
+	padding-top: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 
-		> .user {
-			line-height: 24px;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
+.avatar {
+	width: 24px;
+	height: 24px;
+	margin-right: 3px;
+}
 
-			&:not(:last-child) {
-				margin-bottom: 3px;
-			}
-
-			> .avatar {
-				width: 24px;
-				height: 24px;
-				margin-right: 3px;
-			}
-		}
-	}
+.more {
+	padding-top: 4px;
 }
 </style>

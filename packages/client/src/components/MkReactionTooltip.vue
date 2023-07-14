@@ -1,15 +1,15 @@
 <template>
 <MkTooltip ref="tooltip" :showing="showing" :target-element="targetElement" :max-width="340" @closed="emit('closed')">
-	<div class="beeadbfb">
-		<MkReactionIcon :reaction="reaction" :custom-emojis="emojis" class="icon" :no-style="true"/>
-		<div class="name">{{ getReactionName(reaction) }}</div>
+	<div :class="$style.root">
+		<MkReactionIcon :reaction="reaction" :custom-emojis="emojis" :class="$style.icon" :no-style="true"/>
+		<div :class="$style.name">{{ getReactionName(reaction) }}</div>
 	</div>
 </MkTooltip>
 </template>
 
 <script lang="ts" setup>
 import { } from 'vue';
-import MkTooltip from './MkTooltip.vue';
+import MkTooltip from '@/components/MkTooltip.vue';
 import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import { getEmojiName } from '@/scripts/emojilist';
 
@@ -36,19 +36,20 @@ const getReactionName = (reaction: string): string => {
 };
 </script>
 
-<style lang="scss" scoped>
-.beeadbfb {
+<style lang="scss" module>
+.root {
 	text-align: center;
+}
 
-	> .icon {
-		display: block;
-		width: 60px;
-		font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
-		margin: 0 auto;
-	}
+.icon {
+	display: block;
+	width: 60px;
+	font-size: 60px; // unicodeな絵文字についてはwidthが効かないため
+	margin: 0 auto;
+	object-fit: contain;
+}
 
-	> .name {
-		font-size: 0.9em;
-	}
+.name {
+	font-size: 0.9em;
 }
 </style>
