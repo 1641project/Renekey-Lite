@@ -6,11 +6,13 @@
 			<slot name="header"></slot>
 		</div>
 		<div :class="$style.headerSub">
-			<slot name="func" :button-style-class="$style.headerButton"></slot>
-			<button v-if="foldable" :class="$style.headerButton" class="_button" @click="() => showBody = !showBody">
-				<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
-				<template v-else><i class="ti ti-chevron-down"></i></template>
-			</button>
+			<div :class="$style.headerButtons">
+				<slot name="func"></slot>
+				<button v-if="foldable" class="_button" @click="() => showBody = !showBody">
+					<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
+					<template v-else><i class="ti ti-chevron-down"></i></template>
+				</button>
+			</div>
 		</div>
 	</header>
 	<Transition
@@ -199,9 +201,13 @@ onUnmounted(() => {
 	height: 100%;
 }
 
-.headerButton {
-	width: 42px;
-	height: 100%;
+.headerButtons {
+	display: flex;
+
+	> ::v-deep(button) {
+		width: 42px;
+		height: 100%;
+	}
 }
 
 .content {
