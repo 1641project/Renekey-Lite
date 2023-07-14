@@ -1,7 +1,7 @@
 <template>
 <div class="_gaps">
 	<div class="_gaps">
-		<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" @enter="searchEnabled ? search : null">
+		<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" @enter="searchEnabled ? search() : null">
 			<template #prefix><i class="ti ti-search"></i></template>
 		</MkInput>
 		<MkFolder>
