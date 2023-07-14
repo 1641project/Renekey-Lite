@@ -215,6 +215,12 @@ export const toast = (message: string): void => {
 	}, {}, 'closed');
 };
 
+export const tmsFlashMessage = (message: string): void => {
+	popup(defineAsyncComponent(() => import('@/components/TmsFlashMessage.vue')), {
+		message,
+	}, {}, 'closed');
+};
+
 export const alert = (props: {
 	[x: string]: unknown;
 	type?: 'error' | 'info' | 'success' | 'warning' | 'waiting' | 'question';
