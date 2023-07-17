@@ -21,6 +21,7 @@
 		fgTransparent: ':alpha<0.5<@fg',
 		fgHighlighted: ':lighten<3<@fg',
 		fgOnAccent: '#fff',
+		fgOnWhite: '#333',
 		divider: 'rgba(255, 255, 255, 0.1)',
 		indicator: '@accent',
 		panel: ':lighten<3<@bg',
@@ -60,10 +61,14 @@
 		buttonHoverBg: 'rgba(255, 255, 255, 0.1)',
 		buttonGradateA: '@accent',
 		buttonGradateB: ':hue<20<@accent',
-		swutchOffBg: 'rgba(255, 255, 255, 0.1)',
-		swutchOffFg: '@fg',
-		swutchOnBg: '@accentedBg',
-		swutchOnFg: '@accent',
+		switchOffBg: 'rgba(255, 255, 255, 0.1)',
+		switchOffFg: ':alpha<0.8<@fg',
+		switchOnBg: '@accentedBg',
+		switchOnFg: '@accent',
+		swutchOffBg: '@switchOffBg', // 後方互換性のため
+		swutchOffFg: '@switchOffFg', // 後方互換性のため
+		swutchOnBg: '@switchOnBg', // 後方互換性のため
+		swutchOnFg: '@switchOnFg', // 後方互換性のため
 		inputBorder: 'rgba(255, 255, 255, 0.1)',
 		inputBorderHover: 'rgba(255, 255, 255, 0.2)',
 		listItemHoverBg: 'rgba(255, 255, 255, 0.03)',
@@ -77,7 +82,8 @@
 		codeString: '#ffb675',
 		codeNumber: '#cfff9e',
 		codeBoolean: '#c59eff',
-		deckDivider: '#000',
+		deckBg: '#000',
+		deckDivider: '@deckBg', // 後方互換性のため
 		htmlThemeColor: '@bg',
 		X2: ':darken<2<@panel',
 		X3: 'rgba(255, 255, 255, 0.05)',

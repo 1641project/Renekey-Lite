@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, Ref } from 'vue';
 import tinycolor from 'tinycolor2';
 import { globalEvents } from '@/events';
 import { deepClone } from '@/scripts/clone';
@@ -17,12 +17,13 @@ import darkTheme from '@/themes/_dark.json5';
 
 export const themeProps = Object.keys(lightTheme.props).filter(key => !key.startsWith('X'));
 
-export const getBuiltinThemes = () => Promise.all(
+export const getBuiltinThemes = (): Promise<Theme[]> => Promise.all(
 	[
 		'l-light',
 		'l-coffee',
 		'l-apricot',
 		'l-rainy',
+		'l-botanical',
 		'l-vivid',
 		'l-cherry',
 		'l-sushi',
@@ -41,15 +42,15 @@ export const getBuiltinThemes = () => Promise.all(
 	].map(name => import(`../themes/${name}.json5`).then(({ default: _default }): Theme => _default)),
 );
 
-export const getBuiltinThemesRef = () => {
+export const getBuiltinThemesRef = (): Ref<Theme[]> => {
 	const builtinThemes = ref<Theme[]>([]);
 	getBuiltinThemes().then(themes => builtinThemes.value = themes);
 	return builtinThemes;
 };
 
-let timeout = null;
+let timeout: number | null = null;
 
-export function applyTheme(theme: Theme, persist = true) {
+export const applyTheme = (theme: Theme, persist = true): void => {
 	if (timeout) window.clearTimeout(timeout);
 
 	document.documentElement.classList.add('_themeChanging_');
@@ -58,7 +59,7 @@ export function applyTheme(theme: Theme, persist = true) {
 		document.documentElement.classList.remove('_themeChanging_');
 	}, 1000);
 
-	const colorSchema = theme.base === 'dark' ? 'dark' : 'light';
+	const colorScheme = theme.base === 'dark' ? 'dark' : 'light';
 
 	// Deep copy
 	const _theme = deepClone(theme);
@@ -70,30 +71,29 @@ export function applyTheme(theme: Theme, persist = true) {
 
 	const props = compile(_theme);
 
-	for (const tag of document.head.children) {
-		if (tag.tagName === 'META' && tag.getAttribute('name') === 'theme-color') {
-			tag.setAttribute('content', props['htmlThemeColor']);
-			break;
-		}
+	const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+
+	if (meta) {
+		meta.setAttribute('content', props['htmlThemeColor']);
 	}
 
 	for (const [k, v] of Object.entries(props)) {
 		document.documentElement.style.setProperty(`--${k}`, v.toString());
 	}
 
-	document.documentElement.style.setProperty('color-schema', colorSchema);
+	document.documentElement.style.setProperty('color-scheme', colorScheme);
 
 	if (persist) {
 		localStorage.setItem('theme', JSON.stringify(props));
-		localStorage.setItem('colorSchema', colorSchema);
+		localStorage.setItem('colorScheme', colorScheme);
 	}
 
 	// 色計算など再度行えるようにクライアント全体に通知
 	globalEvents.emit('themeChanged');
-}
+};
 
-function compile(theme: Theme): Record<string, string> {
-	function getColor(val: string): tinycolor.Instance {
+const compile = (theme: Theme): Record<string, string> => {
+	const getColor = (val: string): tinycolor.Instance => {
 		// ref (prop)
 		if (val[0] === '@') {
 			return getColor(theme.props[val.slice(1)]);
@@ -107,8 +107,8 @@ function compile(theme: Theme): Record<string, string> {
 		// func
 		else if (val[0] === ':') {
 			const parts = val.split('<');
-			const func = parts.shift().slice(1);
-			const arg = parseFloat(parts.shift());
+			const func = parts.shift()!.slice(1);
+			const arg = parseFloat(parts.shift()!);
 			const color = getColor(parts.join('<'));
 
 			switch (func) {
@@ -122,7 +122,7 @@ function compile(theme: Theme): Record<string, string> {
 
 		// other case
 		return tinycolor(val);
-	}
+	};
 
 	const props = {};
 
@@ -133,16 +133,16 @@ function compile(theme: Theme): Record<string, string> {
 	}
 
 	return props;
-}
+};
 
-function genValue(c: tinycolor.Instance): string {
+const genValue = (c: tinycolor.Instance): string => {
 	return c.toRgbString();
-}
+};
 
-export function validateTheme(theme: Record<string, any>): boolean {
-	if (theme.id == null || typeof theme.id !== 'string') return false;
-	if (theme.name == null || typeof theme.name !== 'string') return false;
-	if (theme.base == null || !['light', 'dark'].includes(theme.base)) return false;
+export const validateTheme = (theme: Record<string, unknown>): theme is Theme => {
+	if (typeof theme.id !== 'string') return false;
+	if (typeof theme.name !== 'string') return false;
+	if (theme.base !== 'light' && theme.base !== 'dark') return false;
 	if (theme.props == null || typeof theme.props !== 'object') return false;
 	return true;
-}
+};
