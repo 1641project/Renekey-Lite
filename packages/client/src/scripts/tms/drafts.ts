@@ -27,7 +27,7 @@ type LsDraft = {
 	data: Partial<DraftData>;
 };
 
-export type Draft = {
+export type DraftEntity = {
 	id: string;
 	updatedAt: string;
 	data: DraftData;
@@ -43,7 +43,7 @@ type LsMessageDraft = {
 	data: Partial<MessageDraftData>;
 };
 
-export type MessageDraft = {
+export type MessageDraftEntity = {
 	id: string;
 	updatedAt: string;
 	data: MessageDraftData;
@@ -61,7 +61,7 @@ export const genDraftId = (data: PartialNullable<{
 	renote: Misskey.entities.Note;
 	channel: Misskey.entities.Channel;
 	isEdit: boolean;
-}>): Draft['id'] | null => {
+}>): DraftEntity['id'] | null => {
 	const entries: [string, string | null][] = [];
 	const { user, reply, renote, channel, isEdit } = data;
 
@@ -86,7 +86,7 @@ export const genDraftId = (data: PartialNullable<{
 	return entries.map(([k, v]) => v ? `${k}:${v}` : k).join('/');
 };
 
-export const parseDraftId = (draftId: Draft['id'] | null): {
+export const parseDraftId = (draftId: DraftEntity['id'] | null): {
 	userId: string | null;
 	replyId: string | null;
 	renoteId: string | null;
@@ -155,7 +155,7 @@ const restoreDraftData = (lsDraft: Partial<DraftData>): DraftData => {
 	return draftData;
 };
 
-export const createDraft = (): Draft => {
+export const createDraft = (): DraftEntity => {
 	const draftId = genDraftId({
 		user: $i,
 		isEdit: true,
@@ -182,7 +182,7 @@ export const createDraft = (): Draft => {
 	};
 };
 
-export const getAllDraft = (): Draft[] => {
+export const getAllDraft = (): DraftEntity[] => {
 	const drafts = loadLsDrafts();
 
 	return Object.entries(drafts).flatMap(([id, draft]) => {
@@ -196,7 +196,7 @@ export const getAllDraft = (): Draft[] => {
 	});
 };
 
-export const getDraft = (draftId: string | null): Draft | null => {
+export const getDraft = (draftId: string | null): DraftEntity | null => {
 	if (!draftId) return null;
 
 	const draft = loadLsDrafts()[draftId];
@@ -211,7 +211,7 @@ export const getDraft = (draftId: string | null): Draft | null => {
 	};
 };
 
-export const setDraft = (draftId: string | null, data: DraftData, force = false): Draft | null => {
+export const setDraft = (draftId: string | null, data: DraftData, force = false): DraftEntity | null => {
 	if (!draftId) return null;
 
 	const { text, useCw, cw, visibility, localOnly, files, poll, replyId, renoteId, channelId, quoteId, visibleUserIds } = data;
@@ -281,7 +281,7 @@ const restoreMessageDraftData = (lsDraft: Partial<MessageDraftData>): MessageDra
 	return draftData;
 };
 
-export const getAllMessageDraft = (): MessageDraft[] => {
+export const getAllMessageDraft = (): MessageDraftEntity[] => {
 	const drafts = loadLsMessageDrafts();
 
 	return Object.entries(drafts).flatMap(([id, draft]) => {
@@ -295,7 +295,7 @@ export const getAllMessageDraft = (): MessageDraft[] => {
 	});
 };
 
-export const getMessageDraft = (draftId: string | null): MessageDraft | null => {
+export const getMessageDraft = (draftId: string | null): MessageDraftEntity | null => {
 	if (!draftId) return null;
 
 	const draft = loadLsMessageDrafts()[draftId];
@@ -310,7 +310,7 @@ export const getMessageDraft = (draftId: string | null): MessageDraft | null => 
 	};
 };
 
-export const setMessageDraft = (draftId: string | null, data: MessageDraftData, force = false): MessageDraft | null => {
+export const setMessageDraft = (draftId: string | null, data: MessageDraftData, force = false): MessageDraftEntity | null => {
 	if (!draftId) return null;
 
 	const { text, file } = data;

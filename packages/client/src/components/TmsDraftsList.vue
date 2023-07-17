@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 import { } from 'vue';
 import { i18n } from '@/i18n';
-import { Draft, getAllDraft, deleteDraft, createDraft } from '@/scripts/tms/drafts';
+import { DraftEntity, getAllDraft, deleteDraft, createDraft } from '@/scripts/tms/drafts';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkButton from '@/components/MkButton.vue';
 import TmsDraft from '@/components/TmsDraftsList.draft.vue';
@@ -44,13 +44,13 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'chosen', draft: Draft): void;
+	(ev: 'chosen', draft: DraftEntity): void;
 	(ev: 'closed'): void;
 }>();
 
 const dialog = $shallowRef<InstanceType<typeof MkModalWindow>>();
 
-const draftsList = $ref<Draft[]>(
+const draftsList = $ref<DraftEntity[]>(
 	getAllDraft()
 		.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 		.sort(({ id }) => id === props.active ? -1 : 1),
@@ -62,13 +62,13 @@ const create = (): void => {
 	dialog?.close();
 };
 
-const chosen = (draftId: Draft['id']): void => {
+const chosen = (draftId: DraftEntity['id']): void => {
 	const draft = draftsList.find(d => d.id === draftId);
 	if (draft) emit('chosen', draft);
 	dialog?.close();
 };
 
-const deleted = (draftId: Draft['id']): void => {
+const deleted = (draftId: DraftEntity['id']): void => {
 	deleteDraft(draftId);
 	const index = draftsList.findIndex(({ id }) => draftId === id);
 	if (index !== -1) draftsList.splice(index, 1);

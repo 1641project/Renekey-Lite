@@ -138,7 +138,7 @@ import MkRippleEffect from '@/components/MkRippleEffect.vue';
 
 //#region define
 const props = withDefaults(defineProps<{
-	draft: Draft.Draft | null;
+	draft: Draft.DraftEntity | null;
 	reply: Misskey.entities.Note | null;
 	renote: Misskey.entities.Note | null;
 	channel: Misskey.entities.Channel | null;
@@ -175,7 +175,7 @@ const emit = defineEmits<{
 	(ev: 'posted'): void;
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
-	(ev: 'reopen', draft?: Draft.Draft | null): void;
+	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
 }>();
 
 const modal = inject<boolean>('modal', false);
@@ -327,7 +327,7 @@ watch($$(visibility), checkAnnoyingText);
 //#endregion
 
 //#region draft
-const draft = $ref<Draft.Draft | null>(props.draft);
+const draft = $ref<Draft.DraftEntity | null>(props.draft);
 const draftId = $computed<string | null>(() => {
 	if (draft) return draft.id;
 	return Draft.genDraftId({
@@ -823,7 +823,7 @@ const chooseDraft = (): void => {
 	os.popup(defineAsyncComponent(() => import('@/components/TmsDraftsList.vue')), {
 		active: draftId,
 	}, {
-		chosen: (draft_: Draft.Draft) => {
+		chosen: (draft_: Draft.DraftEntity) => {
 			emit('reopen', draft_);
 		},
 	}, 'closed');

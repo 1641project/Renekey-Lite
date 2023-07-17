@@ -62,11 +62,11 @@ const emit = defineEmits<{
 	(ev: 'posted'): void;
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
-	(ev: 'reopen', draft?: Draft.Draft | null): void;
+	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
 }>();
 
 let bindProps = $ref<{
-	draft?: Draft.Draft | null;
+	draft?: Draft.DraftEntity | null;
 	reply?: Misskey.entities.Note | null;
 	renote?: Misskey.entities.Note | null;
 	channel?: Misskey.entities.Channel | null;
@@ -152,7 +152,7 @@ const esc = (): void => {
 	emit('esc');
 };
 
-const reopen = async (draft?: Draft.Draft | null): Promise<void> => {
+const reopen = async (draft?: Draft.DraftEntity | null): Promise<void> => {
 	hidden();
 
 	bindProps = {};
