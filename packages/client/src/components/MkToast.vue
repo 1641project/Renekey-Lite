@@ -43,19 +43,19 @@ onMounted(() => {
 <style lang="scss" module>
 .transition_toast_enterActive,
 .transition_toast_leaveActive {
-	transition: opacity 0.3s, transform 0.3s !important;
+	transition: opacity 0.15s, transform 0.15s !important;
 }
 .transition_toast_enterFrom,
 .transition_toast_leaveTo {
 	opacity: 0;
-	transform: translateY(-100%);
+	transform: translateY(100%);
 }
 
 .root {
 	position: fixed;
 	left: 0;
 	right: 0;
-	top: 50px;
+	bottom: var(--minBottomSpacing);
 	margin: 0 auto;
 	margin-top: 16px;
 	min-width: 300px;
