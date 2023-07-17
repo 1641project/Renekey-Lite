@@ -14,7 +14,7 @@ declare global {
 }
 
 type FetchingWrapper = {
-	<T>(prom: Promise<T>): Promise<T>;
+	<T>(prom: Promise<T>, comment?: string): Promise<T>;
 };
 
 const select = (src: any, label: string | null, multiple: boolean, fetchingWrapper?: FetchingWrapper): Promise<DriveFile | DriveFile[]> => {
@@ -36,7 +36,7 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 				});
 
 				if (fetchingWrapper) {
-					fetchingWrapper(Promise.all(promises));
+					fetchingWrapper(Promise.all(promises), 'scripts/select-file/select');
 				}
 
 				// 一応廃棄
@@ -58,7 +58,7 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 			});
 
 			if (fetchingWrapper) {
-				fetchingWrapper(promise);
+				fetchingWrapper(promise, 'scripts/select-file/select/chooseFileFromDrive');
 			}
 		};
 
@@ -94,7 +94,7 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 				});
 
 				if (fetchingWrapper) {
-					fetchingWrapper(promise);
+					fetchingWrapper(promise, 'scripts/select-file/select/chooseFileFromUrl');
 				}
 
 				os.alert({

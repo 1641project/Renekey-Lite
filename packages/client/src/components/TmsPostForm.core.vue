@@ -181,11 +181,13 @@ const emit = defineEmits<{
 const modal = inject<boolean>('modal', false);
 
 const fetchingList = new Set<string>();
-const fetchingWrapper = <T>(prom: Promise<T>): Promise<T> => {
+const fetchingWrapper = <T>(prom: Promise<T>, comment?: string): Promise<T> => {
 	const id = uuid();
 
 	fetchingList.add(id);
 	prom.finally(() => fetchingList.delete(id));
+
+	console.log(`fetchingWrapper${comment ? `(${comment})` : ''}`, { id, prom, idList: fetchingList });
 
 	return prom;
 };
@@ -217,6 +219,7 @@ const setQuote = async (quoteId?: string | null): Promise<void> => {
 		os.api('notes/show', { noteId: quoteId }, token)
 			.then(_quote => quote = _quote)
 			.catch(() => quote = null),
+		'setQuote',
 	);
 
 	migrateNoteVisibility();
@@ -294,6 +297,7 @@ const addMissingMention = (): void => {
 				os.api('users/show', { username: x.username, host: x.host ?? undefined }, token).then(user => {
 					visibleUsers.push(user);
 				}),
+				'addMissingMention',
 			);
 		}
 	}
@@ -477,6 +481,7 @@ onMounted(() => {
 									pushVisibleUser(user);
 								});
 							}),
+						'onMounted/nextTick/draft',
 					);
 				}
 				await setQuote(_draft.data.quoteId);
@@ -524,6 +529,7 @@ const addVisibleUser = (): void => {
 				text = `${mention} ${text}`;
 			}
 		}),
+		'addVisibleUser',
 	);
 };
 
@@ -539,6 +545,7 @@ const removeVisibleUser = (user: Misskey.entities.User): void => {
 // 			.then(driveFile => {
 // 				files.push(driveFile);
 // 			}),
+// 		'upload',
 // 	);
 // };
 
@@ -549,6 +556,7 @@ const uploads = async (fileList: File[]): Promise<void> => {
 			.then(driveFiles => {
 				files.push(...driveFiles);
 			}),
+		'uploads',
 	);
 };
 
@@ -657,6 +665,7 @@ const migrateNoteVisibility = (): void => {
 						pushVisibleUser(user);
 					});
 				}),
+			'migrateNoteVisibility',
 		);
 	} else {
 		visibleUsers = [];
@@ -798,6 +807,7 @@ const onPaste = async (ev: ClipboardEvent): Promise<void> => {
 				const quoteId = paste.slice(path.length).split(/[\/\?#]/, 1)[0] || null;
 				setQuote(quoteId);
 			}),
+			'onPaste/quoteQuestion',
 		);
 	}
 };
@@ -978,6 +988,7 @@ const insertMention = (): void => {
 		os.selectUser().then(user => {
 			if (textareaEl) insertTextAtCursor(textareaEl, `${parseMention(user)} `);
 		}),
+		'insertMention',
 	);
 };
 
