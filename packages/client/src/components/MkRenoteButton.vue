@@ -81,7 +81,7 @@ const renote = (viaKeyboard = false): void => {
 						renoteId: props.note.id,
 						channelId: (props.note as any).channelId,
 					}).then(() => {
-						os.tmsFlashMessage(i18n.ts.renoted);
+						os.toast(i18n.ts.renoted);
 					});
 				},
 			},
@@ -112,7 +112,7 @@ const renote = (viaKeyboard = false): void => {
 					os.api('notes/create', {
 						renoteId: props.note.id,
 					}).then(() => {
-						os.tmsFlashMessage(i18n.ts.renoted);
+						os.toast(i18n.ts.renoted);
 					});
 				},
 			},
@@ -139,7 +139,7 @@ const renote = (viaKeyboard = false): void => {
 				action: (): void => {
 					renoteAnime();
 					pakuru(props.note).then(({ canceled }) => {
-						if (!canceled) os.tmsFlashMessage(i18n.ts._tms.pakured);
+						if (!canceled) os.toast(i18n.ts._tms.pakured);
 					});
 				},
 			} : undefined,
@@ -150,7 +150,7 @@ const renote = (viaKeyboard = false): void => {
 				action: (): void => {
 					renoteAnime();
 					numberquote(props.note).then(({ canceled }) => {
-						if (!canceled) os.tmsFlashMessage(i18n.ts._tms.numberquoted);
+						if (!canceled) os.toast(i18n.ts._tms.numberquoted);
 					});
 				},
 			} : undefined,
