@@ -109,7 +109,6 @@ import * as mfm from 'mfm-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { toASCII } from 'punycode/';
 import { throttle } from 'throttle-debounce';
-import { v4 as uuid } from 'uuid';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
 import { stream } from '@/stream';
@@ -179,19 +178,6 @@ const emit = defineEmits<{
 }>();
 
 const modal = inject<boolean>('modal', false);
-
-const fetchingList = new Set<string>();
-const fetchingWrapper = <T>(prom: Promise<T>, comment?: string): Promise<T> => {
-	const id = uuid();
-
-	fetchingList.add(id);
-	prom.finally(() => fetchingList.delete(id));
-
-	console.log(`fetchingWrapper${comment ? `(${comment})` : ''}`, { id, prom, idList: fetchingList });
-
-	return prom;
-};
-const fetching = $computed<boolean>(() => fetchingList.size !== 0);
 //#endregion
 
 //#region params, flags
@@ -215,12 +201,9 @@ const setQuote = async (quoteId?: string | null): Promise<void> => {
 		return;
 	}
 
-	await fetchingWrapper(
-		os.api('notes/show', { noteId: quoteId }, token)
-			.then(_quote => quote = _quote)
-			.catch(() => quote = null),
-		'setQuote',
-	);
+	await os.api('notes/show', { noteId: quoteId }, token)
+		.then(_quote => quote = _quote)
+		.catch(() => quote = null);
 
 	migrateNoteVisibility();
 };
@@ -264,7 +247,7 @@ const counter = textCounter({
 });
 
 const canPost = $computed((): boolean => {
-	return !fetching && !posting && !posted &&
+	return !posting && !posted &&
 		(1 <= counter.value.chars || 1 <= files.length || !!poll || !!(renote || quote)) &&
 		!(counter.value.isRemaining && counter.value.isOver) &&
 		(!poll || poll.choices.length >= 2);
@@ -293,12 +276,9 @@ const addMissingMention = (): void => {
 
 	for (const x of extractMentions(ast)) {
 		if (!visibleUsers.some(u => (u.username === x.username) && (u.host === x.host))) {
-			fetchingWrapper(
-				os.api('users/show', { username: x.username, host: x.host ?? undefined }, token).then(user => {
-					visibleUsers.push(user);
-				}),
-				'addMissingMention',
-			);
+			os.api('users/show', { username: x.username, host: x.host ?? undefined }, token).then(user => {
+				visibleUsers.push(user);
+			});
 		}
 	}
 };
@@ -474,15 +454,12 @@ onMounted(() => {
 				files = _draft.data.files;
 				poll = _draft.data.poll;
 				if (_draft.data.visibleUserIds.length) {
-					await fetchingWrapper(
-						os.api('users/show', { userIds: _draft.data.visibleUserIds }, token)
-							.then(users => {
-								users.forEach(user => {
-									pushVisibleUser(user);
-								});
-							}),
-						'onMounted/nextTick/draft',
-					);
+					await os.api('users/show', { userIds: _draft.data.visibleUserIds }, token)
+						.then(users => {
+							users.forEach(user => {
+								pushVisibleUser(user);
+							});
+						});
 				}
 				await setQuote(_draft.data.quoteId);
 			}
@@ -520,17 +497,14 @@ const pushVisibleUser = (user: Misskey.entities.User): void => {
 };
 
 const addVisibleUser = (): void => {
-	fetchingWrapper(
-		os.selectUser().then(user => {
-			pushVisibleUser(user);
-			
-			const mention = parseMention(user);
-			if (!text.toLowerCase().includes(mention)) {
-				text = `${mention} ${text}`;
-			}
-		}),
-		'addVisibleUser',
-	);
+	os.selectUser().then(user => {
+		pushVisibleUser(user);
+		
+		const mention = parseMention(user);
+		if (!text.toLowerCase().includes(mention)) {
+			text = `${mention} ${text}`;
+		}
+	});
 };
 
 const removeVisibleUser = (user: Misskey.entities.User): void => {
@@ -540,24 +514,18 @@ const removeVisibleUser = (user: Misskey.entities.User): void => {
 
 //#region files
 // const upload = async (file: File): Promise<void> => {
-// 	return await fetchingWrapper(
-// 		uploadFile(file, defaultStore.state.uploadFolder)
-// 			.then(driveFile => {
-// 				files.push(driveFile);
-// 			}),
-// 		'upload',
-// 	);
+// 	return await uploadFile(file, defaultStore.state.uploadFolder)
+// 		.then(driveFile => {
+// 			files.push(driveFile);
+// 		});
 // };
 
 const uploads = async (fileList: File[]): Promise<void> => {
 	if (fileList.length === 0) return;
-	return await fetchingWrapper(
-		Promise.all(fileList.map(file => uploadFile(file, defaultStore.state.uploadFolder)))
-			.then(driveFiles => {
-				files.push(...driveFiles);
-			}),
-		'uploads',
-	);
+	return await Promise.all(fileList.map(file => uploadFile(file, defaultStore.state.uploadFolder)))
+		.then(driveFiles => {
+			files.push(...driveFiles);
+		});
 };
 
 const detachFile = (id: string): void => {
@@ -658,15 +626,12 @@ const migrateNoteVisibility = (): void => {
 
 	if (migrated.visibleUserIds.length !== 0) {
 		const visibleUserIds = migrated.visibleUserIds.filter(id => id !== $i?.id && id !== reply?.userId && !visibleUsers.some(x => id === x.id));
-		fetchingWrapper(
-			os.api('users/show', { userIds: visibleUserIds }, token)
-				.then(users => {
-					users.forEach(user => {
-						pushVisibleUser(user);
-					});
-				}),
-			'migrateNoteVisibility',
-		);
+		os.api('users/show', { userIds: visibleUserIds }, token)
+			.then(users => {
+				users.forEach(user => {
+					pushVisibleUser(user);
+				});
+			});
 	} else {
 		visibleUsers = [];
 	}
@@ -794,21 +759,18 @@ const onPaste = async (ev: ClipboardEvent): Promise<void> => {
 
 	if (!renote && !quote && paste.startsWith(path)) {
 		ev.preventDefault();
-		fetchingWrapper(
-			os.confirm({
-				type: 'info',
-				text: i18n.ts.quoteQuestion,
-			}).then(({ canceled }) => {
-				if (canceled) {
-					if (textareaEl) insertTextAtCursor(textareaEl, paste);
-					return;
-				}
+		os.confirm({
+			type: 'info',
+			text: i18n.ts.quoteQuestion,
+		}).then(({ canceled }) => {
+			if (canceled) {
+				if (textareaEl) insertTextAtCursor(textareaEl, paste);
+				return;
+			}
 
-				const quoteId = paste.slice(path.length).split(/[\/\?#]/, 1)[0] || null;
-				setQuote(quoteId);
-			}),
-			'onPaste/quoteQuestion',
-		);
+			const quoteId = paste.slice(path.length).split(/[\/\?#]/, 1)[0] || null;
+			setQuote(quoteId);
+		});
 	}
 };
 //#endregion
@@ -958,7 +920,7 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 const chooseFileFrom = (ev: MouseEvent): void => {
 	const el = getHtmlElementFromEvent(ev);
 
-	selectFiles(el, i18n.ts.attachFile, fetchingWrapper)
+	selectFiles(el, i18n.ts.attachFile)
 		.then(_files => {
 			for (const file of _files) {
 				files.push(file);
@@ -984,12 +946,9 @@ const toggleUseCw = (): void => {
 };
 
 const insertMention = (): void => {
-	fetchingWrapper(
-		os.selectUser().then(user => {
-			if (textareaEl) insertTextAtCursor(textareaEl, `${parseMention(user)} `);
-		}),
-		'insertMention',
-	);
+	os.selectUser().then(user => {
+		if (textareaEl) insertTextAtCursor(textareaEl, `${parseMention(user)} `);
+	});
 };
 
 const toggleWithHashtags = (): void => {

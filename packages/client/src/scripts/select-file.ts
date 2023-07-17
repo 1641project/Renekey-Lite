@@ -13,11 +13,7 @@ declare global {
 	}
 }
 
-type FetchingWrapper = {
-	<T>(prom: Promise<T>, comment?: string): Promise<T>;
-};
-
-const select = (src: any, label: string | null, multiple: boolean, fetchingWrapper?: FetchingWrapper): Promise<DriveFile | DriveFile[]> => {
+const select = (src: any, label: string | null, multiple: boolean): Promise<DriveFile | DriveFile[]> => {
 	return new Promise(async (res, rej) => {
 		const keepOriginal = ref(defaultStore.state.keepOriginalUploading);
 
@@ -35,10 +31,6 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 					rej();
 				});
 
-				if (fetchingWrapper) {
-					fetchingWrapper(Promise.all(promises), 'scripts/select-file/select');
-				}
-
 				// 一応廃棄
 				window.__misskey_input_ref__ = null;
 			};
@@ -51,15 +43,11 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 		};
 
 		const chooseFileFromDrive = (): void => {
-			const promise = os.selectDriveFile(multiple).then(files => {
+			os.selectDriveFile(multiple).then(files => {
 				res(files);
 			}).catch((): void => {
 				rej();
 			});
-
-			if (fetchingWrapper) {
-				fetchingWrapper(promise, 'scripts/select-file/select/chooseFileFromDrive');
-			}
 		};
 
 		const chooseFileFromUrl = (): void => {
@@ -72,7 +60,7 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 
 				const marker = uuid();
 
-				const promise = new Promise<void>(r => {
+				new Promise<void>(r => {
 					const connection = stream.useChannel('main');
 					connection.on('urlUploadFinished', urlResponse => {
 						if (urlResponse.marker === marker) {
@@ -92,10 +80,6 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 						connection.dispose();
 					});
 				});
-
-				if (fetchingWrapper) {
-					fetchingWrapper(promise, 'scripts/select-file/select/chooseFileFromUrl');
-				}
 
 				os.alert({
 					title: i18n.ts.uploadFromUrlRequested,
@@ -129,10 +113,10 @@ const select = (src: any, label: string | null, multiple: boolean, fetchingWrapp
 	});
 };
 
-export const selectFile = (src: any, label: string | null = null, fetchingWrapper?: FetchingWrapper): Promise<DriveFile> => {
-	return select(src, label, false, fetchingWrapper) as Promise<DriveFile>;
+export const selectFile = (src: any, label: string | null = null): Promise<DriveFile> => {
+	return select(src, label, false) as Promise<DriveFile>;
 };
 
-export const selectFiles = (src: any, label: string | null = null, fetchingWrapper?: FetchingWrapper): Promise<DriveFile[]> => {
-	return select(src, label, true, fetchingWrapper) as Promise<DriveFile[]>;
+export const selectFiles = (src: any, label: string | null = null): Promise<DriveFile[]> => {
+	return select(src, label, true) as Promise<DriveFile[]>;
 };
