@@ -620,6 +620,9 @@ importers:
       chartjs-adapter-date-fns:
         specifier: 3.0.0
         version: 3.0.0(chart.js@4.2.1)(date-fns@2.29.3)
+      chartjs-chart-matrix:
+        specifier: ^2.0.1
+        version: 2.0.1(chart.js@4.2.1)
       chartjs-plugin-gradient:
         specifier: 0.6.1
         version: 0.6.1(chart.js@4.2.1)
@@ -641,6 +644,9 @@ importers:
       eventemitter3:
         specifier: 5.0.0
         version: 5.0.0
+      gsap:
+        specifier: ^3.12.2
+        version: 3.12.2
       idb-keyval:
         specifier: 6.2.0
         version: 6.2.0
@@ -4471,6 +4477,14 @@ packages:
       date-fns: 2.29.3
     dev: false
 
+  /chartjs-chart-matrix@2.0.1(chart.js@4.2.1):
+    resolution: {integrity: sha512-BGfeY+/PHnITyDlc7WfnKJ1RyOfgOzIqWp/gxzzl7pUjyoGzHDcw51qd2xJF9gdT9Def7ZwOnOMm8GJUXDxI0w==}
+    peerDependencies:
+      chart.js: '>=3.0.0'
+    dependencies:
+      chart.js: 4.2.1
+    dev: false
+
   /chartjs-plugin-gradient@0.6.1(chart.js@4.2.1):
     resolution: {integrity: sha512-TGHNIh8KqQMLdb+UfY80cBHYRyOC47eeokmgkeajRdKGbFt462lJiyiq4ZJ25fiM7BGsmzoBLhmVyEw4B3gQxw==}
     peerDependencies:
@@ -7161,6 +7175,10 @@ packages:
   /grapheme-splitter@1.0.4:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
     dev: true
+
+  /gsap@3.12.2:
+    resolution: {integrity: sha512-EkYnpG8qHgYBFAwsgsGEqvT1WUidX0tt/ijepx7z8EUJHElykg91RvW1XbkT59T0gZzzszOpjQv7SE41XuIXyQ==}
+    dev: false
 
   /gulp-cli@2.3.0:
     resolution: {integrity: sha512-zzGBl5fHo0EKSXsHzjspp3y5CONegCm8ErO5Qh0UzFzk2y4tMvzLWhoDokADbarfZRL2pGpRp7yt6gfJX4ph7A==}
