@@ -6,11 +6,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, shallowRef, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
 
-type Captcha = {
+// APIs provided by Captcha services
+export type Captcha = {
 	render(container: string | Node, options: {
 		readonly [_ in 'sitekey' | 'theme' | 'type' | 'size' | 'tabindex' | 'callback' | 'expired' | 'expired-callback' | 'error-callback' | 'endpoint']?: unknown;
 	}): string;
@@ -32,7 +33,7 @@ declare global {
 
 const props = defineProps<{
 	provider: CaptchaProvider;
-	sitekey: string;
+	sitekey: string | null; // null will show error on request
 	modelValue?: string | null;
 }>();
 
@@ -42,7 +43,7 @@ const emit = defineEmits<{
 
 const available = ref(false);
 
-const captchaEl = ref<HTMLDivElement | undefined>();
+const captchaEl = shallowRef<HTMLDivElement | undefined>();
 
 const variable = computed(() => {
 	switch (props.provider) {
@@ -60,24 +61,26 @@ const src = computed(() => {
 	}
 });
 
+const scriptId = computed(() => `script-${props.provider}`);
+
 const captcha = computed<Captcha>(() => window[variable.value] || {} as unknown as Captcha);
 
 if (loaded) {
 	available.value = true;
 } else {
-	(document.getElementById(props.provider) || document.head.appendChild(Object.assign(document.createElement('script'), {
+	(document.getElementById(scriptId.value) ?? document.head.appendChild(Object.assign(document.createElement('script'), {
 		async: true,
-		id: props.provider,
+		id: scriptId.value,
 		src: src.value,
 	})))
 		.addEventListener('load', () => available.value = true);
 }
 
-function reset() {
+const reset = (): void => {
 	if (captcha.value.reset) captcha.value.reset();
-}
+};
 
-function requestRender() {
+const requestRender = (): void => {
 	if (captcha.value.render && captchaEl.value instanceof Element) {
 		captcha.value.render(captchaEl.value, {
 			sitekey: props.sitekey,
@@ -89,11 +92,11 @@ function requestRender() {
 	} else {
 		window.setTimeout(requestRender, 1);
 	}
-}
+};
 
-function callback(response?: string) {
+const callback = (response?: string): void => {
 	emit('update:modelValue', typeof response === 'string' ? response : null);
-}
+};
 
 onMounted(() => {
 	if (available.value) {
@@ -110,5 +113,4 @@ onBeforeUnmount(() => {
 defineExpose({
 	reset,
 });
-
 </script>

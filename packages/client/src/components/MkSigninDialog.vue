@@ -8,7 +8,9 @@
 >
 	<template #header>{{ i18n.ts.login }}</template>
 
-	<MkSignin :auto-set="autoSet" :message="message" @login="onLogin"/>
+	<MkSpacer :margin-min="20" :margin-max="28">
+		<MkSignin :auto-set="autoSet" :message="message" @login="onLogin"/>
+	</MkSpacer>
 </MkModalWindow>
 </template>
 
@@ -27,12 +29,12 @@ withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(ev: 'done', r: any): void;
+	(ev: 'done', v: any): void;
 	(ev: 'closed'): void;
 	(ev: 'cancelled'): void;
 }>();
 
-const dialog = $ref<InstanceType<typeof MkModalWindow>>();
+const dialog = $shallowRef<InstanceType<typeof MkModalWindow>>();
 
 const onClose = (): void => {
 	emit('cancelled');
