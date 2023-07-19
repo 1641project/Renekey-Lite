@@ -60,7 +60,7 @@ import { instance } from '@/instance';
 import { i18n } from '@/i18n';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
-import MkSwitch from '@/components/MkSwitch.vue';
+import MkSwitch from '@/components/form/switch.vue';
 import MkInfo from '@/components/MkInfo.vue';
 
 // サーバールールの実装待ち
