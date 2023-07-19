@@ -98,7 +98,7 @@ import { notePage } from '@/filters/note';
 import { userPage } from '@/filters/user';
 import { i18n } from '@/i18n';
 import * as os from '@/os';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { useTooltip } from '@/scripts/use-tooltip';
 
 const props = withDefaults(defineProps<{
@@ -120,7 +120,7 @@ onMounted(() => {
 	if (rootEl.value && !props.notification.isRead) {
 		readObserver = new IntersectionObserver((entries, observer) => {
 			if (!entries.some(({ isIntersecting }) => isIntersecting)) return;
-			stream.send('readNotification', {
+			useStream().send('readNotification', {
 				id: props.notification.id,
 			});
 			observer.disconnect();
@@ -128,7 +128,7 @@ onMounted(() => {
 
 		readObserver.observe(rootEl.value);
 
-		connection = stream.useChannel('main');
+		connection = useStream().useChannel('main');
 		connection.on('readAllNotifications', () => {
 			readObserver?.disconnect();
 		});

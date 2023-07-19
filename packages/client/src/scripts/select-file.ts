@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { DriveFile } from 'misskey-js/built/entities';
 import { v4 as uuid } from 'uuid';
 import * as os from '@/os';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
 import { uploadFile } from '@/scripts/upload';
@@ -61,7 +61,7 @@ const select = (src: any, label: string | null, multiple: boolean): Promise<Driv
 				const marker = uuid();
 
 				new Promise<void>(r => {
-					const connection = stream.useChannel('main');
+					const connection = useStream().useChannel('main');
 					connection.on('urlUploadFinished', urlResponse => {
 						if (urlResponse.marker === marker) {
 							r();

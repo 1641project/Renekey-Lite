@@ -3,6 +3,23 @@ import { markRaw } from 'vue';
 import { $i } from '@/account';
 import { url } from '@/config';
 
-export const stream = markRaw(new Misskey.Stream(url, $i ? {
-	token: $i.token,
-} : null));
+let stream: Misskey.Stream | null = null;
+
+export const useStream = (): Misskey.Stream => {
+	if (stream) return stream;
+
+	stream = markRaw(new Misskey.Stream(url, $i ? {
+		token: $i.token,
+	} : null));
+
+	window.setTimeout(heartbeat, 1000 * 60);
+
+	return stream;
+};
+
+const heartbeat = (): void => {
+	if (stream != null && document.visibilityState === 'visible') {
+		stream.send('h');
+	}
+	window.setTimeout(heartbeat, 1000 * 60);
+};

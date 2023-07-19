@@ -6,7 +6,7 @@
 import { computed, provide, onUnmounted } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNotes from '@/components/MkNotes.vue';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import * as sound from '@/scripts/sound';
 import { $i } from '@/account';
 import { defaultStore } from '@/store';
@@ -56,6 +56,8 @@ let endpoint: keyof Misskey.Endpoints | undefined;
 let query: Misskey.Endpoints[keyof Misskey.Endpoints]['req'] | undefined;
 let connection: Misskey.ChannelConnection | null = null;
 let connection2: Misskey.ChannelConnection | null = null;
+
+const stream = useStream();
 
 if (props.src === 'antenna') {
 	endpoint = 'antennas/notes';

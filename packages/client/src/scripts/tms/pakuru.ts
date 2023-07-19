@@ -3,7 +3,7 @@ import * as mfm from 'mfm-js';
 import { v4 as uuid } from 'uuid';
 import * as os from '@/os';
 import { $i } from '@/account';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { defaultStore } from '@/store';
 import { deepClone } from '@/scripts/clone';
 import { isPureRenote } from '@/scripts/tms/is-pure-renote';
@@ -48,7 +48,7 @@ const uploadFile = async (_file: DriveFile): Promise<DriveFile> => {
 	return new Promise((res) => {
 		const marker = uuid();
 
-		const connection = stream.useChannel('main');
+		const connection = useStream().useChannel('main');
 		connection.on('urlUploadFinished', urlResponse => {
 			if (urlResponse.marker === marker) {
 				res(urlResponse.file);

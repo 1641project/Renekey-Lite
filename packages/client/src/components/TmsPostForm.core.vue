@@ -111,7 +111,7 @@ import { toASCII } from 'punycode/';
 import { throttle } from 'throttle-debounce';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { host as Host, url } from '@/config';
 import { instance } from '@/instance';
 import { defaultStore, notePostInterruptors, postFormActions } from '@/store';
@@ -716,7 +716,7 @@ const onDrop = (ev: DragEvent): void => {
 //#region handler (keydown, ime, paste)
 const typing = throttle(3000, () => {
 	if (channel) {
-		stream.send('typingOnChannel', { channel: channel.id });
+		useStream().send('typingOnChannel', { channel: channel.id });
 	}
 });
 
@@ -1261,7 +1261,7 @@ const insertEmoji = async (ev: MouseEvent): Promise<void> => {
 	}
 }
 
-:global(.max-width_500px) {
+:where(:global(.max-width_500px)) {
 	.headerRightButtonText {
 		display: none;
 	}
@@ -1299,7 +1299,7 @@ const insertEmoji = async (ev: MouseEvent): Promise<void> => {
 	}
 }
 
-:global(.max-width_310px) {
+:where(:global(.max-width_310px)) {
 	.header {
 		gap: 0;
 	}

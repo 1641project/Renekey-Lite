@@ -1,62 +1,57 @@
 <template>
-<div v-if="hasDisconnected && defaultStore.state.serverDisconnectedBehavior === 'quiet'" class="nsbbhtug" @click="resetDisconnected">
-	<div>{{ i18n.ts.disconnectedFromServer }}</div>
-	<div class="command">
-		<button class="_textButton" @click="reload">{{ i18n.ts.reload }}</button>
-		<button class="_textButton">{{ i18n.ts.doNothing }}</button>
+<div v-if="hasDisconnected && defaultStore.state.serverDisconnectedBehavior === 'quiet'" :class="$style.root" class="_panel _shadow" @click="resetDisconnected">
+	<div><i class="ti ti-alert-triangle"></i> {{ i18n.ts.disconnectedFromServer }}</div>
+	<div :class="$style.command" class="_buttons">
+		<MkButton small primary @click="reload">{{ i18n.ts.reload }}</MkButton>
+		<MkButton small>{{ i18n.ts.doNothing }}</MkButton>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
 import { onUnmounted } from 'vue';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { i18n } from '@/i18n';
+import MkButton from '@/components/MkButton.vue';
+import * as os from '@/os';
 import { defaultStore } from '@/store';
+
+const zIndex = os.claimZIndex('high');
 
 let hasDisconnected = $ref(false);
 
-function onDisconnected() {
+const onDisconnected = (): void => {
 	hasDisconnected = true;
-}
+};
 
-function resetDisconnected() {
+const resetDisconnected = (): void => {
 	hasDisconnected = false;
-}
+};
 
-function reload() {
+const reload = (): void => {
 	location.reload();
-}
+};
 
-stream.on('_disconnected_', onDisconnected);
+useStream().on('_disconnected_', onDisconnected);
 
 onUnmounted(() => {
-	stream.off('_disconnected_', onDisconnected);
+	useStream().off('_disconnected_', onDisconnected);
 });
 </script>
 
-<style lang="scss" scoped>
-.nsbbhtug {
+<style lang="scss" module>
+.root {
 	position: fixed;
-	z-index: 16385;
+	z-index: v-bind(zIndex);
 	bottom: calc(var(--minBottomSpacing) + var(--margin));
 	right: var(--margin);
 	margin: 0;
-	padding: 6px 12px;
+	padding: 12px;
 	font-size: 0.9em;
-	color: #fff;
-	background: #000;
-	opacity: 0.8;
-	border-radius: 4px;
 	max-width: 320px;
+}
 
-	> .command {
-		display: flex;
-		justify-content: space-around;
-
-		> button {
-			padding: 0.7em;
-		}
-	}
+.command {
+	margin-top: 8px;
 }
 </style>

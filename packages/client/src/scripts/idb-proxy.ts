@@ -6,31 +6,34 @@ import {
 	del as idel,
 } from 'idb-keyval';
 
-const fallbackName = (key: string) => `idbfallback::${key}`;
+const fallbackName = (key: string): string => `idbfallback::${key}`;
 
-let idbAvailable = typeof window !== 'undefined' ? !!window.indexedDB : true;
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+let idbAvailable = (typeof window !== 'undefined' ? !!(window.indexedDB && window.indexedDB.open) : true) as boolean;
 
 if (idbAvailable) {
-	iset('idb-test', 'test').catch(err => {
-		console.error('idb error', err);
-		console.error('indexedDB is unavailable. It will use localStorage.');
-		idbAvailable = false;
-	});
+	await iset('idb-test', 'test')
+		.catch(err => {
+			console.error('idb error', err);
+			console.error('indexedDB is unavailable. It will use localStorage.');
+			idbAvailable = false;
+		});
 } else {
 	console.error('indexedDB is unavailable. It will use localStorage.');
 }
 
-export async function get(key: string) {
-	if (idbAvailable) return iget(key);
-	return JSON.parse(localStorage.getItem(fallbackName(key)));
-}
+export const get = async <T>(key: string): Promise<T | undefined> => {
+	if (idbAvailable) return iget<T>(key);
+	const raw = window.localStorage.getItem(fallbackName(key));
+	return raw ? JSON.parse(raw) as T : undefined;
+};
 
-export async function set(key: string, val: any) {
+export const set = async (key: string, val: unknown): Promise<void> => {
 	if (idbAvailable) return iset(key, val);
-	return localStorage.setItem(fallbackName(key), JSON.stringify(val));
-}
+	return window.localStorage.setItem(fallbackName(key), JSON.stringify(val));
+};
 
-export async function del(key: string) {
+export const del = async (key: string): Promise<void> => {
 	if (idbAvailable) return idel(key);
-	return localStorage.removeItem(fallbackName(key));
-}
+	return window.localStorage.removeItem(fallbackName(key));
+};

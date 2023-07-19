@@ -103,7 +103,7 @@ const alpha = (hex, a) => {
 	return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 import * as os from '@/os';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 
 export default defineComponent({
 	components: {
@@ -122,7 +122,7 @@ export default defineComponent({
 			stats: null,
 			serverInfo: null,
 			connection: null,
-			queueConnection: markRaw(stream.useChannel('queueStats')),
+			queueConnection: markRaw(useStream().useChannel('queueStats')),
 			memUsage: 0,
 			chartCpuMem: null,
 			chartNet: null,
@@ -154,7 +154,7 @@ export default defineComponent({
 		os.api('admin/server-info', {}).then(res => {
 			this.serverInfo = res;
 
-			this.connection = markRaw(stream.useChannel('serverStats'));
+			this.connection = markRaw(useStream().useChannel('serverStats'));
 			this.connection.on('stats', this.onStats);
 			this.connection.on('statsLog', this.onStatsLog);
 			this.connection.send('requestLog', {

@@ -38,13 +38,14 @@ import MkInfo from '@/components/MkInfo.vue';
 import * as os from '@/os';
 import { ColdDeviceStorage, defaultStore } from '@/store';
 import { unisonReload } from '@/scripts/unison-reload';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
 import { version, host } from '@/config';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { disableContextmenu } from '@/scripts/touch';
 import { parseObject } from '@/scripts/tms/parse';
+
 const { t, ts } = i18n;
 
 useCssModule();
@@ -120,7 +121,7 @@ type Profile = {
 	};
 };
 
-const connection = $i && stream.useChannel('main');
+const connection = $i && useStream().useChannel('main');
 
 let profiles = $ref<Record<string, Profile> | null>(null);
 

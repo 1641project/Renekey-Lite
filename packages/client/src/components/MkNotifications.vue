@@ -23,7 +23,7 @@ import MkPagination, { Paging } from '@/components/MkPagination.vue';
 import MkNotification from '@/components/MkNotification.vue';
 import XList from '@/components/MkDateSeparatedList.vue';
 import MkNote from '@/components/MkNote.vue';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
 
@@ -50,7 +50,7 @@ const onNotification = (notification: Misskey.entities.Notification): void => {
 		: !!$i?.mutingNotificationTypes.includes(notification.type);
 
 	if (isMuted || document.visibilityState === 'visible') {
-		stream.send('readNotification', {
+		useStream().send('readNotification', {
 			id: notification.id,
 		});
 	}
@@ -66,7 +66,7 @@ const onNotification = (notification: Misskey.entities.Notification): void => {
 let connection: Misskey.ChannelConnection | null = null;
 
 onMounted(() => {
-	connection = stream.useChannel('main');
+	connection = useStream().useChannel('main');
 	connection.on('notification', onNotification);
 	connection.on('readAllNotifications', () => {
 		if (pagingComponent.value) {

@@ -104,7 +104,7 @@ export default defineConfig(({ command, mode }) => {
 			manifest: 'manifest.json',
 			rollupOptions: {
 				input: {
-					app: './src/init.ts',
+					app: './src/_boot_.ts',
 				},
 				output: {
 					manualChunks: {

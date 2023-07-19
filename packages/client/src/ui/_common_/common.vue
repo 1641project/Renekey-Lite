@@ -31,7 +31,7 @@ import { popups, pendingApiRequestsCount } from '@/os';
 import { uploads } from '@/scripts/upload';
 import * as sound from '@/scripts/sound';
 import { $i } from '@/account';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
 
@@ -46,7 +46,7 @@ function onNotification(notification) {
 	if ($i.mutingNotificationTypes.includes(notification.type)) return;
 
 	if (document.visibilityState === 'visible') {
-		stream.send('readNotification', {
+		useStream().send('readNotification', {
 			id: notification.id,
 		});
 
@@ -64,7 +64,7 @@ function onNotification(notification) {
 }
 
 if ($i) {
-	const connection = stream.useChannel('main', null, 'UI');
+	const connection = useStream().useChannel('main', null, 'UI');
 	connection.on('notification', onNotification);
 
 	//#region Listen message from SW

@@ -35,7 +35,7 @@ import { throttle } from 'throttle-debounce';
 import { formatTimeString } from '@/scripts/format-time-string';
 import { selectFile } from '@/scripts/select-file';
 import * as os from '@/os';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
 //import { Autocomplete } from '@/scripts/autocomplete';
@@ -55,7 +55,7 @@ let text = $ref<string>('');
 let file = $ref<Misskey.entities.DriveFile | null>(null);
 let sending = $ref(false);
 const typing = throttle(3000, () => {
-	stream.send('typingOnMessaging', props.user ? { partner: props.user.id } : { group: props.group?.id });
+	useStream().send('typingOnMessaging', props.user ? { partner: props.user.id } : { group: props.group?.id });
 });
 
 const draftKey = $computed(() => {

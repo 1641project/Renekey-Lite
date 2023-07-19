@@ -77,7 +77,7 @@ app.use(views(_dirname + '/views', {
 		version: config.version,
 		getClientEntry: () => process.env.NODE_ENV === 'production' ?
 			config.clientEntry :
-			JSON.parse(readFileSync(`${_dirname}/../../../../../built/_client_dist_/manifest.json`, 'utf-8'))['src/init.ts'],
+			JSON.parse(readFileSync(`${_dirname}/../../../../../built/_client_dist_/manifest.json`, 'utf-8'))['src/_boot_.ts'],
 		config,
 	},
 }));
