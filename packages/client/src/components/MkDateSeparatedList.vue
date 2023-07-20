@@ -134,34 +134,53 @@ export default defineComponent({
 					[$style['direction-up']]: props.direction === 'up',
 				},
 				...(defaultStore.state.animation ? {
-					name: 'list',
 					tag: 'div',
+					moveClass: $style.transition_list_move,
+					enterActiveClass: $style.transition_list_enterActive,
+					leaveActiveClass: $style.transition_list_leaveActive,
+					enterFromClass: $style.transition_list_enterFrom,
+					leaveToClass: $style.transition_list_leaveTo,
 					onBeforeLeave,
 					onLeaveCanceled,
 				} : {}),
 			},
-			{ default: renderChildren });
+			{
+				default: renderChildren,
+			},
+		);
 	},
 });
 </script>
 
 <style lang="scss" module>
+
+.transition_list_move,
+.transition_list_enterActive,
+.transition_list_leaveActive {
+	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+.direction-up {
+	> .transition_list_enterFrom,
+	> .transition_list_leaveTo {
+		opacity: 0 !important;
+		transform: translateY(64px) !important;
+	}
+}
+.direction-down {
+	> .transition_list_enterFrom,
+	> .transition_list_leaveTo {
+		opacity: 0 !important;
+		transform: translateY(-64px) !important;
+	}
+}
+.deny-move-transition > .transition_list_move {
+	transition: none !important;
+}
+
 .date-separated-list {
 	container-type: inline-size;
 
 	&:global {
-		> .list-move {
-			transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-		}
-
-		&.deny-move-transition > .list-move {
-			transition: none !important;
-		}
-
-		> .list-enter-active {
-			transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-		}
-
 		> *:empty {
 			display: none;
 		}
@@ -188,26 +207,6 @@ export default defineComponent({
 		&:not(:last-child) {
 			border-bottom: none;
 			border-top: solid 0.5px var(--divider);
-		}
-	}
-}
-
-.direction-up {
-	&:global {
-		> .list-enter-from,
-		> .list-leave-to {
-			opacity: 0;
-			transform: translateY(64px);
-		}
-	}
-}
-
-.direction-down {
-	&:global {
-		> .list-enter-from,
-		> .list-leave-to {
-			opacity: 0;
-			transform: translateY(-64px);
 		}
 	}
 }

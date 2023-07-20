@@ -169,7 +169,7 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	animation: {
 		where: 'device',
-		default: !window.matchMedia('(prefers-reduced-motion)').matches,
+		default: true,
 	},
 	animatedMfm: {
 		where: 'device',
@@ -189,7 +189,7 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	disableShowingAnimatedImages: {
 		where: 'device',
-		default: window.matchMedia('(prefers-reduced-motion)').matches,
+		default: false,
 	},
 	enableDataSaverMode: {
 		where: 'device',
