@@ -21,11 +21,11 @@
 					<template #label><span v-text="form[item].label || item"></span><span v-if="form[item].required === false"> ({{ i18n.ts.optional }})</span></template>
 					<template v-if="form[item].description" #caption>{{ form[item].description }}</template>
 				</MkInput>
-				<MkInput v-else-if="form[item].type === 'string' && !form[item].multiline" v-model="values[item]" :max="form[item].max" type="text" class="_formBlock">
+				<MkInput v-else-if="form[item].type === 'string' && !form[item].multiline" v-model="values[item]" :max-length="form[item].maxLength" type="text" class="_formBlock">
 					<template #label><span v-text="form[item].label || item"></span><span v-if="form[item].required === false"> ({{ i18n.ts.optional }})</span></template>
 					<template v-if="form[item].description" #caption>{{ form[item].description }}</template>
 				</MkInput>
-				<MkTextarea v-else-if="form[item].type === 'string' && form[item].multiline" v-model="values[item]" :max="form[item].max" class="_formBlock">
+				<MkTextarea v-else-if="form[item].type === 'string' && form[item].multiline" v-model="values[item]" :max-length="form[item].maxLength" class="_formBlock">
 					<template #label><span v-text="form[item].label || item"></span><span v-if="form[item].required === false"> ({{ i18n.ts.optional }})</span></template>
 					<template v-if="form[item].description" #caption>{{ form[item].description }}</template>
 				</MkTextarea>

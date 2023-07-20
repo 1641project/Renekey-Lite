@@ -1,17 +1,23 @@
 <template>
-<span v-if="!fetching" class="nmidsaqw">
+<span v-if="!fetching" :class="$style.root">
 	<template v-if="display === 'marquee'">
-		<Transition name="change" mode="default">
+		<Transition
+			:enter-active-class="$style.transition_change_enterActive"
+			:leave-active-class="$style.transition_change_leaveActive"
+			:enter-from-class="$style.transition_change_enterFrom"
+			:leave-to-class="$style.transition_change_leaveTo"
+			mode="default"
+		>
 			<MarqueeText :key="key" :duration="marqueeDuration" :reverse="marqueeReverse">
-				<span v-for="instance in instances" :key="instance.id" class="item" :class="{ colored }" :style="{ background: colored ? instance.themeColor : null }">
-					<img v-if="instance.iconUrl" class="icon" :src="instance.iconUrl" alt=""/>
-					<MkA :to="`/instance-info/${instance.host}`" class="host _monospace">
+				<span v-for="instance in instances" :key="instance.id" :class="[$style.item, { [$style.colored]: colored }]" :style="{ background: (colored && instance.themeColor) ? instance.themeColor : undefined }">
+					<img v-if="instance.iconUrl || instance.faviconUrl" :class="$style.icon" :src="(instance.iconUrl || instance.faviconUrl)!" alt=""/>
+					<MkA :to="`/instance-info/${instance.host}`" :class="$style.host" class="_monospace">
 						{{ instance.host }}
 					</MkA>
-					<span class="divider"></span>
+					<span></span>
 				</span>
 			</MarqueeText>
-		</transition>
+		</Transition>
 	</template>
 	<template v-else-if="display === 'oneByOne'">
 		<!-- TODO -->
@@ -56,46 +62,47 @@ useInterval(tick, Math.max(5000, props.refreshIntervalSec * 1000), {
 });
 </script>
 
-<style lang="scss" scoped>
-.change-enter-active, .change-leave-active {
+<style lang="scss" module>
+.transition_change_enterActive,
+.transition_change_leaveActive {
 	position: absolute;
 	top: 0;
-	transition: all 1s ease;
+  transition: all 1s ease;
 }
-.change-enter-from {
+.transition_change_enterFrom {
 	opacity: 0;
 	transform: translateY(-100%);
 }
-.change-leave-to {
+.transition_change_leaveTo {
 	opacity: 0;
 	transform: translateY(100%);
 }
 
-.nmidsaqw {
+.root {
 	display: inline-block;
 	position: relative;
+}
 
-	::v-deep(.item) {
-		display: inline-block;
-		vertical-align: bottom;
-		margin-right: 5em;
+.item {
+	display: inline-block;
+	vertical-align: bottom;
+	margin-right: 5em;
 
-		> .icon {
-			display: inline-block;
-			height: var(--height);
-			aspect-ratio: 1;
-			vertical-align: bottom;
-			margin-right: 1em;
-		}
-
-		> .host {
-			vertical-align: bottom;
-		}
-
-		&.colored {
-			padding-right: 1em;
-			color: #fff;
-		}
+	&.colored {
+		padding-right: 1em;
+		color: #fff;
 	}
+}
+
+.icon {
+	display: inline-block;
+	height: var(--height);
+	aspect-ratio: 1;
+	vertical-align: bottom;
+	margin-right: 1em;
+}
+
+.host {
+	vertical-align: bottom;
 }
 </style>

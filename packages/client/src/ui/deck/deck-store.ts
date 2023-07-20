@@ -9,6 +9,7 @@ type ColumnWidget = {
 	name: string;
 	id: string;
 	data: Record<string, any>;
+	place: string | null;
 };
 
 export type Column = {
@@ -48,6 +49,10 @@ export const deckStore = markRaw(new Storage('deck', {
 		default: true,
 	},
 	navWindow: {
+		where: 'deviceAccount',
+		default: true,
+	},
+	useSimpleUiForNonRootPages: {
 		where: 'deviceAccount',
 		default: true,
 	},

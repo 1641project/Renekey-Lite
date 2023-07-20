@@ -37,14 +37,14 @@ async function create() {
 		name: {
 			type: 'string',
 			label: i18n.ts.name,
-			max: 100,
+			maxLength: 100,
 		},
 		description: {
 			type: 'string',
 			required: false,
 			multiline: true,
 			label: i18n.ts.description,
-			max: 2048,
+			maxLength: 2048,
 		},
 		isPublic: {
 			type: 'boolean',

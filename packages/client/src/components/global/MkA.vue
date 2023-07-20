@@ -1,11 +1,11 @@
 <template>
-<a ref="el" :href="to" :class="active ? activeClass : null" @click.prevent="nav" @contextmenu.prevent.stop="onContextmenu">
+<a :href="to" :class="active ? activeClass : null" @click.prevent="nav" @contextmenu.prevent.stop="onContextmenu">
 	<slot></slot>
 </a>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { shallowRef } from 'vue';
 import * as os from '@/os';
 import { copyText } from '@/scripts/tms/clipboard';
 import { url } from '@/config';
@@ -16,7 +16,7 @@ import { useRouter } from '@/router';
 const props = withDefaults(defineProps<{
 	to: string;
 	activeClass?: null | string;
-	behavior?: null | 'window' | 'browser' | 'modalWindow';
+	behavior?: null | 'window' | 'browser';
 }>(), {
 	activeClass: null,
 	behavior: null,
@@ -24,7 +24,7 @@ const props = withDefaults(defineProps<{
 
 const router = useRouter();
 
-const el = ref<HTMLAnchorElement>();
+const el = shallowRef<HTMLAnchorElement>();
 
 const active = $computed(() => {
 	if (props.activeClass == null) return false;
@@ -81,10 +81,6 @@ const openWindow = (): void => {
 	os.pageWindow(props.to);
 };
 
-const modalWindow = (): void => {
-	os.modalPageWindow(props.to);
-};
-
 const nav = (ev: MouseEvent): void => {
 	if (props.behavior === 'browser') {
 		location.href = props.to;
@@ -93,10 +89,6 @@ const nav = (ev: MouseEvent): void => {
 
 	if (props.behavior === 'window') {
 		return openWindow();
-	}
-
-	if (props.behavior === 'modalWindow') {
-		return modalWindow();
 	}
 
 	if (ev.shiftKey) {

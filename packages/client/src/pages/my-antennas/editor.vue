@@ -1,7 +1,7 @@
 <template>
 <div class="shaynizk">
 	<div class="form">
-		<MkInput v-model="name" :max="100" class="_formBlock">
+		<MkInput v-model="name" :max-length="100" class="_formBlock">
 			<template #label>{{ i18n.ts.name }}</template>
 		</MkInput>
 		<MkSelect v-model="src" class="_formBlock">

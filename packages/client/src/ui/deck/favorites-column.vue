@@ -1,5 +1,5 @@
 <template>
-<XColumn :column="column" :is-stacked="isStacked" @parent-focus="$event => emit('parent-focus', $event)">
+<XColumn :column="column" :is-stacked="isStacked">
 	<template #header><i class="ti ti-star" style="margin-right: 8px;"></i>{{ column.name }}</template>
 
 	<MkPagination ref="pagingComponent" :pagination="pagination">
@@ -12,9 +12,9 @@
 
 		<template #default="{ items }">
 			<div :class="$style.notes">
-				<XList v-slot="{ item }" :items="items" :direction="'down'" :no-gap="true" :ad="false">
+				<MkDateSeparatedList v-slot="{ item }" :items="items" :direction="'down'" :no-gap="true" :ad="false">
 					<MkNote :key="item.id" :note="item.note"/>
-				</XList>
+				</MkDateSeparatedList>
 			</div>
 		</template>
 	</MkPagination>
@@ -27,16 +27,12 @@ import XColumn from './column.vue';
 import { Column } from './deck-store';
 import MkPagination from '@/components/MkPagination.vue';
 import MkNote from '@/components/MkNote.vue';
-import XList from '@/components/MkDateSeparatedList.vue';
+import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
 import { i18n } from '@/i18n';
 
 defineProps<{
 	column: Column;
 	isStacked: boolean;
-}>();
-
-const emit = defineEmits<{
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
 }>();
 
 const pagingComponent = ref<InstanceType<typeof MkPagination>>();

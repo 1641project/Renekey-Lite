@@ -35,6 +35,14 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'account',
 		default: 0,
 	},
+	accountSetupWizard: {
+		where: 'account',
+		default: 0,
+	},
+	timelineTutorial: {
+		where: 'account',
+		default: 0,
+	},
 	keepCw: {
 		where: 'account',
 		default: true,
@@ -42,6 +50,10 @@ export const defaultStore = markRaw(new Storage('base', {
 	showFullAcct: {
 		where: 'account',
 		default: false,
+	},
+	collapseRenotes: {
+		where: 'account',
+		default: true,
 	},
 	rememberNoteVisibility: {
 		where: 'account',
@@ -75,6 +87,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		where: 'account',
 		default: ['👍', '❤️', '😆', '🤔', '😮', '🎉', '💢', '😥', '😇', '🍮'],
 	},
+	reactionAcceptance: {
+		where: 'account',
+		default: 'nonSensitiveOnly' as 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null,
+	},
 	mutedWords: {
 		where: 'account',
 		default: [],
@@ -82,6 +98,10 @@ export const defaultStore = markRaw(new Storage('base', {
 	mutedAds: {
 		where: 'account',
 		default: [] as string[],
+	},
+	showTimelineReplies: {
+		where: 'account',
+		default: false,
 	},
 
 	menu: {
@@ -119,7 +139,7 @@ export const defaultStore = markRaw(new Storage('base', {
 		}[],
 	},
 	widgets: {
-		where: 'deviceAccount',
+		where: 'account',
 		default: [] as {
 			name: string;
 			id: string;
@@ -149,9 +169,13 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	animation: {
 		where: 'device',
-		default: true,
+		default: !window.matchMedia('(prefers-reduced-motion)').matches,
 	},
 	animatedMfm: {
+		where: 'device',
+		default: true,
+	},
+	advancedMfm: {
 		where: 'device',
 		default: true,
 	},
@@ -165,6 +189,10 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	disableShowingAnimatedImages: {
 		where: 'device',
+		default: window.matchMedia('(prefers-reduced-motion)').matches,
+	},
+	enableDataSaverMode: {
+		where: 'device',
 		default: false,
 	},
 	disablePagesScript: {
@@ -174,6 +202,10 @@ export const defaultStore = markRaw(new Storage('base', {
 	useOsNativeEmojis: {
 		where: 'device',
 		default: false,
+	},
+	emojiStyle: {
+		where: 'device',
+		default: 'twemoji' as 'twemoji' | 'fluentEmoji' | 'native',
 	},
 	disableDrawer: {
 		where: 'device',
@@ -188,6 +220,10 @@ export const defaultStore = markRaw(new Storage('base', {
 		default: true,
 	},
 	showFixedPostForm: {
+		where: 'device',
+		default: false,
+	},
+	showFixedPostFormInChannel: {
 		where: 'device',
 		default: false,
 	},
@@ -265,17 +301,57 @@ export const defaultStore = markRaw(new Storage('base', {
 	},
 	numberOfPageCache: {
 		where: 'device',
-		default: 5,
+		default: 3,
+	},
+	showNoteActionsOnlyHover: {
+		where: 'device',
+		default: false,
+	},
+	showClipButtonInNoteFooter: {
+		where: 'device',
+		default: false,
+	},
+	largeNoteReactions: {
+		where: 'device',
+		default: false,
+	},
+	forceShowAds: {
+		where: 'device',
+		default: false,
 	},
 	aiChanMode: {
 		where: 'device',
 		default: false,
 	},
+	devMode: {
+		where: 'device',
+		default: false,
+	},
+	mediaListWithOneImageAppearance: {
+		where: 'device',
+		default: 'expand' as 'expand' | '16_9' | '1_1' | '2_3',
+	},
+	notificationPosition: {
+		where: 'device',
+		default: 'rightBottom' as 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom',
+	},
+	notificationStackAxis: {
+		where: 'device',
+		default: 'horizontal' as 'vertical' | 'horizontal',
+	},
+	enableCondensedLineForAcct: {
+		where: 'device',
+		default: false,
+	},
+	additionalUnicodeEmojiIndexes: {
+		where: 'device',
+		default: {} as Record<string, Record<string, string[]>>,
+	},
 }));
 
 // TODO: 他のタブと永続化されたstateを同期
 
-const PREFIX = 'miux:';
+const PREFIX = 'miux:' as const;
 
 export type Plugin = {
 	id: string;
@@ -287,6 +363,11 @@ export type Plugin = {
 	version: string;
 	ast: any[];
 };
+
+interface Watcher {
+	key: string;
+	callback: (value: unknown) => void;
+}
 
 /**
  * 常にメモリにロードしておく必要がないような設定情報を保管するストレージ(非リアクティブ)
@@ -311,18 +392,28 @@ export class ColdDeviceStorage {
 		sound_channel: { type: 'syuilo/square-pico', volume: 1 },
 	};
 
-	public static watchers = [];
+	public static watchers: Watcher[] = [];
 
 	public static get<T extends keyof typeof ColdDeviceStorage.default>(key: T): typeof ColdDeviceStorage.default[T] {
 		// TODO: indexedDBにする
 		//       ただしその際はnullチェックではなくキー存在チェックにしないとダメ
 		//       (indexedDBはnullを保存できるため、ユーザーが意図してnullを格納した可能性がある)
-		const value = localStorage.getItem(PREFIX + key);
+		const value = localStorage.getItem(`${PREFIX}${key}`);
 		if (value == null) {
 			return ColdDeviceStorage.default[key];
 		} else {
 			return JSON.parse(value);
 		}
+	}
+
+	public static getAll(): Partial<typeof this.default> {
+		return (Object.keys(this.default) as (keyof typeof this.default)[]).reduce((acc, key) => {
+			const value = localStorage.getItem(`${PREFIX}${key}`);
+			if (value != null) {
+				acc[key] = JSON.parse(value);
+			}
+			return acc;
+		}, {} as any);
 	}
 
 	public static set<T extends keyof typeof ColdDeviceStorage.default>(key: T, value: typeof ColdDeviceStorage.default[T]): void {
@@ -334,7 +425,7 @@ export class ColdDeviceStorage {
 			return;
 		}
 
-		localStorage.setItem(PREFIX + key, JSON.stringify(value));
+		localStorage.setItem(`${PREFIX}${key}`, JSON.stringify(value));
 
 		for (const watcher of this.watchers) {
 			if (watcher.key === key) watcher.callback(value);

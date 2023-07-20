@@ -1,27 +1,39 @@
 <template>
-<MkModal ref="modal" :prefer-type="'dialog'" :z-priority="'high'" @click="done(true)" @closed="emit('closed')">
-	<div class="mk-dialog">
-		<div v-if="icon" class="icon">
+<MkModal ref="modal" prefer-type="dialog" :z-priority="'high'" @click="done(true)" @closed="emit('closed')">
+	<div class="mk-dialog" :class="$style.root">
+		<div v-if="icon" :class="$style.icon">
 			<i :class="icon"></i>
 		</div>
-		<div v-else-if="!input && !select" class="icon" :class="type">
-			<i v-if="type === 'success'" class="ti ti-check"></i>
-			<i v-else-if="type === 'error'" class="ti ti-circle-x"></i>
-			<i v-else-if="type === 'warning'" class="ti ti-alert-triangle"></i>
-			<i v-else-if="type === 'info'" class="ti ti-info-circle"></i>
-			<i v-else-if="type === 'question'" class="ti ti-question-circle"></i>
-			<MkLoading v-else-if="type === 'waiting'" :em="true"/>
+		<div
+			v-else-if="!input && !select"
+			:class="[$style.icon, {
+				[$style.type_success]: type === 'success',
+				[$style.type_error]: type === 'error',
+				[$style.type_warning]: type === 'warning',
+				[$style.type_info]: type === 'info',
+			}]"
+		>
+			<i v-if="type === 'success'" :class="$style.iconInner" class="ti ti-check"></i>
+			<i v-else-if="type === 'error'" :class="$style.iconInner" class="ti ti-circle-x"></i>
+			<i v-else-if="type === 'warning'" :class="$style.iconInner" class="ti ti-alert-triangle"></i>
+			<i v-else-if="type === 'info'" :class="$style.iconInner" class="ti ti-info-circle"></i>
+			<i v-else-if="type === 'question'" :class="$style.iconInner" class="ti ti-help-circle"></i>
+			<MkLoading v-else-if="type === 'waiting'" :class="$style.iconInner" :em="true"/>
 		</div>
-		<header v-if="title">
+		<header v-if="title" :class="$style.title">
 			<Mfm v-if="allowMfm" :text="title"/>
 			<span v-else>{{ title }}</span>
 		</header>
-		<div v-if="text" class="body">
+		<div v-if="text" :class="$style.text">
 			<Mfm v-if="allowMfm" :text="text"/>
 			<span v-else>{{ text }}</span>
 		</div>
-		<MkInput v-if="input" v-model="inputValue" :max="input.max" autofocus :type="input.type || 'text'" :placeholder="input.placeholder || undefined" @keydown="onInputKeydown">
+		<MkInput v-if="input" v-model="inputValue" :max-length="input.maxLength" autofocus :type="input.type || 'text'" :placeholder="input.placeholder || undefined" :autocomplete="input.autocomplete" @keydown="onInputKeydown">
 			<template v-if="input.type === 'password'" #prefix><i class="ti ti-lock"></i></template>
+			<template #caption>
+				<span v-if="okButtonDisabled && disabledReason === 'charactersExceeded'" v-text="i18n.t('_dialog.charactersExceeded', { current: (inputValue as string).length, max: input.maxLength ?? 'NaN' })"/>
+				<span v-else-if="okButtonDisabled && disabledReason === 'charactersBelow'" v-text="i18n.t('_dialog.charactersBelow', { current: (inputValue as string).length, min: input.minLength ?? 'NaN' })"/>
+			</template>
 		</MkInput>
 		<MkSelect v-if="select" v-model="selectedValue" autofocus>
 			<template v-if="select.items">
@@ -33,19 +45,19 @@
 				</optgroup>
 			</template>
 		</MkSelect>
-		<div v-if="(showOkButton || showCancelButton) && !actions" class="buttons">
-			<MkButton v-if="showOkButton" inline primary :autofocus="!input && !select" @click="ok">{{ (showCancelButton || input || select) ? i18n.ts.ok : i18n.ts.gotIt }}</MkButton>
-			<MkButton v-if="showCancelButton || input || select" inline @click="cancel">{{ i18n.ts.cancel }}</MkButton>
+		<div v-if="(showOkButton || showCancelButton) && !actions" :class="$style.buttons">
+			<MkButton v-if="showOkButton" data-cy-modal-dialog-ok inline primary rounded :autofocus="!input && !select" :disabled="okButtonDisabled" @click="ok">{{ okText ?? ((showCancelButton || input || select) ? i18n.ts.ok : i18n.ts.gotIt) }}</MkButton>
+			<MkButton v-if="showCancelButton || input || select" data-cy-modal-dialog-cancel inline rounded @click="cancel">{{ cancelText ?? i18n.ts.cancel }}</MkButton>
 		</div>
-		<div v-if="actions" class="buttons">
-			<MkButton v-for="action in actions" :key="action.text" inline :primary="action.primary" @click="() => { action.callback(); close(); }">{{ action.text }}</MkButton>
+		<div v-if="actions" :class="$style.buttons">
+			<MkButton v-for="action in actions" :key="action.text" inline rounded :primary="action.primary" :danger="action.danger" @click="() => { action.callback(); modal?.close(); }">{{ action.text }}</MkButton>
 		</div>
 	</div>
 </MkModal>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/form/input.vue';
@@ -53,10 +65,12 @@ import MkSelect from '@/components/form/select.vue';
 import { i18n } from '@/i18n';
 
 type Input = {
-	type: HTMLInputElement['type'];
+	type: 'text' | 'number' | 'password' | 'email' | 'url' | 'date' | 'time' | 'search' | 'datetime-local';
 	placeholder?: string | null;
-	default: any | null;
-	max?: number;
+	autocomplete?: string;
+	default: string | number | null;
+	minLength?: number;
+	maxLength?: number;
 };
 
 type Select = {
@@ -84,11 +98,14 @@ const props = withDefaults(defineProps<{
 	actions?: {
 		text: string;
 		primary?: boolean,
+		danger?: boolean,
 		callback: (...args: any[]) => void;
 	}[];
 	showOkButton?: boolean;
 	showCancelButton?: boolean;
 	cancelableByBgClick?: boolean;
+	okText?: string;
+	cancelText?: string;
 	allowMfm?: boolean;
 }>(), {
 	type: 'info',
@@ -103,17 +120,37 @@ const emit = defineEmits<{
 	(ev: 'closed'): void;
 }>();
 
-const modal = ref<InstanceType<typeof MkModal>>();
+const modal = shallowRef<InstanceType<typeof MkModal>>();
 
-const inputValue = ref(props.input?.default || null);
-const selectedValue = ref(props.select?.default || null);
+const inputValue = ref<string | number | null>(props.input?.default ?? null);
+const selectedValue = ref(props.select?.default ?? null);
 
-function done(canceled: boolean, result?) {
+let disabledReason = $ref<null | 'charactersExceeded' | 'charactersBelow'>(null);
+const okButtonDisabled = $computed<boolean>(() => {
+	if (props.input) {
+		if (props.input.minLength) {
+			if ((inputValue.value || inputValue.value === '') && (inputValue.value as string).length < props.input.minLength) {
+				disabledReason = 'charactersBelow';
+				return true;
+			}
+		}
+		if (props.input.maxLength) {
+			if (inputValue.value && (inputValue.value as string).length > props.input.maxLength) {
+				disabledReason = 'charactersExceeded';
+				return true;
+			}
+		}
+	}
+
+	return false;
+});
+
+const done = (canceled: boolean, result?): void => {
 	emit('done', { canceled, result });
 	modal.value?.close();
-}
+};
 
-async function ok() {
+const ok = async (): Promise<void> => {
 	if (!props.showOkButton) return;
 
 	const result =
@@ -121,27 +158,27 @@ async function ok() {
 		props.select ? selectedValue.value :
 		true;
 	done(false, result);
-}
+};
 
-function cancel() {
+const cancel = (): void => {
 	done(true);
-}
-/*
-function onBgClick() {
-	if (props.cancelableByBgClick) cancel();
-}
-*/
-function onKeydown(evt: KeyboardEvent) {
-	if (evt.key === 'Escape' || evt.key === 'Esc') cancel();
-}
+};
 
-function onInputKeydown(evt: KeyboardEvent) {
+// const onBgClick = (): void => {
+// 	if (props.cancelableByBgClick) cancel();
+// };
+
+const onKeydown = (evt: KeyboardEvent): void => {
+	if (evt.key === 'Escape') cancel();
+};
+
+const onInputKeydown = (evt: KeyboardEvent): void => {
 	if (evt.key === 'Enter') {
 		evt.preventDefault();
 		evt.stopPropagation();
 		ok();
 	}
-}
+};
 
 onMounted(() => {
 	document.addEventListener('keydown', onKeydown);
@@ -152,66 +189,67 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.mk-dialog {
+<style lang="scss" module>
+.root {
 	position: relative;
+	margin: auto;
 	padding: 32px;
 	min-width: 320px;
 	max-width: 480px;
 	box-sizing: border-box;
 	text-align: center;
 	background: var(--panel);
-	border-radius: var(--radius);
+	border-radius: 16px;
+}
 
-	> .icon {
-		font-size: 24px;
+.icon {
+	font-size: 24px;
 
-		&.info {
-			color: #55c4dd;
-		}
-
-		&.success {
-			color: var(--success);
-		}
-
-		&.error {
-			color: var(--error);
-		}
-
-		&.warning {
-			color: var(--warn);
-		}
-
-		> * {
-			display: block;
-			margin: 0 auto;
-		}
-
-		& + header {
-			margin-top: 16px;
-		}
+	& + .title {
+		margin-top: 8px;
 	}
+}
 
-	> header {
-		margin: 0 0 8px 0;
-		font-weight: bold;
-		font-size: 20px;
+.iconInner {
+	display: block;
+	margin: 0 auto;
+}
 
-		& + .body {
-			margin-top: 8px;
-		}
+.type_info {
+	color: #55c4dd;
+}
+
+.type_success {
+	color: var(--success);
+}
+
+.type_error {
+	color: var(--error);
+}
+
+.type_warning {
+	color: var(--warn);
+}
+
+.title {
+	margin: 0 0 8px 0;
+	font-weight: bold;
+	font-size: 1.1em;
+
+	& + .text {
+		margin-top: 8px;
 	}
+}
 
-	> .body {
-		margin: 16px 0 0 0;
-	}
+.text {
+	margin: 16px 0 0 0;
+}
 
-	> .buttons {
-		margin-top: 16px;
-
-		> * {
-			margin: 0 8px;
-		}
-	}
+.buttons {
+	margin-top: 16px;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 </style>

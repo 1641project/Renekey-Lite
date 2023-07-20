@@ -139,7 +139,7 @@ onMounted(() => {
 	padding: 12px 0 12px 16px;
 }
 
-:global(.max-width_500px) {
+:where(:global(.max-width_500px)) {
 	.title {
 		padding: 8px 10px 8px 0;
 	}

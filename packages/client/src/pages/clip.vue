@@ -61,7 +61,7 @@ const headerActions = $computed(() => clip && isOwned ? [{
 				type: 'string',
 				label: i18n.ts.name,
 				default: clip.name,
-				max: 100,
+				maxLength: 100,
 			},
 			description: {
 				type: 'string',
@@ -69,7 +69,7 @@ const headerActions = $computed(() => clip && isOwned ? [{
 				multiline: true,
 				label: i18n.ts.description,
 				default: clip.description,
-				max: 2048,
+				maxLength: 2048,
 			},
 			isPublic: {
 				type: 'boolean',

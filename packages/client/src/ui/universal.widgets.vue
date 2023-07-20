@@ -1,33 +1,40 @@
 <template>
-<div class="efzpzdvf">
-	<MkWidgets :edit="editMode" :widgets="defaultStore.reactiveState.widgets.value" @add-widget="addWidget" @remove-widget="removeWidget" @update-widget="updateWidget" @update-widgets="updateWidgets" @exit="editMode = false"/>
+<div>
+	<MkWidgets :edit="editMode" :widgets="widgets" @add-widget="addWidget" @remove-widget="removeWidget" @update-widget="updateWidget" @update-widgets="updateWidgets" @exit="editMode = false"/>
 
 	<button v-if="editMode" class="_textButton" style="font-size: 0.9em;" @click="editMode = false"><i class="ti ti-check"></i> {{ i18n.ts.editWidgetsExit }}</button>
-	<button v-else class="_textButton mk-widget-edit" style="font-size: 0.9em;" @click="editMode = true"><i class="ti ti-pencil"></i> {{ i18n.ts.editWidgets }}</button>
+	<button v-else class="_textButton" data-cy-widget-edit :class="$style.edit" style="font-size: 0.9em;" @click="editMode = true"><i class="ti ti-pencil"></i> {{ i18n.ts.editWidgets }}</button>
 </div>
 </template>
 
+<script lang="ts">
+let editMode = $ref(false);
+</script>
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { } from 'vue';
 import MkWidgets, { Widget, EditedWidget } from '@/components/MkWidgets.vue';
 import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
 
-const emit = defineEmits<{
-	(ev: 'mounted', el: HTMLElement | null): void;
-}>();
+const props = withDefaults(defineProps<{
+	// null = 全てのウィジェットを表示
+	// left = place: leftだけを表示
+	// right = rightとnullを表示
+	place?: 'left' | null | 'right';
+}>(), {
+	place: null,
+});
 
-let editMode = $ref(false);
-const rootEl = $ref<HTMLDivElement>();
-
-onMounted(() => {
-	emit('mounted', rootEl ?? null);
+const widgets = $computed(() => {
+	if (props.place === null) return defaultStore.reactiveState.widgets.value;
+	if (props.place === 'left') return defaultStore.reactiveState.widgets.value.filter(w => w.place === 'left');
+	return defaultStore.reactiveState.widgets.value.filter(w => w.place !== 'left');
 });
 
 const addWidget = (widget: Widget): void => {
 	defaultStore.set('widgets', [{
 		...widget,
-		place: null,
+		place: props.place,
 	}, ...defaultStore.state.widgets]);
 };
 
@@ -39,34 +46,31 @@ const updateWidget = ({ id, data }: EditedWidget): void => {
 	defaultStore.set('widgets', defaultStore.state.widgets.map(w => w.id === id ? {
 		...w,
 		data,
+		place: props.place,
 	} : w));
 };
 
-const updateWidgets = (widgets: Widget[]): void => {
-	defaultStore.set('widgets', widgets);
+const updateWidgets = (thisWidgets: Widget[]): void => {
+	if (props.place === null) {
+		defaultStore.set('widgets', thisWidgets);
+		return;
+	}
+	if (props.place === 'left') {
+		defaultStore.set('widgets', [
+			...thisWidgets.map(w => ({ ...w, place: 'left' })),
+			...defaultStore.state.widgets.filter(w => w.place !== 'left' && !thisWidgets.some(t => w.id === t.id)),
+		]);
+		return;
+	}
+	defaultStore.set('widgets', [
+		...defaultStore.state.widgets.filter(w => w.place === 'left' && !thisWidgets.some(t => w.id === t.id)),
+		...thisWidgets.map(w => ({ ...w, place: 'right' })),
+	]);
 };
 </script>
 
-<style lang="scss" scoped>
-.efzpzdvf {
-	position: sticky;
-	height: min-content;
-	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
-	min-height: 100dvh;
-	padding: var(--margin) 0;
-	box-sizing: border-box;
-
-	> * {
-		margin: var(--margin) 0;
-		width: 300px;
-
-		&:first-child {
-			margin-top: 0;
-		}
-	}
-
-	> .add {
-		margin: 0 auto;
-	}
+<style lang="scss" module>
+.edit {
+	width: 100%;
 }
 </style>

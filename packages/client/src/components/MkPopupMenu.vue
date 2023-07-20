@@ -1,6 +1,6 @@
 <template>
-<MkModal ref="modal" v-slot="{ type, maxHeight }" :z-priority="'high'" :src="src" :transparent-bg="true" @click="done(null)" @closed="emit('closed')">
-	<MkMenu :items="items" :align="align" :width="width" :max-height="maxHeight" :as-drawer="type === 'drawer'" class="sfhdhdhq" :class="{ drawer: type === 'drawer' }" @close="done"/>
+<MkModal ref="modal" v-slot="{ type, maxHeight }" :z-priority="'high'" :src="src" :transparent-bg="true" @click="done(null)" @close="emit('closing')" @closed="emit('closed')">
+	<MkMenu :items="items" :align="align" :width="width" :max-height="maxHeight" :as-drawer="type === 'drawer'" :class="{ [$style.drawer]: type === 'drawer' }" @close="done"/>
 </MkModal>
 </template>
 
@@ -19,11 +19,12 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'done', result: unknown): void;
+	(ev: 'done', v: unknown): void;
 	(ev: 'closed'): void;
+	(ev: 'closing'): void;
 }>();
 
-const modal = $ref<InstanceType<typeof MkModal>>();
+const modal = $shallowRef<InstanceType<typeof MkModal>>();
 
 const done = (result: unknown): void => {
 	modal?.close();
@@ -31,12 +32,10 @@ const done = (result: unknown): void => {
 };
 </script>
 
-<style lang="scss" scoped>
-.sfhdhdhq {
-	&.drawer {
-		border-radius: 24px;
-		border-bottom-right-radius: 0;
-		border-bottom-left-radius: 0;
-	}
+<style lang="scss" module>
+.drawer {
+	border-radius: 24px;
+	border-bottom-right-radius: 0;
+	border-bottom-left-radius: 0;
 }
 </style>

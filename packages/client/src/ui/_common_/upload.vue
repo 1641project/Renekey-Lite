@@ -95,10 +95,10 @@ const zIndex = os.claimZIndex('high');
 	font-size: 0.8em;
 	flex-shrink: 0;
 }
-.mk-uploader > ol > li > .top > .status > .initing {
-}
-.mk-uploader > ol > li > .top > .status > .kb {
-}
+// .mk-uploader > ol > li > .top > .status > .initing {
+// }
+// .mk-uploader > ol > li > .top > .status > .kb {
+// }
 .mk-uploader > ol > li > .top > .status > .percentage {
 	display: inline-block;
 	width: 48px;
@@ -124,7 +124,7 @@ const zIndex = os.claimZIndex('high');
 	background: var(--accent);
 }
 .mk-uploader > ol > li > progress::-webkit-progress-bar {
-	//background: var(--accentAlpha01);
+	// background: var(--accentAlpha01);
 	background: transparent;
 }
 </style>

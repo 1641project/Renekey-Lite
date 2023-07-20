@@ -30,7 +30,7 @@
 				</li>
 				<li v-if="registration.stage >= 1">
 					<MkForm :disabled="registration.stage != 1 || registration.saving">
-						<MkInput v-model="keyName" :max="30">
+						<MkInput v-model="keyName" :max-length="30">
 							<template #label>{{ i18n.ts.securityKeyName }}</template>
 						</MkInput>
 						<MkButton :disabled="keyName.length == 0" @click="registerKey">{{ i18n.ts.registerSecurityKey }}</MkButton>

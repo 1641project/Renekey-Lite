@@ -44,6 +44,7 @@ export type Widget = {
 	name: string;
 	id: string;
 	data: Record<string, any>;
+	place: string | null;
 };
 
 export type EditedWidget = Pick<Widget, 'id' | 'data'>;

@@ -1,8 +1,7 @@
 // NIRAX --- A lightweight router
 
 import { EventEmitter } from 'eventemitter3';
-import { Component, shallowRef, ShallowRef } from 'vue';
-import { pleaseLogin } from '@/scripts/please-login';
+import { Component, onMounted, shallowRef, ShallowRef } from 'vue';
 import { safeURIDecode } from '@/scripts/safe-uri-decode';
 
 type RouteDef = {
@@ -23,11 +22,12 @@ type ParsedPath = (string | {
 	optional?: boolean;
 })[];
 
-export type Resolved = { route: RouteDef; props: Map<string, string>; child?: Resolved; };
+export type Resolved = { route: RouteDef; props: Map<string, string | boolean>; child?: Resolved; };
 
-function parsePath(path: string): ParsedPath {
+const parsePath = (path: string): ParsedPath => {
 	const res = [] as ParsedPath;
 
+	// eslint-disable-next-line no-param-reassign
 	path = path.substring(1);
 
 	for (const part of path.split('/')) {
@@ -48,7 +48,7 @@ function parsePath(path: string): ParsedPath {
 	}
 
 	return res;
-}
+};
 
 export class Router extends EventEmitter<{
 	change: (ctx: {
@@ -75,15 +75,19 @@ export class Router extends EventEmitter<{
 	public currentRef: ShallowRef<Resolved> = shallowRef();
 	public currentRoute: ShallowRef<RouteDef> = shallowRef();
 	private currentPath: string;
+	private isLoggedIn: boolean;
+	private notFoundPageComponent: Component;
 	private currentKey = Date.now().toString();
 
 	public navHook: ((path: string, flag?: any) => boolean) | null = null;
 
-	constructor(routes: Router['routes'], currentPath: Router['currentPath']) {
+	constructor(routes: Router['routes'], currentPath: Router['currentPath'], isLoggedIn: boolean, notFoundPageComponent: Component) {
 		super();
 
 		this.routes = routes;
 		this.currentPath = currentPath;
+		this.isLoggedIn = isLoggedIn;
+		this.notFoundPageComponent = notFoundPageComponent;
 		this.navigate(currentPath, null, false);
 	}
 
@@ -102,10 +106,10 @@ export class Router extends EventEmitter<{
 
 		if (_DEV_) console.log('Routing: ', path, queryString);
 
-		function check(routes: RouteDef[], _parts: string[]): Resolved | null {
+		const check = (routes: RouteDef[], _parts: string[]): Resolved | null => {
 			forEachRouteLoop:
 			for (const route of routes) {
-				let parts = [ ..._parts ];
+				let parts = [..._parts];
 				const props = new Map<string, string>();
 
 				pathMatchLoop:
@@ -195,7 +199,7 @@ export class Router extends EventEmitter<{
 			}
 
 			return null;
-		}
+		};
 
 		const _parts = path.split('/').filter(part => part.length !== 0);
 
@@ -212,8 +216,9 @@ export class Router extends EventEmitter<{
 			throw new Error('no route found for: ' + path);
 		}
 
-		if (res.route.loginRequired) {
-			pleaseLogin('/');
+		if (res.route.loginRequired && !this.isLoggedIn) {
+			res.route.component = this.notFoundPageComponent;
+			res.props.set('showLoginPopup', true);
 		}
 
 		const isSamePath = beforePath === path;
@@ -263,13 +268,35 @@ export class Router extends EventEmitter<{
 		});
 	}
 
-	public replace(path: string, key?: string | null, emitEvent = true) {
+	public replace(path: string, key?: string | null) {
 		this.navigate(path, key);
-		if (emitEvent) {
-			this.emit('replace', {
-				path,
-				key: this.currentKey,
-			});
-		}
 	}
 }
+
+export const useScrollPositionManager = (getScrollContainer: () => HTMLElement | null | undefined, router: Router): void => {
+	const scrollPosStore = new Map<string, number>();
+
+	onMounted(() => {
+		const scrollContainer = getScrollContainer();
+
+		if (!scrollContainer) return;
+
+		scrollContainer.addEventListener('scroll', () => {
+			scrollPosStore.set(router.getCurrentKey(), scrollContainer.scrollTop);
+		}, { passive: true });
+
+		router.addListener('change', ctx => {
+			const scrollPos = scrollPosStore.get(ctx.key) ?? 0;
+			scrollContainer.scroll({ top: scrollPos, behavior: 'instant' });
+			if (scrollPos !== 0) {
+				window.setTimeout(() => { // 遷移直後はタイミングによってはコンポーネントが復元し切ってない可能性も考えられるため少し時間を空けて再度スクロール
+					scrollContainer.scroll({ top: scrollPos, behavior: 'instant' });
+				}, 100);
+			}
+		});
+
+		router.addListener('same', () => {
+			scrollContainer.scroll({ top: 0, behavior: 'smooth' });
+		});
+	});
+};

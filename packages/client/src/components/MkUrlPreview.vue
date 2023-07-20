@@ -311,7 +311,7 @@ onUnmounted(() => {
 	margin-top: 6px;
 }
 
-:global(.max-width_400px) {
+:where(:global(.max-width_400px)) {
 	.link {
 		font-size: 12px;
 	}
@@ -325,7 +325,7 @@ onUnmounted(() => {
 	}
 }
 
-:global(.max-width_350px) {
+:where(:global(.max-width_350px)) {
 	.link {
 		font-size: 10px;
 

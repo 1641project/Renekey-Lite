@@ -1,4 +1,4 @@
-<!-- eslint-disable vue/multi-word-component-names -->
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
 <div class="matxzzsk">
 	<div class="label" @click="focus">
@@ -64,7 +64,8 @@ const props = defineProps<{
 	manualSave?: boolean;
 	small?: boolean;
 	large?: boolean;
-	max?: number;
+	minLength?: number;
+	maxLength?: number;
 }>();
 
 const emit = defineEmits<{
@@ -90,7 +91,7 @@ const height =
 
 const counter = textCounter({
 	text: v,
-	maxChars: props.max ?? Infinity,
+	maxChars: props.maxLength ?? Infinity,
 });
 
 const focus = (): void => inputEl.value?.focus();

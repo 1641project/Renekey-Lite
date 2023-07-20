@@ -1,5 +1,5 @@
 <template>
-<div ref="rootEl" class="_panel" :class="[$style.root, { [$style.naked]: naked, [$style.thin]: thin, [$style.hideHeader]: !showHeader, [$style.scrollable]: scrollable, [$style.closed]: !showBody }]">
+<div ref="rootEl" v-size="{ max: [380] }" class="_panel" :class="[$style.root, { [$style.naked]: naked, [$style.thin]: thin, [$style.hideHeader]: !showHeader, [$style.scrollable]: scrollable, [$style.closed]: !showBody }]">
 	<header v-if="showHeader" ref="headerEl" :class="$style.header">
 		<div :class="$style.title">
 			<span :class="$style.titleIcon"><slot name="icon"></slot></span>
@@ -132,6 +132,7 @@ onUnmounted(() => {
 
 <style lang="scss" module>
 .transition_toggle_enterActive, .transition_toggle_leaveActive {
+	overflow-y: hidden; // fallback (overflow: clip)
 	overflow-y: clip;
 	transition: opacity 0.5s, height 0.5s !important;
 }
@@ -246,7 +247,7 @@ onUnmounted(() => {
 	}
 }
 
-:global(.max-width_380px) {
+:where(:global(.max-width_380px)) {
 	.title {
 		padding: 8px 10px;
 		font-size: 0.9em;

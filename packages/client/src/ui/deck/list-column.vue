@@ -1,15 +1,15 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" @parent-focus="$event => emit('parent-focus', $event)">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
 	<template #header>
 		<i class="ti ti-list"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId" @after="() => emit('loaded')"/>
+	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId"/>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { } from 'vue';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
 import MkTimeline from '@/components/MkTimeline.vue';
@@ -21,18 +21,7 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const emit = defineEmits<{
-	(ev: 'loaded'): void;
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
-}>();
-
-const timeline = $ref<InstanceType<typeof MkTimeline>>();
-
-onMounted(() => {
-	if (props.column.listId == null) {
-		setList();
-	}
-});
+const timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
 
 const setList = async (): Promise<void> => {
 	const lists = await os.api('users/lists/list');
@@ -51,9 +40,24 @@ const setList = async (): Promise<void> => {
 	});
 };
 
-const menu = [{
-	icon: 'ti ti-pencil',
-	text: i18n.ts.selectList,
-	action: setList,
-}];
+const editList = (): void => {
+	os.pageWindow('my/lists/' + props.column.listId);
+};
+
+if (props.column.listId == null) {
+	setList();
+}
+
+const menu = [
+	{
+		icon: 'ti ti-pencil',
+		text: i18n.ts.selectList,
+		action: setList,
+	},
+	{
+		icon: 'ti ti-settings',
+		text: i18n.ts.editList,
+		action: editList,
+	},
+];
 </script>

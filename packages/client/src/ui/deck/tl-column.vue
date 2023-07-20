@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState" @parent-focus="$event => emit('parent-focus', $event)">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
 	<template #header>
 		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
@@ -8,14 +8,14 @@
 		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<div v-if="disabled" class="iwaalbte">
-		<p>
-			<i class="ti ti-minus-circle"></i>
-			{{ i18n.t('disabled-timeline.title') }}
+	<div v-if="disabled" :class="$style.disabled">
+		<p :class="$style.disabledTitle">
+			<i class="ti ti-circle-minus"></i>
+			{{ i18n.ts._disabledTimeline.title }}
 		</p>
-		<p class="desc">{{ i18n.t('disabled-timeline.description') }}</p>
+		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
 	</div>
-	<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl" :src="column.tl" @after="() => emit('loaded')" @queue="queueUpdated" @note="onNote"/>
+	<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl" :src="column.tl"/>
 </XColumn>
 </template>
 
@@ -26,22 +26,15 @@ import { removeColumn, updateColumn, Column } from './deck-store';
 import MkTimeline from '@/components/MkTimeline.vue';
 import * as os from '@/os';
 import { $i } from '@/account';
-import { instance } from '@/instance';
 import { i18n } from '@/i18n';
+import { instance } from '@/instance';
 
 const props = defineProps<{
 	column: Column;
 	isStacked: boolean;
 }>();
 
-const emit = defineEmits<{
-	(ev: 'loaded'): void;
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
-}>();
-
 let disabled = $ref(false);
-let indicated = $ref(false);
-let columnActive = $ref(true);
 
 onMounted(() => {
 	if (props.column.tl == null) {
@@ -49,7 +42,8 @@ onMounted(() => {
 	} else if ($i) {
 		disabled = !$i.isModerator && !$i.isAdmin && (
 			instance.disableLocalTimeline && ['local', 'social'].includes(props.column.tl) ||
-			instance.disableGlobalTimeline && ['global'].includes(props.column.tl));
+			instance.disableGlobalTimeline && ['global'].includes(props.column.tl)
+		);
 	}
 });
 
@@ -81,43 +75,25 @@ const setType = async (): Promise<void> => {
 	});
 };
 
-const queueUpdated = (q: number): void => {
-	if (columnActive) {
-		indicated = q !== 0;
-	}
-};
-
-const onNote = (): void => {
-	if (!columnActive) {
-		indicated = true;
-	}
-};
-
-const onChangeActiveState = (state: boolean): void => {
-	columnActive = state;
-
-	if (columnActive) {
-		indicated = false;
-	}
-};
-
-const menu = [{
-	icon: 'ti ti-pencil',
-	text: i18n.ts.timeline,
-	action: setType,
-}];
+const menu = [
+	{
+		icon: 'ti ti-pencil',
+		text: i18n.ts.timeline,
+		action: setType,
+	},
+];
 </script>
 
-<style lang="scss" scoped>
-.iwaalbte {
+<style lang="scss" module>
+.disabled {
 	text-align: center;
+}
 
-	> p {
-		margin: 16px;
+.disabledTitle {
+	margin: 16px;
+}
 
-		&.desc {
-			font-size: 14px;
-		}
-	}
+.disabledDescription {
+	font-size: 90%;
 }
 </style>

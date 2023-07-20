@@ -2,18 +2,21 @@
 <div class="azykntjl">
 	<div class="body">
 		<div class="left">
+			<button v-click-anime class="item _button instance" @click="openInstanceMenu">
+				<img :src="instance.iconUrl ?? (instance as any).faviconUrl ?? '/favicon.ico'" class="_ghost"/>
+			</button>
 			<MkA v-click-anime v-tooltip="i18n.ts.timeline" class="item index" active-class="active" to="/" exact>
 				<i class="ti ti-home ti-fw"></i>
 			</MkA>
 			<template v-for="item in menu" :key="item">
 				<div v-if="item === '-'" class="divider"></div>
-				<component :is="navbarItemDef[item].to ? 'MkA' : 'button'" v-else-if="navbarItemDef[item] && (navbarItemDef[item].show !== false)" v-click-anime v-tooltip="i18n.ts[navbarItemDef[item].title]" class="item _button" :class="item" active-class="active" :to="navbarItemDef[item].to" v-on="navbarItemDef[item].action ? { click: navbarItemDef[item].action } : {}">
+				<component :is="navbarItemDef[item].to ? 'MkA' : 'button'" v-else-if="navbarItemDef[item] && (navbarItemDef[item].show !== false)" v-click-anime v-tooltip="navbarItemDef[item].title" class="item _button" :class="item" active-class="active" :to="navbarItemDef[item].to" v-on="navbarItemDef[item].action ? { click: navbarItemDef[item].action } : {}">
 					<i class="ti-fw" :class="navbarItemDef[item].icon"></i>
 					<span v-if="navbarItemDef[item].indicated" class="indicator"><i class="_indicatorCircle"></i></span>
 				</component>
 			</template>
 			<div class="divider"></div>
-			<MkA v-if="$i.isAdmin || $i.isModerator" v-click-anime v-tooltip="i18n.ts.controlPanel" class="item" active-class="active" to="/admin" :behavior="settingsWindowed ? 'modalWindow' : null">
+			<MkA v-if="$i!.isAdmin || $i!.isModerator" v-click-anime v-tooltip="i18n.ts.controlPanel" class="item" active-class="active" to="/admin" :behavior="settingsWindowed ? 'window' : null">
 				<i class="ti ti-dashboard ti-fw"></i>
 			</MkA>
 			<button v-click-anime class="item _button" @click="more">
@@ -22,13 +25,13 @@
 			</button>
 		</div>
 		<div class="right">
-			<MkA v-click-anime v-tooltip="i18n.ts.settings" class="item" active-class="active" to="/settings" :behavior="settingsWindowed ? 'modalWindow' : null">
+			<MkA v-click-anime v-tooltip="i18n.ts.settings" class="item" active-class="active" to="/settings" :behavior="settingsWindowed ? 'window' : null">
 				<i class="ti ti-settings ti-fw"></i>
 			</MkA>
 			<button v-click-anime class="item _button account" @click="openAccountMenu">
-				<MkAvatar :user="$i" class="avatar"/><MkAcct class="acct" :user="$i"/>
+				<MkAvatar :user="$i!" class="avatar"/><MkAcct class="acct" :user="$i!"/>
 			</button>
-			<div class="post" @click="post">
+			<div class="post" @click="os.post()">
 				<MkButton class="button" gradate full rounded>
 					<i class="ti ti-pencil ti-fw"></i>
 				</MkButton>
@@ -38,86 +41,48 @@
 </div>
 </template>
 
-<script lang="ts">
-import { defineAsyncComponent, defineComponent } from 'vue';
-import { host } from '@/config';
+<script lang="ts" setup>
+import { computed, defineAsyncComponent, onMounted } from 'vue';
+import { openInstanceMenu } from './_common_/common';
 import * as os from '@/os';
 import { navbarItemDef } from '@/navbar';
-import { $i, openAccountMenu } from '@/account';
+import { openAccountMenu as openAccountMenu_, $i } from '@/account';
 import MkButton from '@/components/MkButton.vue';
-import { mainRouter } from '@/router';
 import { defaultStore } from '@/store';
+import { instance } from '@/instance';
 import { i18n } from '@/i18n';
 
-export default defineComponent({
-	components: {
-		MkButton,
-	},
+const WINDOW_THRESHOLD = 1400;
 
-	data() {
-		return {
-			host: host,
-			accounts: [],
-			connection: null,
-			navbarItemDef: navbarItemDef,
-			settingsWindowed: false,
-			i18n,
-			$i,
-		};
-	},
+let settingsWindowed = $ref(window.innerWidth > WINDOW_THRESHOLD);
+let menu = $ref(defaultStore.state.menu);
+// const menuDisplay = computed(defaultStore.makeGetterSetter('menuDisplay'));
+let otherNavItemIndicated = computed<boolean>(() => {
+	for (const def in navbarItemDef) {
+		if (menu.includes(def)) continue;
+		if (navbarItemDef[def].indicated) return true;
+	}
+	return false;
+});
 
-	computed: {
-		menu(): string[] {
-			return defaultStore.state.menu;
-		},
+const more = (ev: MouseEvent): void => {
+	os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
+		src: ev.currentTarget ?? ev.target,
+		anchor: { x: 'center', y: 'bottom' },
+	}, {
+	}, 'closed');
+};
 
-		otherNavItemIndicated(): boolean {
-			for (const def in this.navbarItemDef) {
-				if (this.menu.includes(def)) continue;
-				if (this.navbarItemDef[def].indicated) return true;
-			}
-			return false;
-		},
-	},
+const openAccountMenu = (ev: MouseEvent): void => {
+	openAccountMenu_({
+		withExtraOperation: true,
+	}, ev);
+};
 
-	watch: {
-		'defaultStore.reactiveState.menuDisplay.value'() {
-			this.calcViewState();
-		},
-	},
-
-	created() {
-		window.addEventListener('resize', this.calcViewState);
-		this.calcViewState();
-	},
-
-	methods: {
-		calcViewState() {
-			this.settingsWindowed = (window.innerWidth > 1400);
-		},
-
-		post() {
-			os.post();
-		},
-
-		search() {
-			mainRouter.push('/search');
-		},
-
-		more(ev) {
-			os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
-				src: ev.currentTarget ?? ev.target,
-				anchor: { x: 'center', y: 'bottom' },
-			}, {
-			}, 'closed');
-		},
-
-		openAccountMenu: (ev) => {
-			openAccountMenu({
-				withExtraOperation: true,
-			}, ev);
-		},
-	},
+onMounted(() => {
+	window.addEventListener('resize', () => {
+		settingsWindowed = (window.innerWidth >= WINDOW_THRESHOLD);
+	}, { passive: true });
 });
 </script>
 
@@ -188,6 +153,25 @@ export default defineComponent({
 				height: 16px;
 				margin: 0 10px;
 				border-right: solid 0.5px var(--divider);
+			}
+
+			> .instance {
+				display: inline-block;
+				position: relative;
+				width: 56px;
+				height: 100%;
+				vertical-align: bottom;
+
+				> img {
+					display: inline-block;
+					width: 24px;
+					position: absolute;
+					top: 0;
+					right: 0;
+					bottom: 0;
+					left: 0;
+					margin: auto;
+				}
 			}
 
 			> .post {

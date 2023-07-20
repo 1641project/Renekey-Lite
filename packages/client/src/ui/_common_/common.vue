@@ -9,8 +9,25 @@
 
 <XUpload v-if="uploads.length > 0"/>
 
-<TransitionGroup :name="defaultStore.state.animation ? 'notification' : ''" tag="div" class="notification-toast">
-	<XNotification v-for="notification in notifications" :key="notification.id" :notification="notification" class="notification"/>
+<TransitionGroup
+	tag="div"
+	:class="['notification-toast', $style.notifications, {
+		[$style.notificationsPosition_leftTop]: defaultStore.state.notificationPosition === 'leftTop',
+		[$style.notificationsPosition_leftBottom]: defaultStore.state.notificationPosition === 'leftBottom',
+		[$style.notificationsPosition_rightTop]: defaultStore.state.notificationPosition === 'rightTop',
+		[$style.notificationsPosition_rightBottom]: defaultStore.state.notificationPosition === 'rightBottom',
+		[$style.notificationsStackAxis_vertical]: defaultStore.state.notificationStackAxis === 'vertical',
+		[$style.notificationsStackAxis_horizontal]: defaultStore.state.notificationStackAxis === 'horizontal',
+	}]"
+	:move-class="defaultStore.state.animation ? $style.transition_notification_move : ''"
+	:enter-active-class="defaultStore.state.animation ? $style.transition_notification_enterActive : ''"
+	:leave-active-class="defaultStore.state.animation ? $style.transition_notification_leaveActive : ''"
+	:enter-from-class="defaultStore.state.animation ? $style.transition_notification_enterFrom : ''"
+	:leave-to-class="defaultStore.state.animation ? $style.transition_notification_leaveTo : ''"
+>
+	<div v-for="notification in notifications" :key="notification.id" :class="$style.notification">
+		<XNotification :notification="notification"/>
+	</div>
 </TransitionGroup>
 
 <XStreamIndicator/>
@@ -42,8 +59,8 @@ const dev = _DEV_;
 
 let notifications = $ref<Misskey.entities.Notification[]>([]);
 
-function onNotification(notification) {
-	if ($i.mutingNotificationTypes.includes(notification.type)) return;
+const onNotification = (notification: Misskey.entities.Notification): void => {
+	if ($i!.mutingNotificationTypes.includes(notification.type)) return;
 
 	if (document.visibilityState === 'visible') {
 		useStream().send('readNotification', {
@@ -61,7 +78,7 @@ function onNotification(notification) {
 	}
 
 	sound.play('notification');
-}
+};
 
 if ($i) {
 	const connection = useStream().useChannel('main', null, 'UI');
@@ -74,45 +91,108 @@ if ($i) {
 }
 </script>
 
-<style lang="scss" scoped>
-.notification-move, .notification-enter-active, .notification-leave-active {
+<style lang="scss" module>
+.transition_notification_move,
+.transition_notification_enterActive,
+.transition_notification_leaveActive {
 	transition: opacity 0.3s, transform 0.3s !important;
 }
-.notification-enter-from, .notification-leave-to {
+.transition_notification_enterFrom {
+	opacity: 0;
+	transform: translateX(250px);
+}
+.transition_notification_leaveTo {
 	opacity: 0;
 	transform: translateX(-250px);
 }
 
-.notification-toast {
+.notifications {
 	position: fixed;
 	z-index: 3900000;
-	left: 0;
-	width: 250px;
-	top: 32px;
-	padding: 0 32px;
+	padding: 0 var(--margin);
 	pointer-events: none;
-	container-type: inline-size;
+	display: flex;
 
-	> .notification {
-		& + .notification {
-			margin-top: 8px;
-		}
+	&.notificationsPosition_leftTop {
+		top: var(--margin);
+		left: 0;
 	}
 
-	@media (max-width: 500px) {
-		top: initial;
-		bottom: calc(var(--minBottomSpacing) + var(--margin));
-		padding: 0 var(--margin);
-		display: flex;
-		flex-direction: column-reverse;
+	&.notificationsPosition_rightTop {
+		top: var(--margin);
+		right: 0;
+	}
 
-		> .notification {
-			& + .notification {
-				margin-top: 0;
-				margin-bottom: 8px;
+	&.notificationsPosition_leftBottom {
+		bottom: calc(var(--minBottomSpacing) + var(--margin));
+		left: 0;
+	}
+
+	&.notificationsPosition_rightBottom {
+		bottom: calc(var(--minBottomSpacing) + var(--margin));
+		right: 0;
+	}
+
+	&.notificationsStackAxis_vertical {
+		width: 250px;
+
+		&.notificationsPosition_leftTop,
+		&.notificationsPosition_rightTop {
+			flex-direction: column;
+
+			.notification {
+				& + .notification {
+					margin-top: 8px;
+				}
+			}
+		}
+
+		&.notificationsPosition_leftBottom,
+		&.notificationsPosition_rightBottom {
+			flex-direction: column-reverse;
+
+			.notification {
+				& + .notification {
+					margin-bottom: 8px;
+				}
 			}
 		}
 	}
+
+	&.notificationsStackAxis_horizontal {
+		width: 100%;
+
+		&.notificationsPosition_leftTop,
+		&.notificationsPosition_leftBottom {
+			flex-direction: row;
+
+			.notification {
+				& + .notification {
+					margin-left: 8px;
+				}
+			}
+		}
+
+		&.notificationsPosition_rightTop,
+		&.notificationsPosition_rightBottom {
+			flex-direction: row-reverse;
+
+			.notification {
+				& + .notification {
+					margin-right: 8px;
+				}
+			}
+		}
+
+		.notification {
+			width: 250px;
+			flex-shrink: 0;
+		}
+	}
+}
+
+.notification {
+	container-type: inline-size;
 }
 </style>
 
@@ -138,6 +218,7 @@ if ($i) {
 	z-index: 4000000;
 	top: 15px;
 	right: 15px;
+	pointer-events: none;
 
 	&:before {
 		content: "";

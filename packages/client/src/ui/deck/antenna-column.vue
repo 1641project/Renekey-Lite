@@ -1,10 +1,10 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" @parent-focus="$event => emit('parent-focus', $event)">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
 	<template #header>
 		<i class="ti ti-antenna"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<MkTimeline v-if="column.antennaId" ref="timeline" src="antenna" :antenna="column.antennaId" @after="() => emit('loaded')"/>
+	<MkTimeline v-if="column.antennaId" ref="timeline" src="antenna" :antenna="column.antennaId"/>
 </XColumn>
 </template>
 
@@ -21,12 +21,7 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const emit = defineEmits<{
-	(ev: 'loaded'): void;
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
-}>();
-
-const timeline = $ref<InstanceType<typeof MkTimeline>>();
+const timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
 
 onMounted(() => {
 	if (props.column.antennaId == null) {
@@ -51,11 +46,22 @@ const setAntenna = async (): Promise<void> => {
 	});
 };
 
-const menu = [{
-	icon: 'ti ti-pencil',
-	text: i18n.ts.selectAntenna,
-	action: setAntenna,
-}];
+const editAntenna = (): void => {
+	os.pageWindow(`my/antennas/${props.column.antennaId}`);
+};
+
+const menu = [
+	{
+		icon: 'ti ti-pencil',
+		text: i18n.ts.selectAntenna,
+		action: setAntenna,
+	},
+	{
+		icon: 'ti ti-settings',
+		text: i18n.ts.editAntenna,
+		action: editAntenna,
+	},
+];
 
 // const focus = (): void => {
 // 	timeline?.focus();

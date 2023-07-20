@@ -48,13 +48,14 @@ import MkKeyValue from '@/components/MkKeyValue.vue';
 import FormTextarea from '@/components/form/textarea.vue';
 import FormSplit from '@/components/form/split.vue';
 import FormInfo from '@/components/MkInfo.vue';
+import { arrayAt } from '@/scripts/tms/utils';
 
 const props = defineProps<{
 	path: string;
 }>();
 
 const scope = $computed(() => props.path.split('/').slice(0, -1));
-const key = $computed(() => props.path.split('/').at(-1));
+const key = $computed(() => arrayAt(props.path.split('/'), -1));
 
 let value = $ref(null);
 let valueForEditor = $ref(null);

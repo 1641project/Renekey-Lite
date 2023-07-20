@@ -12,28 +12,32 @@
 >
 	<template #header>
 		<template v-if="pageMetadata?.value">
-			<i v-if="pageMetadata.value.icon" class="icon" :class="pageMetadata.value.icon" style="margin-right: 0.5em;"></i>
+			<i v-if="pageMetadata.value.icon" :class="pageMetadata.value.icon" style="margin-right: 0.5em;"></i>
 			<span>{{ pageMetadata.value.title }}</span>
 		</template>
 	</template>
 
-	<div class="yrolvcoq" :style="{ background: pageMetadata?.value?.bg }">
+	<div ref="contents" :class="$style.root" style="container-type: inline-size;">
 		<RouterView :key="reloadCount" :router="router"/>
 	</div>
 </MkWindow>
 </template>
 
 <script lang="ts" setup>
-import { ComputedRef, provide } from 'vue';
+import { ComputedRef, onMounted, onUnmounted, provide, shallowRef } from 'vue';
 import RouterView from '@/components/global/RouterView.vue';
 import MkWindow from '@/components/MkWindow.vue';
 import { popout as _popout } from '@/scripts/popout';
 import { copyText } from '@/scripts/tms/clipboard';
 import { url } from '@/config';
-import { mainRouter, routes } from '@/router';
-import { Router } from '@/nirax';
+import { mainRouter, routes, page } from '@/router';
+import { $i } from '@/account';
+import { Router, useScrollPositionManager } from '@/nirax';
 import { i18n } from '@/i18n';
 import { PageMetadata, provideMetadataReceiver } from '@/scripts/page-metadata';
+import { openingWindowsCount } from '@/os';
+import { getScrollContainer } from '@/scripts/scroll';
+import { arrayAt } from '@/scripts/tms/utils';
 
 const props = defineProps<{
 	initialPath: string;
@@ -43,10 +47,11 @@ const emit = defineEmits<{
 	(ev: 'closed'): void;
 }>();
 
-const router = new Router(routes, props.initialPath);
+const router = new Router(routes, props.initialPath, !!$i, page(() => import('@/pages/not-found.vue')));
 
+const contents = shallowRef<HTMLElement>();
 let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
-const windowEl = $ref<InstanceType<typeof MkWindow>>();
+let windowEl = $shallowRef<InstanceType<typeof MkWindow>>();
 const history = $ref<{ path: string; key: any; }[]>([{
 	path: router.getCurrentPath(),
 	key: router.getCurrentKey(),
@@ -88,6 +93,7 @@ provideMetadataReceiver((info) => {
 });
 provide('shouldOmitHeaderTitle', true);
 provide('shouldHeaderThin', true);
+provide('forceSpacerMin', true);
 
 const contextmenu = $computed(() => ([{
 	icon: 'ti ti-player-eject',
@@ -114,7 +120,7 @@ const contextmenu = $computed(() => ([{
 
 const back = (): void => {
 	history.pop();
-	router.replace(history[history.length - 1].path, history[history.length - 1].key);
+	router.replace(arrayAt(history, -1)!.path, arrayAt(history, -1)!.key);
 };
 
 const reload = (): void => {
@@ -135,14 +141,26 @@ const popout = (): void => {
 	windowEl?.close();
 };
 
+useScrollPositionManager(() => getScrollContainer(contents.value ?? null), router);
+
+onMounted(() => {
+	openingWindowsCount.value++;
+});
+
+onUnmounted(() => {
+	openingWindowsCount.value--;
+});
+
 defineExpose({
 	close,
 });
 </script>
 
-<style lang="scss" scoped>
-.yrolvcoq {
+<style lang="scss" module>
+.root {
 	min-height: 100%;
 	background: var(--bg);
+
+	--margin: var(--marginHalf);
 }
 </style>

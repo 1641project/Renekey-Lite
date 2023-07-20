@@ -7,17 +7,17 @@
 			<XSidebar/>
 		</div>
 		<div v-else ref="widgetsLeft" class="widgets left">
-			<XWidgets :place="'left'" @mounted="attachSticky(widgetsLeft)"/>
+			<XWidgets place="left" :margin-top="'var(--margin)'" @mounted="attachSticky(widgetsLeft)"/>
 		</div>
 
-		<main class="main" :style="{ background: pageMetadata?.value?.bg }" @contextmenu.stop="onContextmenu">
-			<div class="content">
+		<main class="main" @contextmenu.stop="onContextmenu">
+			<div class="content" style="container-type: inline-size;">
 				<RouterView/>
 			</div>
 		</main>
 
 		<div v-if="isDesktop" ref="widgetsRight" class="widgets right">
-			<XWidgets :place="null" @mounted="attachSticky(widgetsRight)"/>
+			<XWidgets :place="showMenuOnTop ? 'right' : null" :margin-top="showMenuOnTop ? '0' : 'var(--margin)'" @mounted="attachSticky(widgetsRight)"/>
 		</div>
 	</div>
 
@@ -28,11 +28,11 @@
 			@click="widgetsShowing = false"
 			@touchstart.passive="widgetsShowing = false"
 		></div>
-	</transition>
+	</Transition>
 
 	<Transition :name="defaultStore.state.animation ? 'tray' : ''">
 		<XWidgets v-if="widgetsShowing" class="tray"/>
-	</transition>
+	</Transition>
 
 	<iframe v-if="defaultStore.state.aiChanMode" ref="live2d" class="ivnzpscs" src="https://misskey-dev.github.io/mascot-web/?scale=2&y=1.4"></iframe>
 
@@ -53,7 +53,7 @@ import { disableContextmenu } from '@/scripts/touch';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
 const XHeaderMenu = defineAsyncComponent(() => import('./classic.header.vue'));
-const XWidgets = defineAsyncComponent(() => import('./classic.widgets.vue'));
+const XWidgets = defineAsyncComponent(() => import('./universal.widgets.vue'));
 
 const DESKTOP_THRESHOLD = 1100;
 
@@ -65,7 +65,7 @@ let fullView = $ref(false);
 let globalHeaderHeight = $ref(0);
 const wallpaper = localStorage.getItem('wallpaper') != null;
 const showMenuOnTop = $computed(() => defaultStore.state.menuDisplay === 'top');
-let live2d = $ref<HTMLIFrameElement>();
+let live2d = $shallowRef<HTMLIFrameElement>();
 let widgetsLeft = $ref();
 let widgetsRight = $ref();
 
@@ -77,26 +77,27 @@ provideMetadataReceiver((info) => {
 	}
 });
 provide('shouldHeaderThin', showMenuOnTop);
-provide('shouldSpacerMin', true);
+provide('forceSpacerMin', true);
 
-function attachSticky(el) {
-	const sticky = new StickySidebar(el, defaultStore.state.menuDisplay === 'top' ? 0 : 16, defaultStore.state.menuDisplay === 'top' ? 60 : 0); // TODO: ヘッダーの高さを60pxと決め打ちしているのを直す
+const attachSticky = (el: HTMLElement): void => {
+	const sticky = new StickySidebar(el, 0, defaultStore.state.menuDisplay === 'top' ? 60 : 0); // TODO: ヘッダーの高さを60pxと決め打ちしているのを直す
 	window.addEventListener('scroll', () => {
 		sticky.calc(window.scrollY);
 	}, { passive: true });
-}
+};
 
-function top() {
-	window.scroll({ top: 0, behavior: 'smooth' });
-}
+// const top = (): void => {
+// 	window.scroll({ top: 0, behavior: 'smooth' });
+// };
 
-function onContextmenu(ev: MouseEvent) {
+const onContextmenu = (ev: MouseEvent): void => {
 	if (disableContextmenu) return;
-	const isLink = (el: HTMLElement) => {
-		if (el.tagName === 'A') return true;
-		if (el.parentElement) {
+	const isLink = (el: HTMLElement | null): el is HTMLAnchorElement => {
+		if (el?.tagName === 'A') return true;
+		if (el?.parentElement) {
 			return isLink(el.parentElement);
 		}
+		return false;
 	};
 	if (isLink(ev.target)) return;
 	if (['INPUT', 'TEXTAREA', 'IMG', 'VIDEO', 'CANVAS'].includes(ev.target.tagName) || ev.target.attributes['contenteditable']) return;
@@ -108,41 +109,45 @@ function onContextmenu(ev: MouseEvent) {
 	}, {
 		icon: fullView ? 'ti ti-minimize' : 'ti ti-maximize',
 		text: fullView ? i18n.ts.quitFullView : i18n.ts.fullView,
-		action: () => {
+		action: (): void => {
 			fullView = !fullView;
 		},
 	}, {
 		icon: 'ti ti-window-maximize',
 		text: i18n.ts.openInWindow,
-		action: () => {
+		action: (): void => {
 			os.pageWindow(path);
 		},
 	}], ev);
-}
+};
 
-function onAiClick(ev) {
-	//if (this.live2d) this.live2d.click(ev);
-}
+// const onAiClick = (ev): void => {
+// 	if (live2d) live2d.click(ev);
+// };
 
 if (window.innerWidth < 1024) {
+	const currentUI = localStorage.getItem('ui');
+	localStorage.setItem('ui_temp', currentUI ?? 'default');
 	localStorage.setItem('ui', 'default');
 	location.reload();
 }
 
 document.documentElement.style.overflowY = 'scroll';
 
-if (defaultStore.state.widgets.length === 0) {
-	defaultStore.set('widgets', [{
-		name: 'calendar',
-		id: 'a', place: null, data: {},
-	}, {
-		name: 'notifications',
-		id: 'b', place: null, data: {},
-	}, {
-		name: 'trends',
-		id: 'c', place: null, data: {},
-	}]);
-}
+defaultStore.loaded.then(() => {
+	if (defaultStore.state.widgets.length === 0) {
+		defaultStore.set('widgets', [{
+			name: 'calendar',
+			id: 'a', place: null, data: {},
+		}, {
+			name: 'notifications',
+			id: 'b', place: null, data: {},
+		}, {
+			name: 'trends',
+			id: 'c', place: null, data: {},
+		}]);
+	}
+});
 
 onMounted(() => {
 	window.addEventListener('resize', () => {
@@ -238,7 +243,6 @@ onMounted(() => {
 			min-width: 0;
 			width: 750px;
 			margin: 0 16px 0 0;
-			background: var(--panel);
 			border-left: solid 1px var(--divider);
 			border-right: solid 1px var(--divider);
 			border-radius: 0;
@@ -250,7 +254,7 @@ onMounted(() => {
 		> .widgets {
 			//--panelBorder: none;
 			width: 300px;
-			margin-top: 16px;
+			padding-bottom: calc(var(--margin) + env(safe-area-inset-bottom, 0px));
 
 			@media (max-width: $widgets-hide-threshold) {
 				display: none;
@@ -306,7 +310,7 @@ onMounted(() => {
 		z-index: 1001;
 		height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
 		height: 100dvh;
-		padding: var(--margin);
+		padding: var(--margin) var(--margin) calc(var(--margin) + env(safe-area-inset-bottom, 0px));
 		box-sizing: border-box;
 		overflow: auto;
 		background: var(--bg);

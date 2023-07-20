@@ -57,7 +57,7 @@ defineProps<{
 	text-overflow: ellipsis;
 }
 
-:global(.min-width_350px) {
+:where(:global(.min-width_350px)) {
 	.avatar {
 		margin: 0 10px 0 0 !important;
 		width: 44px !important;
@@ -65,7 +65,7 @@ defineProps<{
 	}
 }
 
-:global(.min-width_500px) {
+:where(:global(.min-width_500px)) {
 	.avatar {
 		margin: 0 12px 0 0 !important;
 		width: 48px !important;

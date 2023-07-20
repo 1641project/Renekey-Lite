@@ -1,35 +1,39 @@
 <template>
-<!-- sectionを利用しているのは、deck.vue側でcolumnに対してfirst-of-typeを効かせるため -->
-<section
-	v-hotkey="keymap" class="dnpfarvg _narrow_"
-	:class="{ paged: isMainColumn, naked, active, isStacked, draghover, dragging, dropready }"
+<div
+	:class="[$style.root, { [$style.paged]: isMainColumn, [$style.naked]: naked, [$style.active]: active, [$style.draghover]: draghover, [$style.dragging]: dragging, [$style.dropready]: dropready }]"
 	@dragover.prevent.stop="onDragover"
 	@dragleave="onDragleave"
 	@drop.prevent.stop="onDrop"
 >
 	<header
-		:class="{ indicated }"
+		:class="[$style.header]"
 		draggable="true"
 		@click="goTop"
 		@dragstart="onDragstart"
 		@dragend="onDragend"
 		@contextmenu.prevent.stop="onContextmenu"
+		@wheel="emit('headerWheel', $event)"
 	>
-		<button v-if="isStacked && !isMainColumn" class="toggleActive _button" @click="toggleActive">
+		<svg viewBox="0 0 256 128" :class="$style.tabShape">
+			<g transform="matrix(6.2431,0,0,6.2431,-677.417,-29.3839)">
+				<path d="M149.512,4.707L108.507,4.707C116.252,4.719 118.758,14.958 118.758,14.958C118.758,14.958 121.381,25.283 129.009,25.209L149.512,25.209L149.512,4.707Z" style="fill: var(--deckBg);"/>
+			</g>
+		</svg>
+		<div :class="$style.color"></div>
+		<button v-if="isStacked && !isMainColumn" :class="$style.toggleActive" class="_button" @click="toggleActive">
 			<template v-if="active"><i class="ti ti-chevron-up"></i></template>
 			<template v-else><i class="ti ti-chevron-down"></i></template>
 		</button>
-		<div class="action">
-			<slot name="action"></slot>
-		</div>
-		<span class="header"><slot name="header"></slot></span>
-		<button v-tooltip="i18n.ts.reload" class="reload _button" @click.stop="reload"><i class="ti ti-reload"></i></button>
-		<button v-tooltip="i18n.ts.settings" class="menu _button" @click.stop="showSettingsMenu"><i class="ti ti-dots"></i></button>
+		<span :class="$style.title"><slot name="header"></slot></span>
+		<svg viewBox="0 0 16 16" version="1.1" :class="$style.grabber">
+			<path fill="currentColor" d="M10 13a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm0-4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm-4 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5-9a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path>
+		</svg>
+		<button v-tooltip="i18n.ts.settings" :class="$style.menu" class="_button" @click.stop="showSettingsMenu"><i class="ti ti-dots"></i></button>
 	</header>
-	<div v-show="active" :key="`${column.id}:${reloadCount}`" ref="body">
+	<div v-if="active" ref="body" :class="$style.body">
 		<slot></slot>
 	</div>
-</section>
+</div>
 </template>
 
 <script lang="ts" setup>
@@ -43,27 +47,24 @@ import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
 
 provide('shouldHeaderThin', true);
 provide('shouldOmitHeaderTitle', true);
-provide('shouldSpacerMin', true);
+provide('forceSpacerMin', true);
 
 const props = withDefaults(defineProps<{
 	column: Column;
 	isStacked?: boolean;
 	naked?: boolean;
-	indicated?: boolean;
 	menu?: MenuItem[];
 }>(), {
 	isStacked: false,
 	naked: false,
-	indicated: false,
-	menu: () => [],
+	menu: undefined,
 });
 
 const emit = defineEmits<{
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
-	(ev: 'change-active-state', v: boolean): void;
+	(ev: 'headerWheel', ctx: WheelEvent): void;
 }>();
 
-let body = $ref<HTMLDivElement>();
+const body = $shallowRef<HTMLDivElement | null>(null);
 
 let dragging = $ref(false);
 watch($$(dragging), v => os.deckGlobalEvents.emit(v ? 'column.dragStart' : 'column.dragEnd'));
@@ -71,18 +72,8 @@ watch($$(dragging), v => os.deckGlobalEvents.emit(v ? 'column.dragStart' : 'colu
 let draghover = $ref(false);
 let dropready = $ref(false);
 
-let reloadCount = $ref(0);
-
 const isMainColumn = $computed(() => props.column.type === 'main');
 const active = $computed(() => props.column.active !== false);
-watch($$(active), v => emit('change-active-state', v));
-
-const keymap = $computed(() => ({
-	'shift+up': (): void => emit('parent-focus', 'up'),
-	'shift+down': (): void => emit('parent-focus', 'down'),
-	'shift+left': (): void => emit('parent-focus', 'left'),
-	'shift+right': (): void => emit('parent-focus', 'right'),
-}));
 
 onMounted(() => {
 	os.deckGlobalEvents.on('column.dragStart', onOtherDragStart);
@@ -93,10 +84,6 @@ onBeforeUnmount(() => {
 	os.deckGlobalEvents.off('column.dragStart', onOtherDragStart);
 	os.deckGlobalEvents.off('column.dragEnd', onOtherDragEnd);
 });
-
-const reload = (): void => {
-	reloadCount++;
-};
 
 const onOtherDragStart = (): void => {
 	dropready = true;
@@ -134,7 +121,7 @@ const getMenu = (): MenuItem[] => {
 					label: i18n.ts.flexible,
 					default: props.column.flexible,
 				},
-			});
+			}) as any;
 			if (canceled) return;
 			updateColumn(props.column.id, result);
 		},
@@ -188,7 +175,7 @@ const getMenu = (): MenuItem[] => {
 		},
 	}];
 
-	if (props.menu.length !== 0) {
+	if (props.menu && props.menu.length !== 0) {
 		items = [...props.menu, null, ...items];
 	}
 
@@ -196,8 +183,7 @@ const getMenu = (): MenuItem[] => {
 };
 
 const showSettingsMenu = (ev: MouseEvent): void => {
-	const el = getHtmlElementFromEvent(ev) ?? undefined;
-	os.popupMenu(getMenu(), el);
+	os.popupMenu(getMenu(), getHtmlElementFromEvent(ev) ?? undefined);
 };
 
 const onContextmenu = (ev: MouseEvent): void => {
@@ -220,7 +206,7 @@ const onDragstart = (ev: DragEvent): void => {
 
 	// Chromeのバグで、Dragstartハンドラ内ですぐにDOMを変更する(=リアクティブなプロパティを変更する)とDragが終了してしまう
 	// SEE: https://stackoverflow.com/questions/19639969/html5-dragend-event-firing-immediately
-	window.setTimeout((): void => {
+	window.setTimeout(() => {
 		dragging = true;
 	}, 10);
 };
@@ -262,15 +248,16 @@ const onDrop = (ev: DragEvent): void => {
 };
 </script>
 
-<style lang="scss" scoped>
-.dnpfarvg {
+<style lang="scss" module>
+.root {
 	--root-margin: 10px;
-	--deckColumnHeaderHeight: 42px;
+	--deckColumnHeaderHeight: 38px;
 
 	height: 100%;
 	overflow: hidden; // fallback (overflow: clip)
 	overflow: clip;
 	contain: strict;
+	border-radius: 10px;
 
 	&.draghover {
 		&:after {
@@ -310,10 +297,7 @@ const onDrop = (ev: DragEvent): void => {
 	&:not(.active) {
 		flex-basis: var(--deckColumnHeaderHeight);
 		min-height: var(--deckColumnHeaderHeight);
-
-		> header.indicated {
-			box-shadow: 4px 0px var(--accent) inset;
-		}
+		border-bottom-right-radius: 0;
 	}
 
 	&.naked {
@@ -321,101 +305,118 @@ const onDrop = (ev: DragEvent): void => {
 		-webkit-backdrop-filter: var(--blur, blur(10px));
 		backdrop-filter: var(--blur, blur(10px));
 
-		> header {
+		> .header {
 			background: transparent;
 			box-shadow: none;
+			color: var(--fg);
+		}
 
-			> button {
-				color: var(--fg);
+		> .body {
+			background: transparent !important;
+
+			&::-webkit-scrollbar-track {
+				background: transparent;
 			}
+			scrollbar-color: var(--scrollbarHandle) transparent;
 		}
 	}
 
 	&.paged {
 		background: var(--bg) !important;
-	}
 
-	> header {
-		position: relative;
-		display: flex;
-		z-index: 2;
-		line-height: var(--deckColumnHeaderHeight);
-		height: var(--deckColumnHeaderHeight);
-		padding: 0 16px;
-		font-size: 0.9em;
-		color: var(--panelHeaderFg);
-		background: var(--panelHeaderBg);
-		box-shadow: 0 1px 0 0 var(--panelHeaderDivider);
-		cursor: pointer;
+		> .body {
+			background: var(--bg) !important;
+			overflow-y: scroll !important;
 
-		&, * {
-			user-select: none;
-		}
-
-		&.indicated {
-			box-shadow: 0 3px 0 0 var(--accent);
-		}
-
-		> .header {
-			display: inline-block;
-			align-items: center;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-
-		> span:only-of-type {
-			width: 100%;
-		}
-
-		> .toggleActive,
-		> .action > ::v-deep(*),
-		> .reload,
-		> .menu {
-			z-index: 1;
-			width: var(--deckColumnHeaderHeight);
-			line-height: var(--deckColumnHeaderHeight);
-			color: var(--faceTextButton);
-
-			&:hover {
-				color: var(--faceTextButtonHover);
+			&::-webkit-scrollbar-track {
+				background: inherit;
 			}
-
-			&:active {
-				color: var(--faceTextButtonActive);
-			}
-		}
-
-		> .toggleActive, > .action {
-			margin-left: -16px;
-		}
-
-		> .action {
-			z-index: 1;
-		}
-
-		> .action:empty {
-			display: none;
-		}
-
-		> .reload {
-			margin-left: auto;
-			margin-right: 0px;
-		}
-
-		> .menu {
-			margin-left: auto;
-			margin-right: -16px;
+			scrollbar-color: var(--scrollbarHandle) transparent;
 		}
 	}
+}
 
-	> div {
-		height: calc(100% - var(--deckColumnHeaderHeight));
-		overflow-y: auto;
-		overflow-x: hidden; // fallback (overflow: clip)
-		overflow-x: clip;
-		-webkit-overflow-scrolling: touch;
-		box-sizing: border-box;
+.header {
+	position: relative;
+	display: flex;
+	z-index: 2;
+	line-height: var(--deckColumnHeaderHeight);
+	height: var(--deckColumnHeaderHeight);
+	padding: 0 16px 0 30px;
+	font-size: 0.9em;
+	color: var(--panelHeaderFg);
+	background: var(--panelHeaderBg);
+	box-shadow: 0 1px 0 0 var(--panelHeaderDivider);
+	cursor: pointer;
+	user-select: none;
+}
+
+.color {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	width: 3px;
+	height: calc(100% - 24px);
+	background: var(--accent);
+	border-radius: 999px;
+}
+
+.tabShape {
+	position: absolute;
+	top: 0;
+	right: -8px;
+	width: auto;
+	height: calc(100% - 6px);
+}
+
+.title {
+	display: inline-block;
+	align-items: center;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 100%;
+}
+
+.toggleActive,
+.menu {
+	z-index: 1;
+	width: var(--deckColumnHeaderHeight);
+	line-height: var(--deckColumnHeaderHeight);
+}
+
+.toggleActive {
+	margin-left: -16px;
+}
+
+.grabber {
+	margin-left: auto;
+	margin-right: 10px;
+	padding: 8px 8px;
+	box-sizing: border-box;
+	height: var(--deckColumnHeaderHeight);
+	cursor: move;
+	user-select: none;
+	opacity: 0.5;
+}
+
+.menu {
+	margin-right: -16px;
+}
+
+.body {
+	height: calc(100% - var(--deckColumnHeaderHeight));
+	overflow-y: auto;
+	overflow-x: hidden; // fallback (overflow: clip)
+	overflow-x: clip;
+	overscroll-behavior-y: contain;
+	box-sizing: border-box;
+	container-type: size;
+	background-color: var(--bg);
+
+	&::-webkit-scrollbar-track {
+		background: var(--panel);
 	}
+	scrollbar-color: var(--scrollbarHandle) var(--panel);
 }
 </style>

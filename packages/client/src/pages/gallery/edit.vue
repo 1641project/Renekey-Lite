@@ -7,7 +7,7 @@
 				<template #label>{{ i18n.ts.title }}</template>
 			</FormInput>
 
-			<FormTextarea v-model="description" :max="500">
+			<FormTextarea v-model="description" :max-length="500">
 				<template #label>{{ i18n.ts.description }}</template>
 			</FormTextarea>
 

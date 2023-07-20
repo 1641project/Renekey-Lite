@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" @parent-focus="$event => emit('parent-focus', $event)">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
 	<template #header>
 		<i class="ti ti-device-tv"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
@@ -8,13 +8,13 @@
 		<div style="padding: 8px; text-align: center;">
 			<MkButton primary gradate rounded inline @click="post"><i class="ti ti-pencil"></i></MkButton>
 		</div>
-		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" @after="() => emit('loaded')"/>
+		<MkTimeline ref="timeline" src="channel" :channel="column.channelId"/>
 	</template>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { } from 'vue';
 import * as Misskey from 'misskey-js';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
@@ -28,26 +28,15 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const emit = defineEmits<{
-	(ev: 'loaded'): void;
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
-}>();
-
 const timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
 let channel = $shallowRef<Misskey.entities.Channel>();
-
-onMounted(() => {
-	if (props.column.channelId == null) {
-		setChannel();
-	}
-});
 
 const setChannel = async (): Promise<void> => {
 	const channels = await os.api('channels/followed', {
 		limit: 100,
 	});
 
-	const { canceled, result: _channel } = await os.select({
+	const { canceled, result: channel_ } = await os.select({
 		title: i18n.ts.selectChannel,
 		items: channels.map(x => ({
 			value: x, text: x.name,
@@ -57,8 +46,8 @@ const setChannel = async (): Promise<void> => {
 	if (canceled) return;
 
 	updateColumn(props.column.id, {
-		channelId: _channel.id,
-		name: _channel.name,
+		channelId: channel_.id,
+		name: channel_.name,
 	});
 };
 
@@ -73,6 +62,10 @@ const post = async (): Promise<void> => {
 		channel,
 	});
 };
+
+if (props.column.channelId == null) {
+	setChannel();
+}
 
 const menu = [{
 	icon: 'ti ti-pencil',

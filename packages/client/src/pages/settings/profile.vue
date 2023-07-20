@@ -1,4 +1,4 @@
-<!-- eslint-disable vue/multi-word-component-names -->
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
 <div class="_formRoot">
 	<div class="llvierxe" :style="{ backgroundImage: $i?.bannerUrl ? `url(${ $i.bannerUrl })` : undefined }">
@@ -9,16 +9,16 @@
 		<MkButton primary rounded class="bannerEdit" @click="changeBanner">{{ i18n.ts._profile.changeBanner }}</MkButton>
 	</div>
 
-	<FormInput v-model="profile.name" :max="50" manual-save class="_formBlock">
+	<FormInput v-model="profile.name" :max-length="50" manual-save class="_formBlock">
 		<template #label>{{ i18n.ts._profile.name }}</template>
 	</FormInput>
 
-	<FormTextarea v-model="profile.description" :max="500" tall manual-save class="_formBlock">
+	<FormTextarea v-model="profile.description" :max-length="500" tall manual-save class="_formBlock">
 		<template #label>{{ i18n.ts._profile.description }}</template>
 		<template #caption>{{ i18n.ts._profile.youCanIncludeHashtags }}</template>
 	</FormTextarea>
 
-	<FormInput v-model="profile.location" :max="50" manual-save class="_formBlock">
+	<FormInput v-model="profile.location" :max-length="50" manual-save class="_formBlock">
 		<template #label>{{ i18n.ts.location }}</template>
 		<template #prefix><i class="ti ti-map-pin"></i></template>
 	</FormInput>

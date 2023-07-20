@@ -1,4 +1,4 @@
-<!-- eslint-disable vue/multi-word-component-names -->
+<!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
 <div class="adhpbeos">
 	<div class="label" @click="focus">
@@ -53,7 +53,8 @@ const props = defineProps<{
 	pre?: boolean;
 	debounce?: boolean;
 	manualSave?: boolean;
-	max?: number;
+	minLength?: number;
+	maxLength?: number;
 }>();
 
 const emit = defineEmits<{
@@ -72,7 +73,7 @@ const inputEl = ref<HTMLTextAreaElement>();
 
 const counter = textCounter({
 	text: v,
-	maxChars: props.max ?? Infinity,
+	maxChars: props.maxLength ?? Infinity,
 });
 
 const focus = (): void => inputEl.value?.focus();
