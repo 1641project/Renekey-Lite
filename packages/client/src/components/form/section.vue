@@ -1,54 +1,59 @@
 <template>
-<div class="vrtktovh _formBlock">
-	<div class="label"><slot name="label"></slot></div>
-	<div class="main _formRoot">
+<div :class="[$style.root, { [$style.rootFirst]: first }]">
+	<div :class="[$style.label, { [$style.labelFirst]: first }]">
+		<slot name="label"></slot>
+	</div>
+	<div :class="$style.main">
 		<slot></slot>
 	</div>
-	<p class="caption"><slot name="caption"></slot></p>
+	<div :class="$style.caption">
+		<slot name="caption"></slot>
+	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
+defineProps<{
+	first?: boolean;
+}>();
 </script>
 
-<style lang="scss" scoped>
-.vrtktovh {
+<style lang="scss" module>
+.root {
 	border-top: solid 0.5px var(--divider);
-	border-bottom: solid 0.5px var(--divider);
+}
 
-	& + .vrtktovh {
-		border-top: none;
+.rootFirst,
+.root:where(:first-child) {
+	border-top: none;
+}
+
+.label {
+	font-weight: bold;
+	padding: 1.5em 0 0 0;
+	margin: 0 0 16px 0;
+
+	&:empty {
+		display: none;
 	}
+}
 
-	&:first-child {
-		border-top: none;
-	}
+.labelFirst,
+:where(.root:first-child) > .label {
+	padding-top: 0;
+}
 
-	&:last-child {
-		border-bottom: none;
-	}
+.main {
+	margin: 1.5em 0 0 0;
+}
 
-	> .label {
-		font-weight: bold;
-		margin: 1.5em 0 16px 0;
+.caption {
+	font-size: 0.85em;
+	margin: 8px 0 0 0;
+	color: var(--fgTransparentWeak);
 
-		&:empty {
-			display: none;
-		}
-	}
-
-	> .caption {
-		font-size: 0.85em;
-		padding: 8px 0 0 0;
-		color: var(--fgTransparentWeak);
-
-		&:empty {
-			display: none;
-		}
-	}
-
-	> .main {
-		margin: 1.5em 0;
+	&:empty {
+		display: none;
 	}
 }
 </style>
