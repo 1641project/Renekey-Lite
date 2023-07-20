@@ -94,92 +94,94 @@ function reduceFrequency(): void {
 </script>
 
 <style lang="scss" scoped>
-.qiivuoyo {
-	background-size: auto auto;
-	background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--ad) 8px, var(--ad) 14px );
+@layer global {
+	.qiivuoyo {
+		background-size: auto auto;
+		background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--ad) 8px, var(--ad) 14px );
 
-	> .main {
-		text-align: center;
+		> .main {
+			text-align: center;
 
-		> a {
-			display: inline-block;
-			position: relative;
-			vertical-align: bottom;
+			> a {
+				display: inline-block;
+				position: relative;
+				vertical-align: bottom;
 
-			&:hover {
+				&:hover {
+					> img {
+						filter: contrast(120%);
+					}
+				}
+
 				> img {
-					filter: contrast(120%);
+					display: block;
+					object-fit: contain;
+					margin: auto;
+					border-radius: 5px;
+				}
+
+				> .menu {
+					position: absolute;
+					top: 1px;
+					right: 1px;
+
+					> .info-circle {
+						border: 3px solid var(--panel);
+						border-radius: 50%;
+						background: var(--panel);
+					}
 				}
 			}
 
-			> img {
-				display: block;
-				object-fit: contain;
-				margin: auto;
-				border-radius: 5px;
+			&.square {
+				> a ,
+				> a > img {
+					max-width: min(300px, 100%);
+					max-height: 300px;
+				}
 			}
 
-			> .menu {
-				position: absolute;
-				top: 1px;
-				right: 1px;
+			&.horizontal {
+				padding: 8px;
 
-				> .info-circle {
-					border: 3px solid var(--panel);
-					border-radius: 50%;
-					background: var(--panel);
+				> a ,
+				> a > img {
+					max-width: min(600px, 100%);
+					max-height: 80px;
+				}
+			}
+
+			&.horizontal-big {
+				padding: 8px;
+
+				> a ,
+				> a > img {
+					max-width: min(600px, 100%);
+					max-height: 250px;
+				}
+			}
+
+			&.vertical {
+				> a ,
+				> a > img {
+					max-width: min(100px, 100%);
 				}
 			}
 		}
 
-		&.square {
-			> a ,
-			> a > img {
-				max-width: min(300px, 100%);
-				max-height: 300px;
-			}
-		}
-
-		&.horizontal {
+		> .menu {
 			padding: 8px;
+			text-align: center;
 
-			> a ,
-			> a > img {
-				max-width: min(600px, 100%);
-				max-height: 80px;
-			}
-		}
+			> .body {
+				padding: 8px;
+				margin: 0 auto;
+				max-width: 400px;
+				border: solid 1px var(--divider);
 
-		&.horizontal-big {
-			padding: 8px;
-
-			> a ,
-			> a > img {
-				max-width: min(600px, 100%);
-				max-height: 250px;
-			}
-		}
-
-		&.vertical {
-			> a ,
-			> a > img {
-				max-width: min(100px, 100%);
-			}
-		}
-	}
-
-	> .menu {
-		padding: 8px;
-		text-align: center;
-
-		> .body {
-			padding: 8px;
-			margin: 0 auto;
-			max-width: 400px;
-			border: solid 1px var(--divider);
-
-			> .button {
-				margin: 8px auto;
+				> .button {
+					margin: 8px auto;
+				}
 			}
 		}
 	}

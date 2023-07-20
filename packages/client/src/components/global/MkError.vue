@@ -19,23 +19,25 @@ const emit = defineEmits<{
 </script>
 
 <style lang="scss" scoped>
-.mjndxjcg {
-	padding: 32px;
-	text-align: center;
+@layer global {
+	.mjndxjcg {
+		padding: 32px;
+		text-align: center;
 
-	> p {
-		margin: 0 0 8px 0;
-	}
+		> p {
+			margin: 0 0 8px 0;
+		}
 
-	> .button {
-		margin: 0 auto;
-	}
+		> .button {
+			margin: 0 auto;
+		}
 
-	> img {
-		vertical-align: bottom;
-		height: 128px;
-		margin-bottom: 16px;
-		border-radius: 16px;
+		> img {
+			vertical-align: bottom;
+			height: 128px;
+			margin-bottom: 16px;
+			border-radius: 16px;
+		}
 	}
 }
 </style>

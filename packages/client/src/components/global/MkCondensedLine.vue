@@ -59,14 +59,16 @@ watch(content, (value, oldValue) => {
 </script>
 
 <style lang="scss" module>
-.container {
-	display: inline-block;
-	max-width: 100%;
-	transform-origin: 0;
-}
+@layer global {
+	.container {
+		display: inline-block;
+		max-width: 100%;
+		transform-origin: 0;
+	}
 
-.content {
-	display: inline-block;
-	white-space: nowrap;
+	.content {
+		display: inline-block;
+		white-space: nowrap;
+	}
 }
 </style>

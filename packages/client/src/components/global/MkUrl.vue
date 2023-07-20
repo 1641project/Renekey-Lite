@@ -57,36 +57,38 @@ useTooltip(el, (showing) => {
 </script>
 
 <style lang="scss" module>
-.root {
-	word-break: break-all;
-}
+@layer global {
+	.root {
+		word-break: break-all;
+	}
 
-.icon {
-	padding-left: 2px;
-	font-size: 0.9em;
-}
+	.icon {
+		padding-left: 2px;
+		font-size: 0.9em;
+	}
 
-.self {
-	font-weight: bold;
-}
+	.self {
+		font-weight: bold;
+	}
 
-.schema {
-	opacity: 0.5;
-}
+	.schema {
+		opacity: 0.5;
+	}
 
-.hostname {
-	font-weight: bold;
-}
+	.hostname {
+		font-weight: bold;
+	}
 
-.pathname {
-	opacity: 0.8;
-}
+	.pathname {
+		opacity: 0.8;
+	}
 
-.query {
-	opacity: 0.5;
-}
+	.query {
+		opacity: 0.5;
+	}
 
-.hash {
-	font-style: italic;
+	.hash {
+		font-style: italic;
+	}
 }
 </style>

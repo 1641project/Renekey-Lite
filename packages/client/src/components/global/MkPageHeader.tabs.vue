@@ -180,79 +180,81 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" module>
-.tabs {
-	display: block;
-	position: relative;
-	margin: 0;
-	height: var(--height);
-	font-size: 0.8em;
-	text-align: center;
-	overflow-x: auto;
-	overflow-y: hidden; // fallback (overflow: clip)
-	overflow-y: clip;
-	scrollbar-width: none;
+@layer global {
+	.tabs {
+		display: block;
+		position: relative;
+		margin: 0;
+		height: var(--height);
+		font-size: 0.8em;
+		text-align: center;
+		overflow-x: auto;
+		overflow-y: hidden; // fallback (overflow: clip)
+		overflow-y: clip;
+		scrollbar-width: none;
 
-	&::-webkit-scrollbar {
-		display: none;
-	}
-}
-
-.tabsInner {
-	display: inline-block;
-	height: var(--height);
-	white-space: nowrap;
-}
-
-.tab {
-	display: inline-block;
-	position: relative;
-	padding: 0 10px;
-	height: 100%;
-	font-weight: normal;
-	opacity: 0.7;
-
-	&:hover {
-		opacity: 1;
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
 
-	&.active {
-		opacity: 1;
+	.tabsInner {
+		display: inline-block;
+		height: var(--height);
+		white-space: nowrap;
 	}
 
-	&.animate {
-		transition: opacity 0.2s ease;
+	.tab {
+		display: inline-block;
+		position: relative;
+		padding: 0 10px;
+		height: 100%;
+		font-weight: normal;
+		opacity: 0.7;
+
+		&:hover {
+			opacity: 1;
+		}
+
+		&.active {
+			opacity: 1;
+		}
+
+		&.animate {
+			transition: opacity 0.2s ease;
+		}
 	}
-}
 
-.tabInner {
-	display: flex;
-	align-items: center;
-}
-
-.tabIcon + .tabTitle {
-	padding-left: 4px;
-}
-
-.tabTitle {
-	overflow: hidden; // fallback (overflow: clip)
-	overflow: clip;
-
-	&.animate {
-		transition: width .15s linear, padding-left .15s linear;
+	.tabInner {
+		display: flex;
+		align-items: center;
 	}
-}
 
-.tabHighlight {
-	position: absolute;
-	bottom: 0;
-	height: 3px;
-	background: var(--accent);
-	border-radius: 999px;
-	transition: none;
-	pointer-events: none;
+	.tabIcon + .tabTitle {
+		padding-left: 4px;
+	}
 
-	&.animate {
-		transition: width 0.15s ease, left 0.15s ease;
+	.tabTitle {
+		overflow: hidden; // fallback (overflow: clip)
+		overflow: clip;
+
+		&.animate {
+			transition: width .15s linear, padding-left .15s linear;
+		}
+	}
+
+	.tabHighlight {
+		position: absolute;
+		bottom: 0;
+		height: 3px;
+		background: var(--accent);
+		border-radius: 999px;
+		transition: none;
+		pointer-events: none;
+
+		&.animate {
+			transition: width 0.15s ease, left 0.15s ease;
+		}
 	}
 }
 </style>

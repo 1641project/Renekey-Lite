@@ -32,71 +32,73 @@ const props = withDefaults(defineProps<{
 </script>
 
 <style lang="scss" module>
-@keyframes spinner {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
-.root {
-	padding: 32px;
-	text-align: center;
-	cursor: wait;
-
-	--size: 38px;
-
-	&.colored {
-		color: var(--accent);
+@layer global {
+	@keyframes spinner {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
-	&.inline {
-		display: inline;
-		padding: 0;
-		--size: 32px;
+	.root {
+		padding: 32px;
+		text-align: center;
+		cursor: wait;
+
+		--size: 38px;
+
+		&.colored {
+			color: var(--accent);
+		}
+
+		&.inline {
+			display: inline;
+			padding: 0;
+			--size: 32px;
+		}
+
+		&.mini {
+			padding: 16px;
+			--size: 32px;
+		}
+
+		&.em {
+			display: inline-block;
+			vertical-align: middle;
+			padding: 0;
+			--size: 1em;
+		}
 	}
 
-	&.mini {
-		padding: 16px;
-		--size: 32px;
+	.container {
+		position: relative;
+		width: var(--size);
+		height: var(--size);
+		margin: 0 auto;
+		opacity: 1 !important;
 	}
 
-	&.em {
-		display: inline-block;
-		vertical-align: middle;
-		padding: 0;
-		--size: 1em;
+	.spinner {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: var(--size);
+		height: var(--size);
+		fill-rule: evenodd;
+		clip-rule: evenodd;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-miterlimit: 1.5;
 	}
-}
 
-.container {
-	position: relative;
-	width: var(--size);
-	height: var(--size);
-	margin: 0 auto;
-	opacity: 1 !important;
-}
+	.bg {
+		opacity: 0.275;
+	}
 
-.spinner {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: var(--size);
-	height: var(--size);
-	fill-rule: evenodd;
-	clip-rule: evenodd;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-	stroke-miterlimit: 1.5;
-}
-
-.bg {
-	opacity: 0.275;
-}
-
-.fg {
-	animation: spinner 0.5s linear infinite;
+	.fg {
+		animation: spinner 0.5s linear infinite;
+	}
 }
 </style>

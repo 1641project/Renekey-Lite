@@ -89,22 +89,24 @@ const computeTitle = (ev: MouseEvent): void => {
 </script>
 
 <style lang="scss" module>
-.normalEmoji {
-	height: 1.25em;
-	vertical-align: -0.25em;
-}
-
-.customEmoji {
-	height: 2em;
-	vertical-align: middle;
-	transition: transform 0.2s ease;
-
-	&:hover {
-		transform: scale(1.2);
+@layer global {
+	.normalEmoji {
+		height: 1.25em;
+		vertical-align: -0.25em;
 	}
-}
 
-.noStyle {
-	height: auto !important;
+	.customEmoji {
+		height: 2em;
+		vertical-align: middle;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: scale(1.2);
+		}
+	}
+
+	.noStyle {
+		height: auto !important;
+	}
 }
 </style>
