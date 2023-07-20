@@ -137,7 +137,7 @@ export default defineComponent({
 					tag: 'div',
 					moveClass: $style.transition_list_move,
 					enterActiveClass: $style.transition_list_enterActive,
-					leaveActiveClass: $style.transition_list_leaveActive,
+					// leaveActiveClass: $style.transition_list_leaveActive,
 					enterFromClass: $style.transition_list_enterFrom,
 					leaveToClass: $style.transition_list_leaveTo,
 					onBeforeLeave,
@@ -155,29 +155,27 @@ export default defineComponent({
 <style lang="scss" module>
 .transition_list_move {
 	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1) !important;
+
+	.deny-move-transition > & {
+		transition: none !important;
+	}
 }
 .transition_list_enterActive {
 	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
-.transition_list_leaveActive {
-	transition: transform 0.15s, opacity 0.15s !important;
-}
-.direction-up {
-	> .transition_list_enterFrom,
-	> .transition_list_leaveTo {
+// .transition_list_leaveActive {
+//  }
+.transition_list_enterFrom,
+.transition_list_leaveTo {
+	.direction-up > & {
 		opacity: 0 !important;
 		transform: translateY(64px) !important;
 	}
-}
-.direction-down {
-	> .transition_list_enterFrom,
-	> .transition_list_leaveTo {
+
+	.direction-down > & {
 		opacity: 0 !important;
 		transform: translateY(-64px) !important;
 	}
-}
-.deny-move-transition > .transition_list_move {
-	transition: none !important;
 }
 
 .date-separated-list {
