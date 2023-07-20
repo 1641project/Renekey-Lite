@@ -36,6 +36,7 @@ export const routes: Router['routes'] = [{
 }, {
 	path: '/user-info/:userId',
 	component: page(() => import('./pages/user-info.vue')),
+	hash: 'initialTab',
 }, {
 	path: '/instance-info/:host',
 	component: page(() => import('./pages/instance-info.vue')),
@@ -165,14 +166,6 @@ export const routes: Router['routes'] = [{
 		name: 'profile',
 		component: page(() => import('./pages/settings/accounts.vue')),
 	}, {
-		path: '/account-info',
-		name: 'other',
-		component: page(() => import('./pages/settings/account-info.vue')),
-	}, {
-		path: '/delete-account',
-		name: 'other',
-		component: page(() => import('./pages/settings/delete-account.vue')),
-	}, {
 		path: '/other',
 		name: 'other',
 		component: page(() => import('./pages/settings/other.vue')),
@@ -210,6 +203,7 @@ export const routes: Router['routes'] = [{
 }, {
 	path: '/explore',
 	component: page(() => import('./pages/explore.vue')),
+	hash: 'initialTab',
 }, {
 	path: '/search',
 	component: page(() => import('./pages/search.vue')),
