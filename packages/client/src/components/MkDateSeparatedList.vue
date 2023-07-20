@@ -8,6 +8,7 @@ import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { MisskeyEntity } from '@/types/date-separated-list';
 
+// eslint-disable-next-line import/no-default-export
 export default defineComponent({
 	props: {
 		items: {
@@ -37,7 +38,7 @@ export default defineComponent({
 	},
 
 	setup(props, { slots, expose }) {
-		const $style = useCssModule();
+		const $style = useCssModule(); // カスタムレンダラなので使っても大丈夫
 		const getDateText = (time: string): string => {
 			const date = new Date(time).getDate();
 			const month = new Date(time).getMonth() + 1;

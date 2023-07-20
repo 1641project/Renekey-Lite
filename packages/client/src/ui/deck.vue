@@ -19,7 +19,7 @@
 					:ref="id"
 					:key="id"
 					:class="$style.column"
-					:column="columns.find(c => c.id === id)"
+					:column="columns.find(c => c.id === id)!"
 					:is-stacked="ids.length > 1"
 					@header-wheel="onWheel"
 				/>
