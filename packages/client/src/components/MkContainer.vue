@@ -205,7 +205,7 @@ onUnmounted(() => {
 .headerButtons {
 	display: flex;
 
-	> ::v-deep(button) {
+	> :global(*) {
 		width: 42px;
 		height: 100%;
 	}

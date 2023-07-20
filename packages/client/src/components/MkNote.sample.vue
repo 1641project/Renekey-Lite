@@ -297,7 +297,7 @@ const react = ({ reaction, canToggle }: {
 			box-sizing: border-box;
 			padding: 4px;
 			max-width: 100%; // はみ出し防止
-			height: 32px !important; // MkEmojiのheight上書き, 100%を指定するとGeckoエンジンで描画がバグる
+			height: 32px; // 100%を指定するとGeckoエンジンで描画がバグる
 		}
 
 		> .reactionCount {
