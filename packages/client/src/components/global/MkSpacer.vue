@@ -42,13 +42,13 @@ const forceSpacerMin = inject<boolean>('forceSpacerMin', false) || deviceKind ==
 
 	:where(:global(.max-width_450px)) {
 		&.root {
-			padding: v-bind('props.marginMin + "px"');
+			padding: v-bind('props.marginMin + "px"') !important;
 		}
 	}
 
 	:where(:global(.min-width_451px)) {
 		&.root {
-			padding: v-bind('props.marginMax + "px"');
+			padding: v-bind('props.marginMax + "px"') !important;
 		}
 	}
 }
