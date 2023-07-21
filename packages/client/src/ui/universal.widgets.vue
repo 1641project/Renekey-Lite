@@ -1,17 +1,14 @@
 <template>
-<div>
+<div ref="rootEl" class="_gaps">
 	<MkWidgets :edit="editMode" :widgets="widgets" @add-widget="addWidget" @remove-widget="removeWidget" @update-widget="updateWidget" @update-widgets="updateWidgets" @exit="editMode = false"/>
 
 	<button v-if="editMode" class="_textButton" style="font-size: 0.9em;" @click="editMode = false"><i class="ti ti-check"></i> {{ i18n.ts.editWidgetsExit }}</button>
-	<button v-else class="_textButton" data-cy-widget-edit :class="$style.edit" style="font-size: 0.9em;" @click="editMode = true"><i class="ti ti-pencil"></i> {{ i18n.ts.editWidgets }}</button>
+	<button v-else class="_textButton mk-widget-edit" data-cy-widget-edit :class="$style.edit" style="font-size: 0.9em;" @click="editMode = true"><i class="ti ti-pencil"></i> {{ i18n.ts.editWidgets }}</button>
 </div>
 </template>
 
-<script lang="ts">
-let editMode = $ref(false);
-</script>
 <script lang="ts" setup>
-import { } from 'vue';
+import { onMounted, ref, shallowRef } from 'vue';
 import MkWidgets, { Widget, EditedWidget } from '@/components/MkWidgets.vue';
 import { i18n } from '@/i18n';
 import { defaultStore } from '@/store';
@@ -24,6 +21,18 @@ const props = withDefaults(defineProps<{
 }>(), {
 	place: null,
 });
+
+const emit = defineEmits<{
+	(ev: 'mounted', el: HTMLElement): void;
+}>();
+
+const rootEl = shallowRef<HTMLElement>();
+
+onMounted(() => {
+	if (rootEl.value) emit('mounted', rootEl.value);
+});
+
+const editMode = ref(false);
 
 const widgets = $computed(() => {
 	if (props.place === null) return defaultStore.reactiveState.widgets.value;

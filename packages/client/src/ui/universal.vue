@@ -8,18 +8,18 @@
 		<div :class="$style.spacer"></div>
 	</MkStickyContainer>
 
-	<div v-if="isDesktop" :class="$style.widgets">
-		<XWidgets/>
+	<div v-if="isDesktop" ref="widgetsEl" :class="$style.widgets">
+		<XWidgets @mounted="attachSticky"/>
 	</div>
 
 	<button v-if="!isDesktop && !isMobile" :class="$style.widgetButton" class="_button" @click="widgetsShowing = true"><i class="ti ti-apps"></i></button>
 
 	<div v-if="isMobile" ref="navFooter" :class="$style.nav">
-		<button :class="$style.navButton" class="_button" @click="drawerMenuShowing = true"><i :class="$style.navButtonIcon" class="ti ti-menu-2"></i><span v-if="menuIndicated" :class="$style.navButtonIndicator"><i class="_indicatorCircle"></i></span></button>
-		<button :class="$style.navButton" class="_button" @click="mainRouter.currentRoute.value.name === 'index' ? top() : mainRouter.push('/')"><i :class="$style.navButtonIcon" class="ti ti-home"></i></button>
-		<button :class="$style.navButton" class="_button" @click="mainRouter.push('/my/notifications')"><i :class="$style.navButtonIcon" class="ti ti-bell"></i><span v-if="$i?.hasUnreadNotification" :class="$style.navButtonIndicator"><i class="_indicatorCircle"></i></span></button>
-		<button :class="$style.navButton" class="_button" @click="widgetsShowing = true"><i :class="$style.navButtonIcon" class="ti ti-apps"></i></button>
-		<button :class="$style.postButton" class="_button" @click="os.post()"><i :class="$style.navButtonIcon" class="ti ti-pencil"></i></button>
+		<button :class="$style.navButton" class="_button nav" @click="drawerMenuShowing = true"><i :class="$style.navButtonIcon" class="ti ti-menu-2"></i><span v-if="menuIndicated" :class="$style.navButtonIndicator"><i class="_indicatorCircle"></i></span></button>
+		<button :class="$style.navButton" class="_button home" @click="mainRouter.currentRoute.value.name === 'index' ? top() : mainRouter.push('/')"><i :class="$style.navButtonIcon" class="ti ti-home"></i></button>
+		<button :class="$style.navButton" class="_button notifications" @click="mainRouter.push('/my/notifications')"><i :class="$style.navButtonIcon" class="ti ti-bell"></i><span v-if="$i?.hasUnreadNotification" :class="$style.navButtonIndicator"><i class="_indicatorCircle"></i></span></button>
+		<button :class="$style.navButton" class="_button widget" @click="widgetsShowing = true"><i :class="$style.navButtonIcon" class="ti ti-apps"></i></button>
+		<button :class="$style.postButton" class="_button post" @click="os.post()"><i :class="$style.navButtonIcon" class="ti ti-pencil"></i></button>
 	</div>
 
 	<Transition
@@ -80,24 +80,26 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, onMounted, computed, ref, ComputedRef, watch, shallowRef, Ref } from 'vue';
-import XCommon from './_common_/common.vue';
+import { defineAsyncComponent, provide, onMounted, computed, ref, ComputedRef, watch, Ref, onUnmounted } from 'vue';
 import type MkStickyContainer from '@/components/global/MkStickyContainer.vue';
-import { instanceName } from '@/config';
+import XCommon from '@/ui/_common_/common.vue';
 import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
 import * as os from '@/os';
+import { instanceName } from '@/config';
 import { defaultStore } from '@/store';
 import { navbarItemDef } from '@/navbar';
 import { i18n } from '@/i18n';
 import { $i } from '@/account';
 import { mainRouter } from '@/router';
+import { CURRENT_STICKY_BOTTOM } from '@/const';
 import { PageMetadata, provideMetadataReceiver } from '@/scripts/page-metadata';
 import { deviceKind } from '@/scripts/device-kind';
 import { disableContextmenu } from '@/scripts/touch';
-import { CURRENT_STICKY_BOTTOM } from '@/const';
+import { StickySidebar } from '@/scripts/sticky-sidebar';
+import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
 import { useScrollPositionManager } from '@/nirax';
 
-const XWidgets = defineAsyncComponent(() => import('./universal.widgets.vue'));
+const XWidgets = defineAsyncComponent(() => import('@/ui/universal.widgets.vue'));
 const XSidebar = defineAsyncComponent(() => import('@/ui/_common_/navbar.vue'));
 const XStatusBars = defineAsyncComponent(() => import('@/ui/_common_/statusbars.vue'));
 
@@ -112,9 +114,13 @@ window.addEventListener('resize', () => {
 });
 
 let pageMetadata = $ref<null | ComputedRef<PageMetadata>>();
-const widgetsShowing = $ref(false);
+
+const widgetsShowing = ref(false);
+const drawerMenuShowing = ref(false);
+
 const navFooter = $shallowRef<HTMLElement>();
-const contents = shallowRef<InstanceType<typeof MkStickyContainer>>();
+const contents = $shallowRef<InstanceType<typeof MkStickyContainer>>();
+const widgetsEl = $shallowRef<HTMLElement>();
 
 provide('router', mainRouter);
 provideMetadataReceiver((info) => {
@@ -131,8 +137,6 @@ const menuIndicated = computed(() => {
 	}
 	return false;
 });
-
-const drawerMenuShowing = ref(false);
 
 mainRouter.on('change', () => {
 	drawerMenuShowing.value = false;
@@ -170,18 +174,21 @@ onMounted(() => {
 	}
 });
 
-const onContextmenu = (ev): void => {
+const onContextmenu = (ev: MouseEvent): void => {
 	if (disableContextmenu) return;
-	const isLink = (el: HTMLElement): el is HTMLAnchorElement => {
-		if (el.tagName === 'A') return true;
-		if (el.parentElement) {
-			return isLink(el.parentElement);
+	const el = getHtmlElementFromEvent(ev);
+
+	const isLink = (el_: HTMLElement): el_ is HTMLAnchorElement => {
+		if (el_.tagName === 'A') return true;
+		if (el_.parentElement) {
+			return isLink(el_.parentElement);
 		}
 		return false;
 	};
 
-	if (isLink(ev.target)) return;
-	if (['INPUT', 'TEXTAREA', 'IMG', 'VIDEO', 'CANVAS'].includes(ev.target.tagName) || ev.target.attributes['contenteditable']) return;
+	if (!el) return;
+	if (isLink(el)) return;
+	if (['INPUT', 'TEXTAREA', 'IMG', 'VIDEO', 'CANVAS'].includes(el.tagName) || el.attributes['contenteditable']) return;
 	if (window.getSelection()?.toString() !== '') return;
 
 	const path = mainRouter.getCurrentPath();
@@ -197,8 +204,35 @@ const onContextmenu = (ev): void => {
 	}], ev);
 };
 
+let stickyHandler: EventListener | null = null;
+const stickyHandlerOptions: AddEventListenerOptions = {
+	passive: true,
+};
+
+const attachSticky = (): void => {
+	detachSticky();
+	if (!widgetsEl) return;
+
+	const sticky = new StickySidebar(widgetsEl);
+	stickyHandler = (): void => {
+		sticky.calc(window.scrollY);
+	};
+	window.addEventListener('scroll', stickyHandler, stickyHandlerOptions);
+};
+
+const detachSticky = (): void => {
+	if (!stickyHandler) return;
+
+	window.removeEventListener('scroll', stickyHandler, stickyHandlerOptions);
+	stickyHandler = null;
+};
+
+onUnmounted(() => {
+	detachSticky();
+});
+
 const top = (): void => {
-	contents.value?.rootEl?.scrollTo({
+	window.scroll({
 		top: 0,
 		behavior: 'smooth',
 	});
@@ -219,7 +253,7 @@ watch($$(navFooter), () => {
 	immediate: true,
 });
 
-useScrollPositionManager(() => contents.value?.rootEl, mainRouter);
+useScrollPositionManager(() => contents?.rootEl, mainRouter);
 </script>
 
 <style lang="scss" module>
@@ -271,11 +305,8 @@ $widgets-hide-threshold: 1090px;
 }
 
 .root {
-	height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
-	height: 100dvh;
-	overflow: hidden; // fallback (overflow: clip)
-	overflow: clip;
-	contain: strict;
+	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+	min-height: 100dvh;
 	box-sizing: border-box;
 	display: flex;
 }
@@ -286,19 +317,17 @@ $widgets-hide-threshold: 1090px;
 
 .contents {
 	flex: 1;
-	height: 100%;
 	min-width: 0;
-	overflow: auto;
-	overflow-y: scroll;
-	overscroll-behavior: contain;
 	background: var(--bg);
 }
 
 .widgets {
-	width: 350px;
-	height: 100%;
 	box-sizing: border-box;
-	overflow: auto;
+	position: sticky;
+	width: 350px;
+	height: min-content;
+	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
+	min-height: 100dvh;
 	padding: var(--margin) var(--margin) calc(var(--margin) + env(safe-area-inset-bottom, 0px));
 	border-left: solid 0.5px var(--divider);
 	background: var(--bg);
@@ -345,10 +374,8 @@ $widgets-hide-threshold: 1090px;
 	padding: 8px;
 	display: block;
 	margin: 0 auto;
-}
 
-@media (min-width: 370px) {
-	.widgetsCloseButton {
+	@media (min-width: 370px) {
 		display: none;
 	}
 }
