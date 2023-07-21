@@ -1,15 +1,15 @@
 <template>
-<MkModal ref="modal" :prefer-type="'dialog'" @click="onBgClick" @closed="emit('closed')">
-	<div ref="rootEl" class="ebkgoccj _narrow_" :style="{ width: `${width}px`, height: scroll ? (height ? `${height}px` : undefined) : (height ? `min(${height}px, 100%)` : '100%') }" @keydown="onKeydown">
-		<div ref="headerEl" class="header">
-			<button v-if="withOkButton" class="_button" @click="emit('close')"><i class="ti ti-x"></i></button>
-			<span class="title">
+<MkModal ref="modal" prefer-type="dialog" @click="onBgClick" @closed="emit('closed')">
+	<div ref="rootEl" :class="$style.root" :style="{ width: `${width}px`, height: `min(${height}px, 100%)` }" @keydown="onKeydown">
+		<div ref="headerEl" :class="$style.header">
+			<button v-if="withOkButton" :class="$style.headerButton" class="_button" @click="emit('close')"><i class="ti ti-x"></i></button>
+			<span :class="$style.title">
 				<slot name="header"></slot>
 			</span>
-			<button v-if="!withOkButton" class="_button" @click="emit('close')"><i class="ti ti-x"></i></button>
-			<button v-if="withOkButton" class="_button" :disabled="okButtonDisabled" @click="emit('ok')"><i class="ti ti-check"></i></button>
+			<button v-if="!withOkButton" :class="$style.headerButton" class="_button" data-cy-modal-window-close @click="emit('close')"><i class="ti ti-x"></i></button>
+			<button v-if="withOkButton" :class="$style.headerButton" class="_button" :disabled="okButtonDisabled" @click="emit('ok')"><i class="ti ti-check"></i></button>
 		</div>
-		<div class="body">
+		<div :class="$style.body">
 			<slot :width="bodyWidth" :height="bodyHeight"></slot>
 		</div>
 	</div>
@@ -24,14 +24,12 @@ withDefaults(defineProps<{
 	withOkButton: boolean;
 	okButtonDisabled: boolean;
 	width: number;
-	height: number | null;
-	scroll: boolean;
+	height: number;
 }>(), {
 	withOkButton: false,
 	okButtonDisabled: false,
 	width: 400,
-	height: null,
-	scroll: true,
+	height: 500,
 });
 
 const emit = defineEmits<{
@@ -41,9 +39,9 @@ const emit = defineEmits<{
 	(event: 'ok'): void;
 }>();
 
-let modal = $ref<InstanceType<typeof MkModal>>();
-let rootEl = $ref<HTMLElement>();
-let headerEl = $ref<HTMLElement>();
+let modal = $shallowRef<InstanceType<typeof MkModal>>();
+let rootEl = $shallowRef<HTMLElement>();
+let headerEl = $shallowRef<HTMLElement>();
 let bodyWidth = $ref(0);
 let bodyHeight = $ref(0);
 
@@ -85,8 +83,9 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
-.ebkgoccj {
+<style lang="scss" module>
+.root {
+	margin: auto;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -99,50 +98,52 @@ defineExpose({
 		--root-margin: 16px;
 	}
 
-	> .header {
-		$height: 46px;
-		$height-narrow: 42px;
-		display: flex;
-		flex-shrink: 0;
-		background: var(--windowHeader);
-		-webkit-backdrop-filter: var(--blur, blur(15px));
-		backdrop-filter: var(--blur, blur(15px));
+	--headerHeight: 46px;
+	--headerHeightNarrow: 42px;
+}
 
-		> button {
-			height: $height;
-			width: $height;
+.header {
+	display: flex;
+	flex-shrink: 0;
+	background: var(--windowHeader);
+	-webkit-backdrop-filter: var(--blur, blur(15px));
+	backdrop-filter: var(--blur, blur(15px));
+}
 
-			@media (max-width: 500px) {
-				height: $height-narrow;
-				width: $height-narrow;
-			}
-		}
+.headerButton {
+	height: var(--headerHeight);
+	width: var(--headerHeight);
 
-		> .title {
-			flex: 1;
-			line-height: $height;
-			padding-left: 32px;
-			font-weight: bold;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			pointer-events: none;
-
-			@media (max-width: 500px) {
-				line-height: $height-narrow;
-				padding-left: 16px;
-			}
-		}
-
-		> button + .title {
-			padding-left: 0;
-		}
+	@media (max-width: 500px) {
+		height: var(--headerHeightNarrow);
+		width: var(--headerHeightNarrow);
 	}
+}
 
-	> .body {
-		flex: 1;
-		overflow: auto;
-		background: var(--panel);
+.title {
+	flex: 1;
+	line-height: var(--headerHeight);
+	padding-left: 32px;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	pointer-events: none;
+
+	@media (max-width: 500px) {
+		line-height: var(--headerHeightNarrow);
+		padding-left: 16px;
 	}
+}
+
+.headerButton + .title {
+	padding-left: 0;
+}
+
+.body {
+	container-type: size;
+	flex: 1;
+	overflow: auto;
+	background: var(--panel);
 }
 </style>

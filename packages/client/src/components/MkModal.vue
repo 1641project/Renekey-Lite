@@ -1,6 +1,30 @@
 <template>
 <Transition
 	:name="transitionName"
+	:enter-active-class="normalizeClass({
+		[$style.transition_modalDrawer_enterActive]: transitionName === 'modal-drawer',
+		[$style.transition_modalPopup_enterActive]: transitionName === 'modal-popup',
+		[$style.transition_modal_enterActive]: transitionName === 'modal',
+		[$style.transition_send_enterActive]: transitionName === 'send',
+	})"
+	:leave-active-class="normalizeClass({
+		[$style.transition_modalDrawer_leaveActive]: transitionName === 'modal-drawer',
+		[$style.transition_modalPopup_leaveActive]: transitionName === 'modal-popup',
+		[$style.transition_modal_leaveActive]: transitionName === 'modal',
+		[$style.transition_send_leaveActive]: transitionName === 'send',
+	})"
+	:enter-from-class="normalizeClass({
+		[$style.transition_modalDrawer_enterFrom]: transitionName === 'modal-drawer',
+		[$style.transition_modalPopup_enterFrom]: transitionName === 'modal-popup',
+		[$style.transition_modal_enterFrom]: transitionName === 'modal',
+		[$style.transition_send_enterFrom]: transitionName === 'send',
+	})"
+	:leave-to-class="normalizeClass({
+		[$style.transition_modalDrawer_leaveTo]: transitionName === 'modal-drawer',
+		[$style.transition_modalPopup_leaveTo]: transitionName === 'modal-popup',
+		[$style.transition_modal_leaveTo]: transitionName === 'modal',
+		[$style.transition_send_leaveTo]: transitionName === 'send',
+	})"
 	:duration="transitionDuration"
 	appear
 	@after-leave="emit('closed')"
@@ -10,21 +34,32 @@
 	<div
 		v-show="manualShowing != null ? manualShowing : showing"
 		v-hotkey.global="keymap"
-		class="qzhlnise"
-		:class="{ drawer: type === 'drawer', dialog: type === 'dialog' || type === 'dialog:top', popup: type === 'popup' }"
-		:style="{ zIndex, pointerEvents: (manualShowing != null ? manualShowing : showing) ? 'auto' : 'none', '--transformOrigin': transformOrigin }"
+		:class="[$style.root, {
+			[$style.drawer]: type === 'drawer',
+			[$style.dialog]: type === 'dialog',
+			[$style.popup]: type === 'popup',
+		}]"
+		:style="{
+			zIndex,
+			pointerEvents: (manualShowing != null ? manualShowing : showing) ? 'auto' : 'none',
+			'--transformOrigin': transformOrigin,
+		}"
 	>
 		<div
-			class="bg _modalBg"
-			:class="{ transparent: transparentBg && (type === 'popup') }"
+			data-cy-bg
+			:data-cy-transparent="isEnableBgTransparent"
+			class="_modalBg"
+			:class="[$style.bg, {
+				[$style.bgTransparent]: isEnableBgTransparent,
+			}]"
 			:style="{ zIndex }"
 			@click="onBgClick"
+			@mousedown="onBgClick"
 			@contextmenu.prevent.stop="() => {}"
 		></div>
 		<div
 			ref="content"
-			class="content"
-			:class="{ fixed, top: type === 'dialog:top' }"
+			:class="[$style.content, { [$style.fixed]: fixed }]"
 			:style="{ zIndex }"
 			@click.self="onBgClick"
 		>
@@ -35,12 +70,11 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, watch, provide } from 'vue';
+import { nextTick, normalizeClass, onMounted, onUnmounted, provide, watch } from 'vue';
 import * as os from '@/os';
 import { isTouchUsing } from '@/scripts/touch';
 import { defaultStore } from '@/store';
 import { deviceKind } from '@/scripts/device-kind';
-import { pushHash, trimHash } from '@/scripts/tms/url-hash';
 
 const getFixedContainer = (el: HTMLElement | null): HTMLElement | null => {
 	if (el == null || el.tagName === 'BODY') return null;
@@ -52,19 +86,19 @@ const getFixedContainer = (el: HTMLElement | null): HTMLElement | null => {
 	}
 };
 
-type ModalTypes = 'popup' | 'dialog' | 'dialog:top' | 'drawer';
+type ModalTypes = 'popup' | 'dialog' | 'drawer';
 
 const props = withDefaults(defineProps<{
 	manualShowing?: boolean | null;
 	anchor?: { x: string; y: string; };
-	src?: HTMLElement;
+	src?: HTMLElement | null;
 	preferType?: ModalTypes | 'auto';
 	zPriority?: 'low' | 'middle' | 'high';
 	noOverlap?: boolean;
 	transparentBg?: boolean;
 }>(), {
 	manualShowing: null,
-	src: undefined,
+	src: null,
 	anchor: () => ({ x: 'center', y: 'bottom' }),
 	preferType: 'auto',
 	zPriority: 'low',
@@ -87,10 +121,10 @@ let maxHeight = $ref<number>();
 let fixed = $ref(false);
 let transformOrigin = $ref('center');
 let showing = $ref(true);
-let content = $ref<HTMLElement>();
+let content = $shallowRef<HTMLElement>();
 const zIndex = os.claimZIndex(props.zPriority);
 let useSendAnime = $ref(false);
-const type = $computed(() => {
+const type = $computed<ModalTypes>(() => {
 	if (props.preferType === 'auto') {
 		if (!defaultStore.state.disableDrawer && isTouchUsing && deviceKind === 'smartphone') {
 			return 'drawer';
@@ -101,6 +135,7 @@ const type = $computed(() => {
 		return props.preferType;
 	}
 });
+const isEnableBgTransparent = $computed(() => props.transparentBg && (type === 'popup'));
 let transitionName = $computed((() =>
 	defaultStore.state.animation
 		? useSendAnime
@@ -125,6 +160,22 @@ let transitionDuration = $computed((() =>
 ));
 
 let contentClicking = false;
+
+const close = (opts: { useSendAnimation?: boolean } = {}): void => {
+	if (opts.useSendAnimation) {
+		useSendAnime = true;
+	}
+
+	// eslint-disable-next-line vue/no-mutating-props
+	if (props.src) props.src.style.pointerEvents = 'auto';
+	showing = false;
+	emit('close');
+};
+
+const onBgClick = (): void => {
+	if (contentClicking) return;
+	emit('click');
+};
 
 if (type === 'drawer') {
 	maxHeight = window.innerHeight / 1.5;
@@ -246,23 +297,12 @@ const align = (): void => {
 
 	transformOrigin = `${transformOriginX} ${transformOriginY}`;
 
-	content.style.left = left + 'px';
-	content.style.top = top + 'px';
+	content.style.left = `${left}px`;
+	content.style.top = `${top}px`;
 };
 
 const onOpened = (): void => {
 	emit('opened');
-
-	if (type !== 'popup') {
-		window.addEventListener('popstate', () => {
-			if (!window.location.hash.endsWith(type) && !window.location.hash) {
-				close();
-				return;
-			}
-		});
-
-		history.pushState(null, '', pushHash(window.location.hash, type));
-	}
 
 	// モーダルコンテンツにマウスボタンが押され、コンテンツ外でマウスボタンが離されたときにモーダルバックグラウンドクリックと判定させないためにマウスイベントを監視しフラグ管理する
 	const el = content?.children[0];
@@ -277,32 +317,17 @@ const onOpened = (): void => {
 	}, { passive: true });
 };
 
-const close = (opts: { useSendAnimation?: boolean } = {}): void => {
-	if (opts.useSendAnimation) {
-		useSendAnime = true;
-	}
-
-	// eslint-disable-next-line vue/no-mutating-props
-	if (props.src) props.src.style.pointerEvents = 'auto';
-	showing = false;
-
-	if (type !== 'popup' && window.location.hash.endsWith(type)) {
-		trimHash();
-	}
-
-	emit('close');
-};
-
-const onBgClick = (): void => {
-	if (contentClicking) return;
-	emit('click');
-};
+const alignObserver = new ResizeObserver(() => {
+	align();
+});
 
 onMounted(() => {
 	watch(() => props.src, async () => {
-		// eslint-disable-next-line vue/no-mutating-props
-		if (props.src) props.src.style.pointerEvents = 'none';
-		fixed = (type === 'drawer') || (getFixedContainer(props.src ?? null) != null);
+		if (props.src) {
+			// eslint-disable-next-line vue/no-mutating-props
+			props.src.style.pointerEvents = 'none';
+		}
+		fixed = (type === 'drawer') || (getFixedContainer(props.src) != null);
 
 		await nextTick();
 
@@ -310,9 +335,14 @@ onMounted(() => {
 	}, { immediate: true });
 
 	nextTick(() => {
-		if (!content) return;
-		new ResizeObserver(align).observe(content);
+		if (content) {
+			alignObserver.observe(content);
+		}
 	});
+});
+
+onUnmounted(() => {
+	alignObserver.disconnect();
 });
 
 defineExpose({
@@ -320,8 +350,9 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
-.send-enter-active, .send-leave-active {
+<style lang="scss" module>
+.transition_send_enterActive,
+.transition_send_leaveActive {
 	> .bg {
 		transition: opacity 0.3s !important;
 	}
@@ -331,8 +362,8 @@ defineExpose({
 		transition: opacity 0.3s ease-in, transform 0.3s cubic-bezier(0.5, -0.5, 1, 0.5) !important;
 	}
 }
-
-.send-enter-from, .send-leave-to {
+.transition_send_enterFrom,
+.transition_send_leaveTo {
 	> .bg {
 		opacity: 0;
 	}
@@ -344,7 +375,8 @@ defineExpose({
 	}
 }
 
-.modal-enter-active, .modal-leave-active {
+.transition_modal_enterActive,
+.transition_modal_leaveActive {
 	> .bg {
 		transition: opacity 0.2s !important;
 	}
@@ -354,8 +386,8 @@ defineExpose({
 		transition: opacity 0.2s, transform 0.2s !important;
 	}
 }
-
-.modal-enter-from, .modal-leave-to {
+.transition_modal_enterFrom,
+.transition_modal_leaveTo {
 	> .bg {
 		opacity: 0;
 	}
@@ -368,7 +400,8 @@ defineExpose({
 	}
 }
 
-.modal-popup-enter-active, .modal-popup-leave-active {
+.transition_modalPopup_enterActive,
+.transition_modalPopup_leaveActive {
 	> .bg {
 		transition: opacity 0.1s !important;
 	}
@@ -378,8 +411,8 @@ defineExpose({
 		transition: opacity 0.1s cubic-bezier(0, 0, 0.2, 1), transform 0.1s cubic-bezier(0, 0, 0.2, 1) !important;
 	}
 }
-
-.modal-popup-enter-from, .modal-popup-leave-to {
+.transition_modalPopup_enterFrom,
+.transition_modalPopup_leaveTo {
 	> .bg {
 		opacity: 0;
 	}
@@ -392,7 +425,16 @@ defineExpose({
 	}
 }
 
-.modal-drawer-enter-active {
+.transition_modalDrawer_enterActive {
+	> .bg {
+		transition: opacity 0.2s !important;
+	}
+
+	> .content {
+		transition: transform 0.2s cubic-bezier(0,.5,0,1) !important;
+	}
+}
+.transition_modalDrawer_leaveActive {
 	> .bg {
 		transition: opacity 0.2s !important;
 	}
@@ -401,18 +443,8 @@ defineExpose({
 		transition: transform 0.2s cubic-bezier(0, 0.5, 0, 1) !important;
 	}
 }
-
-.modal-drawer-leave-active {
-	> .bg {
-		transition: opacity 0.2s !important;
-	}
-
-	> .content {
-		transition: transform 0.2s cubic-bezier(0, 0.5, 0, 1) !important;
-	}
-}
-
-.modal-drawer-enter-from, .modal-drawer-leave-to {
+.transition_modalDrawer_enterFrom,
+.transition_modalDrawer_leaveTo {
 	> .bg {
 		opacity: 0;
 	}
@@ -423,15 +455,7 @@ defineExpose({
 	}
 }
 
-.qzhlnise {
-	> .bg {
-		&.transparent {
-			background: transparent;
-			-webkit-backdrop-filter: none;
-			backdrop-filter: none;
-		}
-	}
-
+.root {
 	&.dialog {
 		> .content {
 			position: fixed;
@@ -441,26 +465,10 @@ defineExpose({
 			right: 0;
 			margin: auto;
 			padding: 32px;
-			// TODO: mask-imageはiOSだとやたら重い。なんとかしたい
-			-webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 32px, rgba(0, 0, 0, 1) calc(100% - 32px), rgba(0, 0, 0, 0) 100%);
-			mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 32px, rgba(0, 0, 0, 1) calc(100% - 32px), rgba(0, 0, 0, 0) 100%);
-			overflow: auto;
 			display: flex;
 
 			@media (max-width: 500px) {
 				padding: 16px;
-				-webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 16px, rgba(0, 0, 0, 1) calc(100% - 16px), rgba(0, 0, 0, 0) 100%);
-				mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 16px, rgba(0, 0, 0, 1) calc(100% - 16px), rgba(0, 0, 0, 0) 100%);
-			}
-
-			> ::v-deep(*) {
-				margin: auto;
-			}
-
-			&.top {
-				> ::v-deep(*) {
-					margin-top: 0;
-				}
 			}
 		}
 	}
@@ -490,12 +498,15 @@ defineExpose({
 			left: 0;
 			right: 0;
 			margin: auto;
-
-			> ::v-deep(*) {
-				margin: auto;
-			}
 		}
 	}
+}
 
+.bg {
+	&.bgTransparent {
+		background: transparent;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+	}
 }
 </style>
