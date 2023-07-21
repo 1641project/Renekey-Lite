@@ -8,8 +8,10 @@
 		<div :class="$style.spacer"></div>
 	</MkStickyContainer>
 
-	<div v-if="isDesktop" ref="widgetsEl" :class="$style.widgets">
-		<XWidgets @mounted="attachSticky"/>
+	<div v-if="isDesktop" ref="widgetsEl">
+		<div :class="$style.widgets">
+			<XWidgets @mounted="attachSticky"/>
+		</div>
 	</div>
 
 	<button v-if="!isDesktop && !isMobile" :class="$style.widgetButton" class="_button" @click="widgetsShowing = true"><i class="ti ti-apps"></i></button>
@@ -323,7 +325,6 @@ $widgets-hide-threshold: 1090px;
 
 .widgets {
 	box-sizing: border-box;
-	position: sticky;
 	width: 350px;
 	height: min-content;
 	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
