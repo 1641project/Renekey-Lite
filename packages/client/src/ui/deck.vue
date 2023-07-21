@@ -84,20 +84,20 @@
 <script lang="ts" setup>
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { v4 as uuid } from 'uuid';
-import XCommon from './_common_/common.vue';
-import { deckStore, addColumn as addColumnToStore, loadDeck, getProfiles, deleteProfile as deleteProfile_ } from './deck/deck-store';
-import XSidebar from '@/ui/_common_/navbar.vue';
-import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
-import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os';
 import { navbarItemDef } from '@/navbar';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
 import { mainRouter } from '@/router';
+import { defaultStore } from '@/store';
 import { unisonReload } from '@/scripts/unison-reload';
 import { deviceKind } from '@/scripts/device-kind';
 import { disableContextmenu } from '@/scripts/touch';
-import { defaultStore } from '@/store';
+import MkButton from '@/components/MkButton.vue';
+import XCommon from '@/ui/_common_/common.vue';
+import XSidebar from '@/ui/_common_/navbar.vue';
+import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
+import { deckStore, addColumn as addColumnToStore, loadDeck, getProfiles, deleteProfile as deleteProfile_ } from '@/ui/deck/deck-store';
 import XMainColumn from '@/ui/deck/main-column.vue';
 import XWidgetsColumn from '@/ui/deck/widgets-column.vue';
 import XNotificationsColumn from '@/ui/deck/notifications-column.vue';
@@ -108,6 +108,7 @@ import XListColumn from '@/ui/deck/list-column.vue';
 import XChannelColumn from '@/ui/deck/channel-column.vue';
 import XMentionsColumn from '@/ui/deck/mentions-column.vue';
 import XDirectColumn from '@/ui/deck/direct-column.vue';
+
 const XStatusBars = defineAsyncComponent(() => import('@/ui/_common_/statusbars.vue'));
 
 const columnComponents = {
@@ -123,9 +124,18 @@ const columnComponents = {
 	direct: XDirectColumn,
 };
 
-mainRouter.navHook = (path, flag): boolean => {
-	if (flag === 'forcePage') return false;
-	const noMainColumn = !deckStore.state.columns.some(x => x.type === 'main');
+const hasMainColumn = (): boolean => deckStore.state.columns.some(x => x.type === 'main');
+
+if (!hasMainColumn()) {
+	const path = mainRouter.getCurrentPath();
+	if (new URL(path || '/', location.origin).pathname !== '/') {
+		os.pageWindow(path);
+	}
+}
+
+mainRouter.navHook = (path: string, flag: unknown): boolean => {
+	const noMainColumn = !hasMainColumn();
+	if (flag === 'forcePage' && !noMainColumn) return false;
 	if (deckStore.state.navWindow || noMainColumn) {
 		os.pageWindow(path);
 		return true;
@@ -156,13 +166,13 @@ const menuIndicated = computed(() => {
 	return false;
 });
 
-function showSettings() {
+const showSettings = (): void => {
 	os.pageWindow('/settings/deck');
-}
+};
 
-let columnsEl = $shallowRef<HTMLElement>();
+const columnsEl = $shallowRef<HTMLElement>();
 
-const addColumn = async (ev) => {
+const addColumn = async (): Promise<void> => {
 	const columns_ = [
 		'main',
 		'widgets',
@@ -192,7 +202,7 @@ const addColumn = async (ev) => {
 	});
 };
 
-const onContextmenu = (ev) => {
+const onContextmenu = (ev): void => {
 	if (disableContextmenu) return;
 	os.contextMenu([{
 		text: i18n.ts._deck.addColumn,
@@ -230,7 +240,7 @@ const changeProfile = (ev: MouseEvent): void => {
 		}))), null, {
 			text: i18n.ts._deck.newProfile,
 			icon: 'ti ti-plus',
-			action: async () => {
+			action: async (): Promise<void> => {
 				const { canceled, result: name } = await os.inputText({
 					title: i18n.ts._deck.profile,
 					allowEmpty: false,
