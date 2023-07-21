@@ -1,9 +1,11 @@
 <template>
-<div ref="rootEl" class="_gaps">
+<div ref="rootEl">
 	<MkWidgets :edit="editMode" :widgets="widgets" @add-widget="addWidget" @remove-widget="removeWidget" @update-widget="updateWidget" @update-widgets="updateWidgets" @exit="editMode = false"/>
 
-	<button v-if="editMode" class="_textButton" style="font-size: 0.9em;" @click="editMode = false"><i class="ti ti-check"></i> {{ i18n.ts.editWidgetsExit }}</button>
-	<button v-else class="_textButton mk-widget-edit" data-cy-widget-edit :class="$style.edit" style="font-size: 0.9em;" @click="editMode = true"><i class="ti ti-pencil"></i> {{ i18n.ts.editWidgets }}</button>
+	<div :class="$style.edit">
+		<button v-if="editMode" :class="$style.editButton" class="_textButton" style="font-size: 0.9em;" @click="editMode = false"><i class="ti ti-check"></i> {{ i18n.ts.editWidgetsExit }}</button>
+		<button v-else :class="$style.editButton" class="_textButton mk-widget-edit" data-cy-widget-edit style="font-size: 0.9em;" @click="editMode = true"><i class="ti ti-pencil"></i> {{ i18n.ts.editWidgets }}</button>
+	</div>
 </div>
 </template>
 
@@ -80,6 +82,12 @@ const updateWidgets = (thisWidgets: Widget[]): void => {
 
 <style lang="scss" module>
 .edit {
+	display: grid;
+	place-items: center;
 	width: 100%;
+}
+
+.editButton {
+	padding: 8px;
 }
 </style>
