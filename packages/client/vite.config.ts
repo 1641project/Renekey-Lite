@@ -42,6 +42,7 @@ const toBase62 = (n: number): string => {
 	return result;
 };
 
+// eslint-disable-next-line import/no-default-export
 export default defineConfig(({ command, mode }) => {
 	fs.mkdirSync(__dirname + '/../../built', { recursive: true });
 	fs.writeFileSync(__dirname + '/../../built/meta.json', JSON.stringify({ version: meta.version }), 'utf-8');
@@ -70,14 +71,20 @@ export default defineConfig(({ command, mode }) => {
 				generateScopedName(name, _filename, _css): string {
 					const _path = path.relative(__dirname, _filename.split('?')[0]).replace(/^src\//, '');
 					const filename = `${path.dirname(_path).replaceAll(path.sep, '/')}/${path.parse(_path).name}`;
+					const pathArr = filename.split('/');
 
-					const componentsPath = 'components/';
-					if (filename.startsWith(componentsPath)) {
-						const id = pathToIdentifier(filename.slice(componentsPath.length));
-						return `_${name}_${id}`;
+					switch (pathArr[0]) {
+						case 'components': {
+							return `_${name}_${pathToIdentifier(filename.slice(11))}`;
+						}
+						case 'pages':
+						case 'ui': {
+							return `_${name}_${pathToIdentifier(filename)}`;
+						}
+						default: {
+							return `_${name}__${toBase62(hash(pathToIdentifier(filename))).substring(0, 5)}`;
+						}
 					}
-
-					return `_${name}__${toBase62(hash(pathToIdentifier(filename))).substring(0, 5)}`;
 				},
 			},
 		},
@@ -111,6 +118,8 @@ export default defineConfig(({ command, mode }) => {
 						vue: ['vue'],
 						photoswipe: ['photoswipe', 'photoswipe/lightbox', 'photoswipe/style.css'],
 					},
+					chunkFileNames: process.env.NODE_ENV === 'production' ? '[hash:8].js' : '[name]-[hash:8].js',
+					assetFileNames: process.env.NODE_ENV === 'production' ? '[hash:8][extname]' : '[name]-[hash:8][extname]',
 				},
 			},
 			cssCodeSplit: true,
