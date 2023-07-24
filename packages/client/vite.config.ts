@@ -2,6 +2,7 @@ import path from 'path';
 import * as fs from 'fs';
 import pluginVue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
+import ReactivityTransform from '@vue-macros/reactivity-transform/vite';
 
 import locales from '../../locales';
 import meta from '../../package.json';
@@ -27,16 +28,16 @@ const hash = (str: string, seed = 0): number => {
 	return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
+const BASE62_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const toBase62 = (n: number): string => {
 	if (n === 0) return '0';
 
-	const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	let result = '';
 
 	while (n > 0) {
-		result = chars[n % 62] + result;
+		result = BASE62_DIGITS[n % BASE62_DIGITS.length] + result;
 		// eslint-disable-next-line no-param-reassign
-		n = Math.floor(n / 62);
+		n = Math.floor(n / BASE62_DIGITS.length);
 	}
 
 	return result;
@@ -50,10 +51,15 @@ export default defineConfig(({ command, mode }) => {
 	return {
 		base: '/assets/',
 
+		server: {
+			port: 5173,
+		},
+
 		plugins: [
 			pluginVue({
 				reactivityTransform: true,
 			}),
+			ReactivityTransform(),
 			pluginJson5(),
 		],
 
@@ -126,8 +132,12 @@ export default defineConfig(({ command, mode }) => {
 			outDir: __dirname + '/../../built/_client_dist_',
 			assetsDir: '.',
 			emptyOutDir: false,
-			sourcemap: process.env.NODE_ENV !== 'production',
+			sourcemap: process.env.NODE_ENV === 'development',
 			reportCompressedSize: false,
+		},
+
+		worker: {
+			format: 'es',
 		},
 	};
 });

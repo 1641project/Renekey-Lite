@@ -9,7 +9,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"declaration": false,
 		"sourceMap": false,
-		"target": "es2021",
+		"target": "ES2022",
 		"module": "esnext",
 		"moduleResolution": "node",
 		"removeComments": false,
@@ -25,11 +25,25 @@
 		"paths": {
 			"@/*": ["./src/*"]
 		},
-		"typeRoots": ["node_modules/@types", "@types"],
-		"types": ["vite/client"],
-		"lib": ["esnext", "dom"],
+		"typeRoots": [
+			"node_modules/@types",
+			"node_modules/@vue-macros",
+			"@types"
+		],
+		"types": [
+			"vite/client",
+			"reactivity-transform/macros-global"
+		],
+		"lib": [
+			"esnext",
+			"dom"
+		],
 		"jsx": "preserve"
 	},
 	"compileOnSave": false,
-	"include": ["./**/*.ts", "./**/*.vue"]
+	"include": [
+		".eslintrc.js",
+		"./**/*.ts",
+		"./**/*.vue"
+	]
 }
