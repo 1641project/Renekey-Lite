@@ -2,13 +2,13 @@
 <div v-if="show" ref="el" class="fdidabkb" :style="{ background: bg }">
 	<div class="upper" :class="{ slim: narrow, thin: thin_ }">
 		<div v-if="!thin_ && narrow && props.displayMyAvatar && $i" class="_button buttons left" @click="openAccountMenu">
-			<MkAvatar class="avatar" :user="$i" :disable-preview="true"/>
+			<MkAvatar class="avatar" :user="$i"/>
 		</div>
 		<div v-else-if="!thin_ && narrow && !hideTitle" class="buttons left"></div>
 
 		<template v-if="metadata">
 			<div v-if="!hideTitle" class="titleContainer" @click="top">
-				<MkAvatar v-if="metadata.avatar" class="avatar" :user="metadata.avatar" :disable-preview="true" :show-indicator="true"/>
+				<MkAvatar v-if="metadata.avatar" class="avatar" :user="metadata.avatar" indicator/>
 				<i v-else-if="metadata.icon" class="icon" :class="metadata.icon"></i>
 
 				<div class="title">

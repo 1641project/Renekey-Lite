@@ -1,8 +1,8 @@
 <template>
 <div ref="rootEl" v-size="{ max: [500, 600] }" class="qglefbjs" :class="notification.type">
 	<div class="head">
-		<MkAvatar v-if="(notification.type as any) === 'pollEnded' && 'note' in notification" class="icon" :user="notification.note.user"/>
-		<MkAvatar v-else-if="'user' in notification" class="icon" :user="notification.user"/>
+		<MkAvatar v-if="(notification.type as any) === 'pollEnded' && 'note' in notification" class="icon" :user="notification.note.user" link preview/>
+		<MkAvatar v-else-if="'user' in notification" class="icon" :user="notification.user" link preview/>
 		<img v-else-if="notification.icon" class="icon" :src="notification.icon" alt=""/>
 		<div class="sub-icon" :class="notification.type">
 			<i v-if="notification.type === 'follow'" class="ti ti-plus"></i>

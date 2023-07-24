@@ -1,7 +1,7 @@
 <template>
 <div v-size="{ max: [450] }" class="wrpstxzv" :class="{ children: depth > 1 }">
 	<div class="main">
-		<MkAvatar class="avatar" :user="note.user"/>
+		<MkAvatar class="avatar" :user="note.user" link preview/>
 		<div class="body">
 			<MkNoteHeader class="header" :note="note" :mini="true"/>
 			<div class="body">

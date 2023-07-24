@@ -1,6 +1,6 @@
 <template>
 <MkA :class="[$style.root]" :to="`/user-info/${user.id}`">
-	<MkAvatar class="avatar" :user="user" :disable-link="true" :show-indicator="true"/>
+	<MkAvatar class="avatar" :user="user" indicator/>
 	<div class="body">
 		<span class="name"><MkUserName class="name" :user="user"/></span>
 		<span class="sub"><span class="acct _monospace">@{{ acct(user) }}</span></span>

@@ -1,7 +1,7 @@
 <template>
 <div v-if="user" :class="[$style.root, { [$style.showActionsOnlyOnHover]: showActionsOnlyOnHover }]">
 	<article :class="$style.article">
-		<MkAvatar :class="$style.avatar" :user="user" disable-link disable-preview/>
+		<MkAvatar :class="$style.avatar" :user="user"/>
 		<div :class="$style.main">
 			<header :class="$style.header">
 				<div :class="$style.name"><MkUserName :user="user"/></div>

@@ -1,6 +1,6 @@
 <template>
 <div v-size="{ min: [350, 500] }" class="fefdfafb" :class="$style.root">
-	<MkAvatar :class="$style.avatar" :user="$i"/>
+	<MkAvatar :class="$style.avatar" :user="$i" link preview/>
 	<div :class="$style.main">
 		<div :class="$style.header">
 			<MkUserName :user="$i" :nowrap="true"/>

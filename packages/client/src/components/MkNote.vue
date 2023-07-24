@@ -14,7 +14,7 @@
 	<div v-if="(appearNote as any /* 定義されていないため */)._prId_" class="info"><i class="ti ti-speakerphone"></i> {{ i18n.ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ i18n.ts.hideThisNote }} <i class="ti ti-x"></i></button></div>
 	<div v-if="(appearNote as any /* 定義されていないため */)._featuredId_" class="info"><i class="ti ti-bolt"></i> {{ i18n.ts.featured }}</div>
 	<div v-if="isRenote" class="renote">
-		<MkAvatar class="avatar" :user="note.user"/>
+		<MkAvatar class="avatar" :user="note.user" link preview/>
 		<i class="ti ti-repeat"></i>
 		<I18n :src="i18n.ts.renotedBy" tag="span">
 			<template #user>
@@ -32,11 +32,11 @@
 		</div>
 	</div>
 	<div v-if="renoteCollapsed" class="collapsed-renote">
-		<MkAvatar class="avatar" :user="appearNote.user"/>
+		<MkAvatar class="avatar" :user="appearNote.user" link preview/>
 		<Mfm :text="getNoteSummary(appearNote)" :plain="true" :nowrap="true" :author="appearNote.user" class="text" @click="renoteCollapsed = false"/>
 	</div>
 	<article v-else ref="articleEl" class="article" :style="{ '--articleTop': `${(el?.clientHeight ?? 0) - (articleEl?.clientHeight ?? 0)}px` }" @contextmenu.stop="onContextmenu">
-		<MkAvatar class="avatar" :user="appearNote.user"/>
+		<MkAvatar class="avatar" :user="appearNote.user" link preview/>
 		<div class="main">
 			<MkNoteHeader class="header" :note="appearNote" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :instance="appearNote.user.instance"/>

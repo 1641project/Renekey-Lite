@@ -1,8 +1,8 @@
 <template>
 <div v-adaptive-bg :class="[$style.root, { yellow: user.isSilenced, red: user.isSuspended, gray: false }]">
-	<MkAvatar class="avatar" :user="user" :disable-link="true" :show-indicator="true"/>
+	<MkAvatar class="avatar" :user="user" indicator/>
 	<div class="body">
-		<span class="name"><MkUserName class="name" :user="user"/></span>
+		<span class="name"><MkUserName class="name" :user="user" disable-link/></span>
 		<span class="sub"><span class="acct _monospace">@{{ acct(user) }}</span></span>
 	</div>
 	<MkMiniChart v-if="chartValues" class="chart" :src="chartValues"/>

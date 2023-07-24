@@ -1,49 +1,89 @@
 <template>
-<span v-if="disableLink" v-user-preview="disablePreview ? undefined : user.id" class="eiwwqkts _noSelect" :class="{ cat: user.isCat, square: defaultStore.state.squareAvatars }" :style="{ color }" :title="acct(user)" @click="onClick">
-	<img class="inner" :src="url" decoding="async"/>
-	<MkUserOnlineIndicator v-if="showIndicator" class="indicator" :user="user"/>
-</span>
-<MkA v-else v-user-preview="disablePreview ? undefined : user.id" class="eiwwqkts _noSelect" :class="{ cat: user.isCat, square: defaultStore.state.squareAvatars }" :style="{ color }" :to="userPage(user)" :title="acct(user)" :target="target">
-	<img class="inner" :src="url" decoding="async"/>
-	<MkUserOnlineIndicator v-if="showIndicator" class="indicator" :user="user"/>
-</MkA>
+<component
+	:is="link ? MkA : 'span'"
+	v-user-preview="preview ? user.id : undefined"
+	v-bind="bound"
+	class="eiwwqkts _noSelect"
+	:class="[$style.root, {
+		[$style.animation]: animation,
+		[$style.cat]: user.isCat,
+		[$style.square]: squareAvatars,
+	}, {
+		animation,
+		cat: user.isCat,
+		square: squareAvatars,
+	}]"
+	:style="{ color }"
+	:title="acct(user)"
+	@click="onClick"
+>
+	<img
+		:class="$style.inner"
+		:src="url"
+		decoding="async"
+	/>
+	<MkUserOnlineIndicator
+		v-if="indicator"
+		:class="$style.indicator"
+		:user="user"
+	/>
+	<div v-if="user.isCat" :class="[$style.ears]">
+		<div :class="$style.earLeft"></div>
+		<div :class="$style.earRight"></div>
+	</div>
+</component>
 </template>
 
 <script lang="ts" setup>
 import { watch } from 'vue';
 import * as Misskey from 'misskey-js';
-import { getStaticImageUrl } from '@/scripts/get-static-image-url';
-import { extractAvgColorFromBlurhash } from '@/scripts/extract-avg-color-from-blurhash';
-import { acct, userPage } from '@/filters/user';
+import MkA from '@/components/global/MkA.vue';
 import MkUserOnlineIndicator from '@/components/MkUserOnlineIndicator.vue';
 import { defaultStore } from '@/store';
+import { acct, userPage } from '@/filters/user';
+import { getStaticImageUrl } from '@/scripts/get-static-image-url';
+import { extractAvgColorFromBlurhash } from '@/scripts/extract-avg-color-from-blurhash';
+
+const animation = $ref(defaultStore.state.animation);
+const squareAvatars = $ref(defaultStore.state.squareAvatars);
 
 const props = withDefaults(defineProps<{
-	user: Misskey.entities.User;
+	user: Misskey.entities.UserDetailed;
 	target?: string | null;
-	disableLink?: boolean;
-	disablePreview?: boolean;
-	showIndicator?: boolean;
+	link?: boolean;
+	preview?: boolean;
+	indicator?: boolean;
 }>(), {
 	target: null,
-	disableLink: false,
-	disablePreview: false,
-	showIndicator: false,
+	link: false,
+	preview: false,
+	indicator: false,
 });
 
 const emit = defineEmits<{
 	(ev: 'click', v: MouseEvent): void;
 }>();
 
+const bound = $computed(() => props.link
+	// MkA
+	? {
+		to: userPage(props.user),
+		target: props.target,
+	}
+	// span
+	: {
+	});
+
 const url = $computed(() => defaultStore.state.disableShowingAnimatedImages
 	? getStaticImageUrl(props.user.avatarUrl)
 	: props.user.avatarUrl);
 
-function onClick(ev: MouseEvent) {
+const onClick = (ev: MouseEvent): void => {
+	if (props.link) return;
 	emit('click', ev);
-}
+};
 
-let color = $ref();
+let color = $ref<string | undefined>();
 
 watch(() => props.user.avatarBlurhash, () => {
 	color = extractAvgColorFromBlurhash(props.user.avatarBlurhash);
@@ -52,7 +92,7 @@ watch(() => props.user.avatarBlurhash, () => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" module>
 @layer global {
 	@keyframes earwiggleleft {
 		from { transform: rotate(37.6deg) skew(30deg); }
@@ -70,73 +110,113 @@ watch(() => props.user.avatarBlurhash, () => {
 		to { transform: rotate(-37.6deg) skew(-30deg); }
 	}
 
-	.eiwwqkts {
+	@keyframes eartightleft {
+		from { transform: rotate(37.6deg) skew(30deg); }
+		50% { transform: rotate(37.4deg) skew(30deg); }
+		to { transform: rotate(37.6deg) skew(30deg); }
+	}
+
+	@keyframes eartightright {
+		from { transform: rotate(-37.6deg) skew(-30deg); }
+		50% { transform: rotate(-37.4deg) skew(-30deg); }
+		to { transform: rotate(-37.6deg) skew(-30deg); }
+	}
+
+	.root {
 		position: relative;
 		display: inline-block;
 		vertical-align: bottom;
 		flex-shrink: 0;
 		border-radius: 100%;
 		line-height: 16px;
+	}
+
+	.inner {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		top: 0;
+		border-radius: 100%;
+		z-index: 1;
+		overflow: hidden; // fallback (overflow: clip)
+		overflow: clip;
+		object-fit: cover;
+		width: 100%;
+		height: 100%;
+	}
+
+	.indicator {
+		position: absolute;
+		z-index: 1;
+		bottom: 0;
+		left: 0;
+		width: 20%;
+		height: 20%;
+	}
+
+	.square {
+		border-radius: 20%;
 
 		> .inner {
+			border-radius: 20%;
+		}
+	}
+
+	.cat {
+		> .ears {
+			contain: strict;
 			position: absolute;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			top: 0;
-			border-radius: 100%;
-			z-index: 1;
-			overflow: hidden; // fallback (overflow: clip)
-			overflow: clip;
-			object-fit: cover;
+			top: -50%;
+			left: -50%;
 			width: 100%;
 			height: 100%;
-		}
+			padding: 50%;
+			pointer-events: none;
 
-		> .indicator {
-			position: absolute;
-			z-index: 1;
-			bottom: 0;
-			left: 0;
-			width: 20%;
-			height: 20%;
-		}
-
-		&.square {
-			border-radius: 20%;
-
-			> .inner {
-				border-radius: 20%;
-			}
-		}
-
-		&.cat {
-			&:before, &:after {
-				background: #df548f;
-				border: solid 4px currentColor;
-				box-sizing: border-box;
-				content: '';
+			> .earLeft,
+			> .earRight {
+				contain: strict;
 				display: inline-block;
 				height: 50%;
 				width: 50%;
+				background: currentColor;
+
+				&::after {
+					contain: strict;
+					content: '';
+					display: block;
+					width: 60%;
+					height: 60%;
+					margin: 20%;
+					background: #df548f;
+				}
 			}
 
-			&:before {
-				border-radius: 0 75% 75%;
+			> .earLeft {
 				transform: rotate(37.5deg) skew(30deg);
+
+				&, &::after {
+					border-radius: 25% 75% 75% 75%;
+				}
 			}
 
-			&:after {
-				border-radius: 75% 0 75% 75%;
+			> .earRight {
 				transform: rotate(-37.5deg) skew(-30deg);
-			}
 
-			&:hover {
-				&:before {
+				&, &::after {
+					border-radius: 75% 25% 75% 75%;
+				}
+			}
+		}
+
+		&.animation:hover {
+			> .ears {
+				> .earLeft {
 					animation: earwiggleleft 1s infinite;
 				}
 
-				&:after {
+				> .earRight {
 					animation: earwiggleright 1s infinite;
 				}
 			}

@@ -12,7 +12,7 @@
 	<MkNoteSub v-for="convNote in conversation" :key="convNote.id" class="reply-to-more" :note="convNote"/>
 	<MkNoteSub v-if="appearNote.reply" :note="appearNote.reply" class="reply-to"/>
 	<div v-if="isRenote" class="renote">
-		<MkAvatar class="avatar" :user="note.user"/>
+		<MkAvatar class="avatar" :user="note.user" link preview/>
 		<i class="ti ti-repeat"></i>
 		<I18n :src="i18n.ts.renotedBy" tag="span">
 			<template #user>
@@ -31,7 +31,7 @@
 	</div>
 	<article class="article" @contextmenu.stop="onContextmenu">
 		<header class="header">
-			<MkAvatar class="avatar" :user="appearNote.user" :show-indicator="true"/>
+			<MkAvatar class="avatar" :user="appearNote.user" indicator link preview/>
 			<div class="body">
 				<div class="top">
 					<MkA v-user-preview="appearNote.user.id" class="name" :to="userPage(appearNote.user)">

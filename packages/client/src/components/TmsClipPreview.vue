@@ -3,7 +3,7 @@
 	<div :class="$style.clipName">{{ clip.name }}</div>
 	<div v-if="clip.description" :class="$style.clipDescription">{{ clip.description.length > 85 ? `${clip.description.slice(0, 85)}…` : clip.description }}</div>
 	<div :class="$style.clipUser">
-		<MkAvatar :class="$style.clipUserIcon" :user="clip.user" disable-link disable-preview/>
+		<MkAvatar :class="$style.clipUserIcon" :user="clip.user"/>
 		<MkUserName :class="$style.clipUserName" :user="clip.user" nowrap/>
 	</div>
 </MkA>
