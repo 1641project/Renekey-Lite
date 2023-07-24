@@ -52,7 +52,7 @@ document.documentElement.style.overflowY = 'scroll';
 }
 
 .rootWithBottom {
-	min-height: calc((var(--vh, 1vh) * 100) - (60px + (var(--margin) * 2) + env(safe-area-inset-bottom, 0px)));  // fallback (dvh units)
+	min-height: calc((var(--vh, 1vh) * 100) - (60px + (var(--margin) * 2) + env(safe-area-inset-bottom, 0px))); // fallback (dvh units)
 	min-height: calc(100dvh - (60px + (var(--margin) * 2) + env(safe-area-inset-bottom, 0px)));
 	box-sizing: border-box;
 }

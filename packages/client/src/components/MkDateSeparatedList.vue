@@ -164,7 +164,7 @@ export default defineComponent({
 	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 // .transition_list_leaveActive {
-//  }
+// }
 .transition_list_enterFrom,
 .transition_list_leaveTo {
 	.direction-up > & {
