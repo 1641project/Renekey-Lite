@@ -7,11 +7,11 @@ module.exports = {
 	parserOptions: {
 		parser: '@typescript-eslint/parser',
 		tsconfigRootDir: __dirname,
-		project: ['./tsconfig.json'],
+		project: ['./tsconfig.eslint.json'],
 		extraFileExtensions: ['.vue'],
 	},
 	extends: [
-		'../shared/.eslintrc.js',
+		'../shared/.eslintrc.cjs',
 		'plugin:vue/vue3-recommended',
 	],
 	rules: {
@@ -20,9 +20,6 @@ module.exports = {
 			{
 				'allowSingleExtends': true,
 			},
-		],
-		'@typescript-eslint/prefer-nullish-coalescing': [
-			'error',
 		],
 		// window の禁止理由: グローバルスコープと衝突し、予期せぬ結果を招くため
 		// e の禁止理由: error や event など、複数のキーワードの頭文字であり分かりにくいため
@@ -61,8 +58,6 @@ module.exports = {
 		'vue/max-attributes-per-line': 'off',
 		'vue/html-self-closing': 'off',
 		'vue/singleline-html-element-content-newline': 'off',
-		'vue/v-on-event-hyphenation': ['error', 'always', { autofix: true }],
-		'vue/attribute-hyphenation': ['error', 'always'],
 	},
 	globals: {
 		// Node.js

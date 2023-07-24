@@ -3,7 +3,7 @@ module.exports = {
 		tsconfigRootDir: __dirname,
 		project: ['./tsconfig.json'],
 	},
-	extends: ['../.eslintrc.js'],
+	extends: ['../.eslintrc.cjs'],
 	env: {
 		node: true,
 		mocha: true,

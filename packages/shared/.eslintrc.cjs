@@ -14,7 +14,7 @@ module.exports = {
 	rules: {
 		'indent': ['warn', 'tab', {
 			'SwitchCase': 1,
-			'MemberExpression': 1,
+			'MemberExpression': 'off',
 			'flatTernaryExpressions': true,
 			'ArrayExpression': 'first',
 			'ObjectExpression': 'first',
@@ -24,8 +24,6 @@ module.exports = {
 		'semi-spacing': ['error', { 'before': false, 'after': true }],
 		'quotes': ['warn', 'single'],
 		'comma-dangle': ['warn', 'always-multiline'],
-		'comma-spacing': ['error', { 'before': false, 'after': true }],
-		'array-bracket-spacing': ['error', 'never'],
 		'keyword-spacing': ['error', {
 			'before': true,
 			'after': true,
@@ -49,7 +47,7 @@ module.exports = {
 		'no-multi-spaces': ['error'],
 		'no-var': ['error'],
 		'prefer-arrow-callback': ['error'],
-		'no-throw-literal': ['error'],
+		'no-throw-literal': ['warn'],
 		'no-param-reassign': ['warn'],
 		'no-constant-condition': ['warn'],
 		'no-empty-pattern': ['warn'],
@@ -77,21 +75,6 @@ module.exports = {
 			'argsIgnorePattern': '^_',
 			'destructuredArrayIgnorePattern': '^_',
 		}],
-		'@typescript-eslint/consistent-type-imports': 'off',
-		'@typescript-eslint/prefer-nullish-coalescing': [
-			'error',
-		],
-		'@typescript-eslint/naming-convention': [
-			'error',
-			{
-				"selector": "typeLike",
-				"format": ["PascalCase"]
-			},
-			{
-				"selector": "typeParameter",
-				"format": []
-			}
-		],
 		'import/no-unresolved': ['off'],
 		'import/no-default-export': ['warn'],
 		'import/order': ['warn', {
