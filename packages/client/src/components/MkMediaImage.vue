@@ -41,9 +41,9 @@
 			<div :class="$style.menuInner"><i class="ti ti-dots" style="display: block;"></i></div>
 		</button>
 		<div :class="$style.indicators">
-			<div v-if="['image/gif', 'image/apng'].includes(image.type)" :class="$style.indicator">GIF</div>
-			<div v-if="image.comment" :class="$style.indicator">ALT</div>
-			<div v-if="image.isSensitive" :class="$style.indicator" :title="i18n.ts.sensitive">NSFW</div>
+			<div v-if="['image/gif', 'image/apng'].includes(image.type)" :class="$style.indicator" @click.stop="() => {}">GIF</div>
+			<div v-if="image.comment" :class="$style.indicator" @click.stop="() => {}">ALT</div>
+			<div v-if="image.isSensitive" :title="i18n.ts.sensitive" :class="$style.indicator" @click.stop="() => {}">NSFW</div>
 		</div>
 	</template>
 </div>
@@ -158,9 +158,13 @@ const showMenu = (ev: MouseEvent): void => {
 	left: auto;
 	display: flex;
 	gap: 6px;
-	padding: 12px;
+	padding: 8px;
 	font-size: 0.8em;
 	text-align: center;
+
+	&:empty {
+		display: none;
+	}
 }
 
 .hideInner {
@@ -174,7 +178,7 @@ const showMenu = (ev: MouseEvent): void => {
 }
 
 .menu {
-	composes: hide;
+	@extend .hide;
 	top: auto;
 	right: 0;
 	bottom: 0;
@@ -182,11 +186,11 @@ const showMenu = (ev: MouseEvent): void => {
 }
 
 .menuInner {
-	composes: hideInner;
+	@extend .hideInner;
 }
 
 .indicators {
-	composes: hide;
+	@extend .hide;
 	top: 0;
 	right: auto;
 	bottom: auto;
@@ -194,7 +198,7 @@ const showMenu = (ev: MouseEvent): void => {
 }
 
 .indicator {
-	composes: hideInner;
+	@extend .hideInner;
 	font-weight: bold;
 }
 
