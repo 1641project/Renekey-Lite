@@ -6,28 +6,30 @@
 	class="eiwwqkts _noSelect"
 	:class="[$style.root, {
 		[$style.animation]: animation,
-		[$style.cat]: user.isCat,
+		[$style.cat]: (user as any).isCat,
 		[$style.square]: squareAvatars,
 	}, {
 		animation,
-		cat: user.isCat,
+		cat: (user as any).isCat,
 		square: squareAvatars,
 	}]"
 	:style="{ color }"
 	:title="acct(user)"
 	@click="onClick"
 >
-	<img
+	<MkImgWithBlurhash
 		:class="$style.inner"
 		:src="url"
-		decoding="async"
+		:hash="user?.avatarBlurhash"
+		:cover="true"
+		:only-avg-color="true"
 	/>
 	<MkUserOnlineIndicator
 		v-if="indicator"
 		:class="$style.indicator"
 		:user="user"
 	/>
-	<div v-if="user.isCat" :class="[$style.ears]">
+	<div v-if="(user as any).isCat" :class="[$style.ears]">
 		<div :class="$style.earLeft"></div>
 		<div :class="$style.earRight"></div>
 	</div>
@@ -38,6 +40,7 @@
 import { watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkA from '@/components/global/MkA.vue';
+import MkImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
 import MkUserOnlineIndicator from '@/components/MkUserOnlineIndicator.vue';
 import { defaultStore } from '@/store';
 import { acct, userPage } from '@/filters/user';
@@ -48,7 +51,7 @@ const animation = $ref(defaultStore.state.animation);
 const squareAvatars = $ref(defaultStore.state.squareAvatars);
 
 const props = withDefaults(defineProps<{
-	user: Misskey.entities.UserDetailed;
+	user: Misskey.entities.User;
 	target?: string | null;
 	link?: boolean;
 	preview?: boolean;

@@ -2,19 +2,19 @@
 <MkContainer :max-height="300" :foldable="true">
 	<template #icon><i class="ti ti-photo"></i></template>
 	<template #header>{{ i18n.ts.images }}</template>
-	<div class="ujigsodd">
+	<div :class="$style.root">
 		<MkLoading v-if="fetching"/>
-		<div v-if="!fetching && images.length > 0" class="stream">
+		<div v-if="!fetching && images.length > 0" :class="$style.stream">
 			<MkA
 				v-for="image in images"
 				:key="image.note.id + image.file.id"
-				class="img"
+				:class="$style.img"
 				:to="notePage(image.note)"
 			>
 				<ImgWithBlurhash :hash="image.file.blurhash" :src="thumbnail(image.file)" :title="image.file.name"/>
 			</MkA>
 		</div>
-		<p v-if="!fetching && images.length == 0" class="empty">{{ i18n.ts.nothing }}</p>
+		<p v-if="!fetching && images.length == 0" :class="$style.empty">{{ i18n.ts.nothing }}</p>
 	</div>
 </MkContainer>
 </template>
@@ -40,15 +40,17 @@ let images = $ref<{
 	file: Misskey.entities.DriveFile;
 }[]>([]);
 
-function thumbnail(image: Misskey.entities.DriveFile): string {
+const thumbnail = (image: Misskey.entities.DriveFile): string => {
 	return defaultStore.state.disableShowingAnimatedImages
-		? getStaticImageUrl(image.thumbnailUrl)
+		? getStaticImageUrl(image.url)
 		: image.thumbnailUrl;
-}
+};
 
 onMounted(() => {
 	const image = [
 		'image/jpeg',
+		'image/webp',
+		'image/avif',
 		'image/png',
 		'image/gif',
 		'image/apng',
@@ -73,31 +75,27 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.ujigsodd {
+<style lang="scss" module>
+.root {
 	padding: 8px;
+}
 
-	> .stream {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-		grid-gap: 6px;
+.stream {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	grid-gap: 6px;
+}
 
-		> .img {
-			height: 128px;
-			border-radius: 6px;
-			overflow: hidden; // fallback (overflow: clip)
-			overflow: clip;
-		}
-	}
+.img {
+	height: 128px;
+	border-radius: 6px;
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
+}
 
-	> .empty {
-		margin: 0;
-		padding: 16px;
-		text-align: center;
-
-		> i {
-			margin-right: 4px;
-		}
-	}
+.empty {
+	margin: 0;
+	padding: 16px;
+	text-align: center;
 }
 </style>
