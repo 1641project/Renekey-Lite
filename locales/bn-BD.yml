@@ -859,6 +859,8 @@ account: "অ্যাকাউন্টগুলি"
 like: "পছন্দ করা"
 show: "প্রদর্শন"
 color: "রং"
+horizontal: "পাশে"
+youFollowing: "অনুসরণ করা হচ্ছে"
 _role:
   priority: "অগ্রাধিকার"
   _priority:
