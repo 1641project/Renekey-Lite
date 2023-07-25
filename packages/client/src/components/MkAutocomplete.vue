@@ -17,21 +17,21 @@
 	</ol>
 	<ol v-else-if="emojis.length > 0" ref="suggests" :class="$style.list">
 		<li v-for="emoji in emojis" :key="emoji.emoji" :class="$style.item" tabindex="-1" @click="complete(type, emoji.emoji)" @keydown="onKeydown">
-			<span :class="$style.emoji">
-				<img
-					v-if="emoji.isCustomEmoji && emoji.url"
-					:src="defaultStore.state.disableShowingAnimatedImages ? getStaticImageUrl(emoji.url) : emoji.url"
-					:alt="emoji.emoji"
-					decoding="async"
-				/>
-				<img
-					v-else-if="!defaultStore.state.useOsNativeEmojis && emoji.url"
-					:src="emoji.url"
-					:alt="emoji.emoji"
-					decoding="async"
-				/>
-				<MkCondensedLine v-else :min-scale="2 / 3">{{ emoji.emoji }}</MkCondensedLine>
-			</span>
+			<img
+				v-if="emoji.isCustomEmoji && emoji.url"
+				:class="$style.emoji"
+				:src="defaultStore.state.disableShowingAnimatedImages ? getStaticImageUrl(emoji.url) : emoji.url"
+				:alt="emoji.emoji"
+				decoding="async"
+			/>
+			<img
+				v-else-if="!defaultStore.state.useOsNativeEmojis && emoji.url"
+				:class="$style.emoji"
+				:src="emoji.url"
+				:alt="emoji.emoji"
+				decoding="async"
+			/>
+			<MkCondensedLine v-else :class="$style.emoji" :min-scale="2 / 3">{{ emoji.emoji }}</MkCondensedLine>
 
 			<!-- eslint-disable-next-line vue/no-v-html -->
 			<span v-if="q" :class="$style.emojiName" v-html="sanitizeHtml(emoji.name.replace(q, `<b>${q}</b>`))"></span>
