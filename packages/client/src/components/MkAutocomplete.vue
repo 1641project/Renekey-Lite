@@ -17,7 +17,21 @@
 	</ol>
 	<ol v-else-if="emojis.length > 0" ref="suggests" :class="$style.list">
 		<li v-for="emoji in emojis" :key="emoji.emoji" :class="$style.item" tabindex="-1" @click="complete(type, emoji.emoji)" @keydown="onKeydown">
-			<MkEmoji :emoji="emoji.emoji" :custom-emojis="emoji.isCustomEmoji ? [emoji] : []" :class="$style.emoji"/>
+			<span :class="$style.emoji">
+				<img
+					v-if="emoji.isCustomEmoji && emoji.url"
+					:src="defaultStore.state.disableShowingAnimatedImages ? getStaticImageUrl(emoji.url) : emoji.url"
+					:alt="emoji.emoji"
+					decoding="async"
+				/>
+				<img
+					v-else-if="!defaultStore.state.useOsNativeEmojis && emoji.url"
+					:src="emoji.url"
+					:alt="emoji.emoji"
+					decoding="async"
+				/>
+				<MkCondensedLine :min-scale="2 / 3">{{ emoji.emoji }}</MkCondensedLine>
+			</span>
 
 			<!-- eslint-disable-next-line vue/no-v-html -->
 			<span v-if="q" :class="$style.emojiName" v-html="sanitizeHtml(emoji.name.replace(q, `<b>${q}</b>`))"></span>
@@ -43,6 +57,7 @@ import { instance } from '@/instance';
 import { i18n } from '@/i18n';
 import contains from '@/scripts/contains';
 import { char2filePath } from '@/scripts/twemoji-base';
+import { getStaticImageUrl } from '@/scripts/get-static-image-url';
 import { MFM_TAGS } from '@/scripts/mfm-tags';
 import { emojilist } from '@/scripts/emojilist';
 import { parseArray } from '@/scripts/tms/parse';
