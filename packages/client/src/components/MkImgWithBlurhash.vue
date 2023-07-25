@@ -9,14 +9,14 @@
 		:enter-to-class="defaultStore.state.animation && props.transition?.enterToClass || undefined"
 		:leave-from-class="defaultStore.state.animation && props.transition?.leaveFromClass || undefined"
 	>
-		<canvas
+		<div
 			v-show="hide"
-			key="canvas"
-			ref="canvas"
+			key="dummy"
 			:class="$style.canvas"
 			:width="canvasWidth"
 			:height="canvasHeight"
 			:title="title ?? undefined"
+			:style="{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }"
 		/>
 		<img
 			v-show="!hide"
@@ -36,45 +36,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, shallowRef, watch } from 'vue';
-import { render } from 'buraha';
-import { v4 as uuid } from 'uuid';
+import { computed, shallowRef, watch } from 'vue';
 import { defaultStore } from '@/store';
-import { WorkerMultiDispatch } from '@/scripts/worker-multi-dispatch';
-import { extractAvgColorFromBlurhash } from '@/scripts/extract-avg-color-from-blurhash';
-// @ts-expect-error https://vitejs.dev/guide/features.html#import-with-query-suffixes
-import DrawBlurhash from '@/workers/draw-blurhash?worker';
-// @ts-expect-error https://vitejs.dev/guide/features.html#import-with-query-suffixes
-import TestWebGL2 from '@/workers/test-webgl2?worker';
-
-const canvasPromise = new Promise<WorkerMultiDispatch | HTMLCanvasElement>(resolve => {
-	// テスト環境で Web Worker インスタンスは作成できない
-	if (import.meta.env.MODE === 'test') {
-		const canvas = document.createElement('canvas');
-		canvas.width = 64;
-		canvas.height = 64;
-		resolve(canvas);
-		return;
-	}
-	const testWorker = new TestWebGL2();
-	testWorker.addEventListener('message', event => {
-		if (event.data.result) {
-			const workers = new WorkerMultiDispatch(
-				() => new DrawBlurhash(),
-				Math.min(navigator.hardwareConcurrency - 1, 4),
-			);
-			resolve(workers);
-			if (_DEV_) console.log('WebGL2 in worker is supported!');
-		} else {
-			const canvas = document.createElement('canvas');
-			canvas.width = 64;
-			canvas.height = 64;
-			resolve(canvas);
-			if (_DEV_) console.log('WebGL2 in worker is not supported...');
-		}
-		testWorker.terminate();
-	});
-});
 
 const props = withDefaults(defineProps<{
 	transition?: {
@@ -107,8 +70,6 @@ const props = withDefaults(defineProps<{
 	onlyAvgColor: false,
 });
 
-const viewId = uuid();
-const canvas = shallowRef<HTMLCanvasElement>();
 const root = shallowRef<HTMLDivElement>();
 const img = shallowRef<HTMLImageElement>();
 let loaded = $ref(false);
@@ -116,22 +77,7 @@ let canvasWidth = $ref(64);
 let canvasHeight = $ref(64);
 let imgWidth = $ref(props.width);
 let imgHeight = $ref(props.height);
-let bitmapTmp = $ref<CanvasImageSource | undefined>();
 const hide = computed(() => !loaded || props.forceBlurhash);
-
-const waitForDecode = (): void => {
-	if (props.src != null && props.src !== '') {
-		nextTick()
-			.then(() => img.value?.decode())
-			.then(() => {
-				loaded = true;
-			}, error => {
-				console.log('Error occurred during decoding image', img.value, error);
-			});
-	} else {
-		loaded = false;
-	}
-};
 
 watch([() => props.width, () => props.height, root], () => {
 	const ratio = props.width / props.height;
@@ -148,95 +94,6 @@ watch([() => props.width, () => props.height, root], () => {
 	imgHeight = Math.round(clientWidth / ratio);
 }, {
 	immediate: true,
-});
-
-const drawImage = (bitmap: CanvasImageSource): void => {
-	// canvasがない（mountedされていない）場合はTmpに保存しておく
-	if (!canvas.value) {
-		bitmapTmp = bitmap;
-		return;
-	}
-
-	// canvasがあれば描画する
-	bitmapTmp = undefined;
-	const ctx = canvas.value.getContext('2d');
-	if (!ctx) return;
-	ctx.drawImage(bitmap, 0, 0, canvasWidth, canvasHeight);
-};
-
-const drawAvg = (): void => {
-	if (!canvas.value || !props.hash) return;
-
-	const ctx = canvas.value.getContext('2d');
-	if (!ctx) return;
-
-	// avgColorでお茶をにごす
-	ctx.beginPath();
-	ctx.fillStyle = extractAvgColorFromBlurhash(props.hash) ?? '#888';
-	ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-};
-
-const draw = async (): Promise<void> => {
-	if (props.hash == null) return;
-
-	drawAvg();
-
-	if (props.onlyAvgColor) return;
-
-	const work = await canvasPromise;
-	if (work instanceof WorkerMultiDispatch) {
-		work.postMessage(
-			{
-				id: viewId,
-				hash: props.hash,
-			},
-			undefined,
-		);
-	} else {
-		try {
-			render(props.hash, work);
-			drawImage(work);
-		} catch (error) {
-			console.error('Error occurred during drawing blurhash', error);
-		}
-	}
-};
-
-const workerOnMessage = (event: MessageEvent): void => {
-	if (event.data.id !== viewId) return;
-	drawImage(event.data.bitmap as ImageBitmap);
-};
-
-canvasPromise.then(work => {
-	if (work instanceof WorkerMultiDispatch) {
-		work.addListener(workerOnMessage);
-	}
-
-	draw();
-});
-
-watch(() => props.src, () => {
-	waitForDecode();
-});
-
-watch(() => props.hash, () => {
-	draw();
-});
-
-onMounted(() => {
-	// drawImageがmountedより先に呼ばれている場合はここで描画する
-	if (bitmapTmp) {
-		drawImage(bitmapTmp);
-	}
-	waitForDecode();
-});
-
-onUnmounted(() => {
-	canvasPromise.then(work => {
-		if (work instanceof WorkerMultiDispatch) {
-			work.removeListener(workerOnMessage);
-		}
-	});
 });
 </script>
 
