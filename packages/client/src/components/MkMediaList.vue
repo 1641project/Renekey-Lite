@@ -57,6 +57,12 @@ import { FILE_TYPE_BROWSERSAFE } from '@/const';
 import { defaultStore } from '@/store';
 import { getScrollContainer, getBodyScrollHeight } from '@/scripts/scroll';
 
+/**
+ * expand表示の最小の高さを指定します
+ * MkMediaImageのボタンが被るのを防ぐため
+ */
+const EXPANDED_MIN_HEIGHT = 100;
+
 const props = defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
 	raw?: boolean;
@@ -108,11 +114,11 @@ const calcAspectRatio = (): void => {
 			break;
 		default: {
 			if (!containerEl.value) containerEl.value = getScrollContainer(rootEl.value);
-			const maxHeight = Math.max(64, (containerEl.value ? containerEl.value.clientHeight : getBodyScrollHeight()) * 0.5 || 360);
+			const maxHeight = Math.max(EXPANDED_MIN_HEIGHT, (containerEl.value ? containerEl.value.clientHeight : getBodyScrollHeight()) * 0.5 || 360);
 			if (width === 0 || !maxHeight) return;
 			const imgResizeRatio = width / img.properties.width;
 			const imgDrawHeight = img.properties.height * imgResizeRatio;
-			galleryEl.value.style.height = `${Math.max(64, Math.min(imgDrawHeight, maxHeight))}px`;
+			galleryEl.value.style.height = `${Math.max(EXPANDED_MIN_HEIGHT, Math.min(imgDrawHeight, maxHeight))}px`;
 			galleryEl.value.style.minHeight = 'initial';
 			galleryEl.value.style.maxHeight = 'initial';
 			break;
@@ -254,9 +260,9 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 		grid-template-rows: 1fr;
 
 		// default but fallback (expand)
-		min-height: 64px;
-		max-height: clamp(64px, 50vh, min(360px, 50vh)); // fallback (cqh units)
-		max-height: clamp(64px, 50cqh, min(360px, 50vh));
+		min-height: v-bind("`${EXPANDED_MIN_HEIGHT}px`");
+		max-height: clamp(v-bind("`${EXPANDED_MIN_HEIGHT}px`"), 50vh, min(360px, 50vh)); // fallback (cqh units)
+		max-height: clamp(v-bind("`${EXPANDED_MIN_HEIGHT}px`"), 50cqh, min(360px, 50vh));
 
 		&.n1_16_9 {
 			min-height: initial;
