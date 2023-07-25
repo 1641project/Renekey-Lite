@@ -312,22 +312,22 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 		}
 	}
 
-	&:where(:not(.n1):global(.max-width_320px)) {
+	&:not(.n1):global(.max-width_320px) {
 		aspect-ratio: auto !important;
 		grid-template-columns: 1fr !important;
 		grid-template-rows: none !important;
+
+		> .media {
+			aspect-ratio: 16 / 9 !important;
+			grid-column: auto !important;
+			grid-row: auto !important
+		}
 	}
 }
 
 .media {
 	overflow: hidden; // clipにするとバグる
 	border-radius: 8px;
-
-	&:where(:not(.n1):global(.max-width_320px)) {
-		aspect-ratio: 16 / 9 !important;
-		grid-column: auto !important;
-		grid-row: auto !important
-	}
 }
 
 :global(.pswp) {
