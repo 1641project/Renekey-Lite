@@ -30,7 +30,7 @@
 					:alt="emoji.emoji"
 					decoding="async"
 				/>
-				<MkCondensedLine :min-scale="2 / 3">{{ emoji.emoji }}</MkCondensedLine>
+				<MkCondensedLine v-else :min-scale="2 / 3">{{ emoji.emoji }}</MkCondensedLine>
 			</span>
 
 			<!-- eslint-disable-next-line vue/no-v-html -->
