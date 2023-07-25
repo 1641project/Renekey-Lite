@@ -53,16 +53,21 @@
 </Transition>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts">
 import { computed, ComputedRef, isRef, nextTick, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch, unref } from 'vue';
 import * as Misskey from 'misskey-js';
+import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os';
+import { defaultStore } from '@/store';
+import { i18n } from '@/i18n';
 import { onScrollTop, isTopVisible, getBodyScrollHeight, getScrollContainer, onScrollBottom, scrollToBottom, scroll, isBottomVisible } from '@/scripts/scroll';
 import { useDocumentVisibility } from '@/scripts/use-document-visibility';
-import MkButton from '@/components/MkButton.vue';
-import { defaultStore } from '@/store';
+import { arrayAt } from '@/scripts/tms/utils';
 import { MisskeyEntity } from '@/types/date-separated-list';
-import { i18n } from '@/i18n';
+
+const SECOND_FETCH_LIMIT = 30;
+const TOLERANCE = 16;
+const APPEAR_MINIMUM_INTERVAL = 600;
 
 export type Paging<E extends keyof Misskey.Endpoints = keyof Misskey.Endpoints> = {
 	endpoint: E;
@@ -94,11 +99,9 @@ const arrayToEntries = (entities: MisskeyEntity[]): [string, MisskeyEntity][] =>
 const concatMapWithArray = (map: MisskeyEntityMap, entities: MisskeyEntity[]): MisskeyEntityMap => {
 	return new Map([...map, ...arrayToEntries(entities)]);
 };
+</script>
 
-const SECOND_FETCH_LIMIT = 30;
-const TOLERANCE = 16;
-const APPEAR_MINIMUM_INTERVAL = 600;
-
+<script lang="ts" setup>
 const props = withDefaults(defineProps<{
 	pagination: Paging;
 	disableAutoLoad?: boolean;
@@ -161,7 +164,7 @@ const BACKGROUND_PAUSE_WAIT_SEC = 10;
 // https://qiita.com/mkataigi/items/0154aefd2223ce23398e
 let scrollObserver = $ref<IntersectionObserver>();
 
-watch([(): boolean | undefined => props.pagination.reversed, $$(scrollableElement)], () => {
+watch([(): boolean => !!props.pagination.reversed, $$(scrollableElement)], () => {
 	if (scrollObserver) scrollObserver.disconnect();
 
 	scrollObserver = new IntersectionObserver(entries => {
@@ -246,7 +249,7 @@ const fetchMore = async (): Promise<void> => {
 		...(props.pagination.offsetMode ? {
 			offset: offset.value,
 		} : {
-			untilId: Array.from(items.value.keys())[items.value.size - 1],
+			untilId: arrayAt(Array.from(items.value.keys()), -1),
 		}),
 	}).then((res: MisskeyEntity[]) => {
 		for (let i = 0; i < res.length; i++) {
@@ -310,7 +313,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		...(props.pagination.offsetMode ? {
 			offset: offset.value,
 		} : {
-			sinceId: Array.from(items.value.keys())[items.value.size - 1],
+			sinceId: arrayAt(Array.from(items.value.keys()), -1),
 		}),
 	}).then((res: MisskeyEntity[]) => {
 		if (res.length === 0) {
