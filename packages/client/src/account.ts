@@ -1,10 +1,10 @@
 import { defineAsyncComponent, reactive } from 'vue';
 import * as Misskey from 'misskey-js';
-import { showSuspendedDialog } from './scripts/show-suspended-dialog';
-import { i18n } from './i18n';
-import { del, get, set } from '@/scripts/idb-proxy';
+import { i18n } from '@/i18n';
 import { apiUrl } from '@/config';
 import { waiting, api, popup, popupMenu, success, alert } from '@/os';
+import { del, get, set } from '@/scripts/idb-proxy';
+import { showSuspendedDialog } from '@/scripts/show-suspended-dialog';
 import { unisonReload, reloadChannel } from '@/scripts/unison-reload';
 import { parseObject } from '@/scripts/tms/parse';
 

@@ -2,12 +2,12 @@
 
 import { onUnmounted, Ref, ref, watch } from 'vue';
 import { BroadcastChannel } from 'broadcast-channel';
-import { $i } from './account';
-import { api } from './os';
-import { get, set } from './scripts/idb-proxy';
-import { defaultStore } from './store';
-import { useStream } from './stream';
-import { deepClone } from './scripts/clone';
+import { $i } from '@/account';
+import { api } from '@/os';
+import { defaultStore } from '@/store';
+import { useStream } from '@/stream';
+import { get, set } from '@/scripts/idb-proxy';
+import { deepClone } from '@/scripts/clone';
 
 type StateDef = Record<string, {
 	where: 'account' | 'device' | 'deviceAccount';

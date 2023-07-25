@@ -1,6 +1,6 @@
 import { computed, reactive } from 'vue';
 import { InstanceMetadata as InstanceMetadata_ } from 'misskey-js/built/entities';
-import { api } from './os';
+import { api } from '@/os';
 import { parseObject } from '@/scripts/tms/parse';
 
 type SomeNullable<T, D extends keyof T> = { [K in keyof T]: (K extends D ? T[K] | null | undefined : T[K]) };

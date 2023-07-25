@@ -1,6 +1,6 @@
 import { markRaw, ref } from 'vue';
 import { Note, UserDetailed } from 'misskey-js/built/entities';
-import { Storage } from './pizzax';
+import { Storage } from '@/pizzax';
 
 export const postFormActions: {
 	title: string;

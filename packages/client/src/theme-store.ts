@@ -1,6 +1,6 @@
-import { Theme } from './scripts/theme';
 import { api } from '@/os';
 import { $i } from '@/account';
+import { Theme } from '@/scripts/theme';
 import { parseArray } from '@/scripts/tms/parse';
 
 const lsCacheKey = $i ? `themes:${$i.id}` : '';
