@@ -249,7 +249,6 @@ export default defineComponent({
 	> textarea {
 		display: block;
 		-webkit-appearance: none;
-		-moz-appearance: none;
 		appearance: none;
 		width: 100%;
 		max-width: 100%;

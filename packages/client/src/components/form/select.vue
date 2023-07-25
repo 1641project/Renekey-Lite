@@ -197,8 +197,8 @@ const onClick = (ev: MouseEvent) => {
 		}
 
 		> .select {
-			appearance: none;
 			-webkit-appearance: none;
+			appearance: none;
 			display: block;
 			height: v-bind("`${height}px`");
 			width: 100%;

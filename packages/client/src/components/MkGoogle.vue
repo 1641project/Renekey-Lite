@@ -34,6 +34,7 @@ const search = () => {
 		border: solid 1px var(--divider);
 		border-radius: 4px 0 0 4px;
 		-webkit-appearance: textfield;
+		appearance: textfield;
 	}
 
 	> button {

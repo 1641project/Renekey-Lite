@@ -167,8 +167,8 @@ onMounted(() => {
 		position: relative;
 
 		> textarea {
-			appearance: none;
 			-webkit-appearance: none;
+			appearance: none;
 			display: block;
 			width: 100%;
 			min-width: 100%;
