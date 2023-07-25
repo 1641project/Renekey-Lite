@@ -200,7 +200,7 @@ const onClick = (ev: MouseEvent) => {
 			appearance: none;
 			-webkit-appearance: none;
 			display: block;
-			height: v-bind("height + 'px'");
+			height: v-bind("`${height}px`");
 			width: 100%;
 			margin: 0;
 			padding: 0 12px;
@@ -229,7 +229,7 @@ const onClick = (ev: MouseEvent) => {
 			top: 0;
 			padding: 0 12px;
 			font-size: 1em;
-			height: v-bind("height + 'px'");
+			height: v-bind("`${height}px`");
 			pointer-events: none;
 
 			&:empty {

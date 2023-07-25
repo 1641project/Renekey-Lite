@@ -67,13 +67,13 @@ onUnmounted(() => {
 	.root {
 		box-sizing: border-box;
 		width: 100%;
-		padding: v-bind('`${margin}px`');
+		padding: v-bind("`${margin}px`");
 	}
 
 	.content {
 		container-type: inline-size;
 		margin: 0 auto;
-		max-width: v-bind('props.contentMax != null ? `${props.contentMax}px` : "none"');
+		max-width: v-bind("props.contentMax != null ? `${props.contentMax}px` : 'none'");
 	}
 }
 </style>

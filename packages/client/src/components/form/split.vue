@@ -17,7 +17,7 @@ const minWidth = props.minWidth + 'px';
 <style lang="scss" scoped>
 .terlnhxf {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(v-bind('minWidth'), 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(v-bind(minWidth), 1fr));
 	grid-gap: 12px;
 
 	> ::v-deep(*) {
