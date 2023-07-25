@@ -116,8 +116,8 @@ const close = (): void => {
 	showing = false;
 };
 
-const onKeydown = (evt): void => {
-	if (evt.which === 27) { // Esc
+const onKeydown = (evt: KeyboardEvent): void => {
+	if (evt.key === 'Escape' || evt.key === 'Esc') {
 		evt.preventDefault();
 		evt.stopPropagation();
 		close();
@@ -131,7 +131,7 @@ const onContextmenu = (ev: MouseEvent): void => {
 };
 
 // 最前面へ移動
-const toTop = (): void => {
+const top = (): void => {
 	if (!rootEl) return;
 	rootEl.style.zIndex = os.claimZIndex(props.front ? 'middle' : 'low').toString();
 };
@@ -184,7 +184,7 @@ const unMinimize = (): void => {
 };
 
 const onBodyMousedown = (): void => {
-	toTop();
+	top();
 };
 
 const onDblClick = (): void => {
@@ -451,7 +451,7 @@ onMounted(() => {
 	applyTransformLeft((window.innerWidth / 2) - (rootEl.offsetWidth / 2));
 
 	// 他のウィンドウ内のボタンなどを押してこのウィンドウが開かれた場合、親が最前面になろうとするのでそれに隠されないようにする
-	toTop();
+	top();
 
 	window.addEventListener('resize', onBrowserResize);
 });
@@ -466,11 +466,12 @@ defineExpose({
 </script>
 
 <style lang="scss" module>
-.transition_window_enterActive, .transition_window_leaveActive {
+.transition_window_enterActive,
+.transition_window_leaveActive {
 	transition: opacity 0.2s, transform 0.2s !important;
 }
-
-.transition_window_enterFrom, .transition_window_leaveTo {
+.transition_window_enterFrom,
+.transition_window_leaveTo {
 	pointer-events: none;
 	opacity: 0;
 	transform: scale(0.9);
@@ -515,7 +516,7 @@ defineExpose({
 	background: var(--windowHeader);
 	-webkit-backdrop-filter: var(--blur, blur(15px));
 	backdrop-filter: var(--blur, blur(15px));
-	//border-bottom: solid 1px var(--divider);
+	// border-bottom: solid 1px var(--divider);
 	font-size: 90%;
 	font-weight: bold;
 }
@@ -555,17 +556,13 @@ defineExpose({
 	flex: 1;
 	overflow: auto scroll; // overflow-yをautoにすると画面がガタガタすることがある
 	background: var(--panel);
-	container-type: inline-size;
+	container-type: size;
 }
 
 $handleSize: 8px;
 
-.handle {
-	position: absolute;
-}
-
 .handleTop {
-	composes: handle;
+	position: absolute;
 	top: -($handleSize);
 	left: 0;
 	width: 100%;
@@ -574,7 +571,7 @@ $handleSize: 8px;
 }
 
 .handleRight {
-	composes: handle;
+	position: absolute;
 	top: 0;
 	right: -($handleSize);
 	width: $handleSize;
@@ -583,7 +580,7 @@ $handleSize: 8px;
 }
 
 .handleBottom {
-	composes: handle;
+	position: absolute;
 	bottom: -($handleSize);
 	left: 0;
 	width: 100%;
@@ -592,7 +589,7 @@ $handleSize: 8px;
 }
 
 .handleLeft {
-	composes: handle;
+	position: absolute;
 	top: 0;
 	left: -($handleSize);
 	width: $handleSize;
@@ -601,7 +598,7 @@ $handleSize: 8px;
 }
 
 .handleTopLeft {
-	composes: handle;
+	position: absolute;
 	top: -($handleSize);
 	left: -($handleSize);
 	width: $handleSize * 2;
@@ -610,7 +607,7 @@ $handleSize: 8px;
 }
 
 .handleTopRight {
-	composes: handle;
+	position: absolute;
 	top: -($handleSize);
 	right: -($handleSize);
 	width: $handleSize * 2;
@@ -619,7 +616,7 @@ $handleSize: 8px;
 }
 
 .handleBottomRight {
-	composes: handle;
+	position: absolute;
 	bottom: -($handleSize);
 	right: -($handleSize);
 	width: $handleSize * 2;
@@ -628,7 +625,7 @@ $handleSize: 8px;
 }
 
 .handleBottomLeft {
-	composes: handle;
+	position: absolute;
 	bottom: -($handleSize);
 	left: -($handleSize);
 	width: $handleSize * 2;

@@ -169,7 +169,7 @@ const cancel = (): void => {
 // };
 
 const onKeydown = (evt: KeyboardEvent): void => {
-	if (evt.key === 'Escape') cancel();
+	if (evt.key === 'Escape' || evt.key === 'Esc') cancel();
 };
 
 const onInputKeydown = (evt: KeyboardEvent): void => {

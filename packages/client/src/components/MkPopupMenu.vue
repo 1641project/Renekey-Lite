@@ -1,13 +1,30 @@
 <template>
-<MkModal ref="modal" v-slot="{ type, maxHeight }" :z-priority="'high'" :src="src" :transparent-bg="true" @click="done(null)" @close="emit('closing')" @closed="emit('closed')">
-	<MkMenu :items="items" :align="align" :width="width" :max-height="maxHeight" :as-drawer="type === 'drawer'" :class="{ [$style.drawer]: type === 'drawer' }" @close="done"/>
+<MkModal
+	ref="modal"
+	v-slot="{ type, maxHeight }"
+	z-priority="high"
+	:src="src"
+	:transparent-bg="true"
+	@click="done(null)"
+	@close="emit('closing')"
+	@closed="emit('closed')"
+>
+	<MkMenu
+		:items="items"
+		:align="align"
+		:width="width"
+		:max-height="maxHeight"
+		:as-drawer="type === 'drawer'"
+		:class="{ [$style.drawer]: type === 'drawer' }"
+		@close="done"
+	/>
 </MkModal>
 </template>
 
 <script lang="ts" setup>
 import { } from 'vue';
-import MkModal from './MkModal.vue';
-import MkMenu from './MkMenu.vue';
+import MkModal from '@/components/MkModal.vue';
+import MkMenu from '@/components/MkMenu.vue';
 import { MenuItem } from '@/types/menu';
 
 defineProps<{
