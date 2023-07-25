@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, shallowRef, watch } from 'vue';
+import { computed, nextTick, onMounted, shallowRef, watch } from 'vue';
 import { defaultStore } from '@/store';
 
 const props = withDefaults(defineProps<{
@@ -79,6 +79,20 @@ let imgWidth = $ref(props.width);
 let imgHeight = $ref(props.height);
 const hide = computed(() => !loaded || props.forceBlurhash);
 
+const waitForDecode = (): void => {
+	if (props.src != null && props.src !== '') {
+		nextTick()
+			.then(() => img.value?.decode())
+			.then(() => {
+				loaded = true;
+			}, error => {
+				console.log('Error occurred during decoding image', img.value, error);
+			});
+	} else {
+		loaded = false;
+	}
+};
+
 watch([() => props.width, () => props.height, root], () => {
 	const ratio = props.width / props.height;
 	if (ratio > 1) {
@@ -94,6 +108,14 @@ watch([() => props.width, () => props.height, root], () => {
 	imgHeight = Math.round(clientWidth / ratio);
 }, {
 	immediate: true,
+});
+
+watch(() => props.src, () => {
+	waitForDecode();
+});
+
+onMounted(() => {
+	waitForDecode();
 });
 </script>
 
