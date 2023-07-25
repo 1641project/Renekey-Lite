@@ -1,11 +1,41 @@
 <template>
-<div class="hoawjimk">
-	<XBanner v-for="media in mediaList.filter(media => !previewable(media))" :key="media.id" :media="media"/>
-	<div v-if="mediaList.filter(media => previewable(media)).length > 0" class="grid-container">
-		<div ref="gallery" :class="['medias', count <= 4 ? 'n' + count : 'nMany']">
+<div ref="rootEl" class="hoawjimk">
+	<MkMediaBanner v-for="media in mediaList.filter(media => !previewable(media))" :key="media.id" :media="media"/>
+	<div v-if="mediaList.filter(media => previewable(media)).length > 0" :class="$style.container">
+		<div
+			ref="galleryEl"
+			v-size="{ max: [320] }"
+			:class="[
+				$style.medias,
+				count === 1 ? [
+					$style.n1, {
+						[$style.n1_16_9]: defaultStore.reactiveState.mediaListWithOneImageAppearance.value === '16_9',
+						[$style.n1_1_1]: defaultStore.reactiveState.mediaListWithOneImageAppearance.value === '1_1',
+						[$style.n1_2_3]: defaultStore.reactiveState.mediaListWithOneImageAppearance.value === '2_3',
+					},
+				]
+				: count === 2 ? $style.n2
+				: count === 3 ? $style.n3
+				: count === 4 ? $style.n4
+				: $style.nMany,
+			]"
+		>
 			<template v-for="media in mediaList.filter(media => previewable(media))">
-				<XVideo v-if="media.type.startsWith('video')" :key="'video:' + media.id" class="media" :video="media"/>
-				<XImage v-else-if="media.type.startsWith('image')" :key="'image:' + media.id" class="media image" :data-id="media.id" :image="media" :raw="raw"/>
+				<MkMediaVideo
+					v-if="media.type.startsWith('video')"
+					:key="`video:${media.id}`"
+					:class="$style.media"
+					:video="media"
+				/>
+				<MkMediaImage
+					v-else-if="media.type.startsWith('image')"
+					:key="`image:${media.id}`"
+					:class="$style.media"
+					class="image"
+					:data-id="media.id"
+					:image="media"
+					:raw="raw"
+				/>
 			</template>
 		</div>
 	</div>
@@ -13,27 +43,88 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, shallowRef, computed } from 'vue';
 import * as Misskey from 'misskey-js';
+// @ts-expect-error https://photoswipe.com/
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import PhotoSwipe from 'photoswipe';
 import 'photoswipe/style.css';
-import XBanner from '@/components/MkMediaBanner.vue';
-import XImage from '@/components/MkMediaImage.vue';
-import XVideo from '@/components/MkMediaVideo.vue';
+import MkMediaBanner from '@/components/MkMediaBanner.vue';
+import MkMediaImage from '@/components/MkMediaImage.vue';
+import MkMediaVideo from '@/components/MkMediaVideo.vue';
 import * as os from '@/os';
 import { FILE_TYPE_BROWSERSAFE } from '@/const';
+import { defaultStore } from '@/store';
+import { getScrollContainer, getBodyScrollHeight } from '@/scripts/scroll';
 
 const props = defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
 	raw?: boolean;
 }>();
 
-const gallery = ref(null);
+const rootEl = shallowRef<HTMLDivElement | null>(null);
+const containerEl = shallowRef<HTMLElement | null>(null);
+const galleryEl = shallowRef<HTMLDivElement | null>(null);
+
 const pswpZIndex = os.claimZIndex('middle');
-const count = $computed(() => props.mediaList.filter(media => previewable(media)).length);
+document.documentElement.style.setProperty('--mk-pswp-root-z-index', pswpZIndex.toString());
+
+const count = computed(() => props.mediaList.filter(media => previewable(media)).length);
+
+/**
+ * アスペクト比をmediaListWithOneImageAppearanceに基づいていい感じに調整する
+ * aspect-ratioではなくheightを使う
+ */
+const calcAspectRatio = (): void => {
+	if (!galleryEl.value || !rootEl.value) return;
+
+	const img = props.mediaList[0];
+
+	if (props.mediaList.length !== 1 || !(img.properties.width && img.properties.height)) {
+		galleryEl.value.style.aspectRatio = '';
+		return;
+	}
+
+	const width = galleryEl.value.clientWidth;
+
+	const heightMin = (ratio: number) => {
+		const imgResizeRatio = width / img.properties.width;
+		const imgDrawHeight = img.properties.height * imgResizeRatio;
+		const maxHeight = width * ratio;
+		const height = Math.min(imgDrawHeight, maxHeight);
+		if (_DEV_) console.log('Image height calculated:', { width, properties: img.properties, imgResizeRatio, imgDrawHeight, maxHeight, height });
+		return `${height}px`;
+	};
+
+	switch (defaultStore.state.mediaListWithOneImageAppearance) {
+		case '16_9':
+			galleryEl.value.style.height = heightMin(9 / 16);
+			break;
+		case '1_1':
+			galleryEl.value.style.height = heightMin(1);
+			break;
+		case '2_3':
+			galleryEl.value.style.height = heightMin(3 / 2);
+			break;
+		default: {
+			if (!containerEl.value) containerEl.value = getScrollContainer(rootEl.value);
+			const maxHeight = Math.max(64, (containerEl.value ? containerEl.value.clientHeight : getBodyScrollHeight()) * 0.5 || 360);
+			if (width === 0 || !maxHeight) return;
+			const imgResizeRatio = width / img.properties.width;
+			const imgDrawHeight = img.properties.height * imgResizeRatio;
+			galleryEl.value.style.height = `${Math.max(64, Math.min(imgDrawHeight, maxHeight))}px`;
+			galleryEl.value.style.minHeight = 'initial';
+			galleryEl.value.style.maxHeight = 'initial';
+			break;
+		}
+	}
+
+	galleryEl.value.style.aspectRatio = 'initial';
+};
 
 onMounted(() => {
+	calcAspectRatio();
+
 	const lightbox = new PhotoSwipeLightbox({
 		dataSource: props.mediaList
 			.filter(media => {
@@ -45,36 +136,40 @@ onMounted(() => {
 					src: media.url,
 					w: media.properties.width,
 					h: media.properties.height,
-					alt: media.comment || media.name,
-					comment: media.comment || media.name,
+					alt: media.comment ?? media.name,
+					comment: media.comment ?? media.name,
 				};
 				if (media.properties.orientation != null && media.properties.orientation >= 5) {
 					[item.w, item.h] = [item.h, item.w];
 				}
 				return item;
 			}),
-		gallery: gallery.value,
+		gallery: galleryEl.value,
+		mainClass: 'pswp',
 		children: '.image',
 		thumbSelector: '.image',
 		loop: false,
 		padding: window.innerWidth > 500 ? {
 			top: 32,
-			bottom: 32,
+			bottom: 90,
 			left: 32,
 			right: 32,
 		} : {
 			top: 0,
-			bottom: 0,
+			bottom: 78,
 			left: 0,
 			right: 0,
 		},
-		imageClickAction: 'close',
+		imageClickAction: 'toggle-controls',
 		tapAction: 'toggle-controls',
+		doubleTapAction: 'zoom',
 		bgOpacity: 1,
+		showAnimationDuration: 100,
+		hideAnimationDuration: 100,
 		pswpModule: PhotoSwipe,
 	});
 
-	lightbox.on('itemData', (ev) => {
+	lightbox.on('itemData', (ev: any) => {
 		const { itemData } = ev;
 
 		// element is children
@@ -82,6 +177,7 @@ onMounted(() => {
 
 		const id = element.dataset.id;
 		const file = props.mediaList.find(media => media.id === id);
+		if (!file) return;
 
 		itemData.src = file.url;
 		itemData.w = Number(file.properties.width);
@@ -90,8 +186,8 @@ onMounted(() => {
 			[itemData.w, itemData.h] = [itemData.h, itemData.w];
 		}
 		itemData.msrc = file.thumbnailUrl;
-		itemData.alt = file.comment || file.name;
-		itemData.comment = file.comment || file.name;
+		itemData.alt = file.comment ?? file.name;
+		itemData.comment = file.comment ?? file.name;
 		itemData.thumbCropped = true;
 	});
 
@@ -100,20 +196,20 @@ onMounted(() => {
 			name: 'altText',
 			className: 'pwsp__alt-text-container',
 			appendTo: 'wrapper',
-			onInit: (el, pwsp) => {
-				let textBox = document.createElement('p');
-				textBox.className = 'pwsp__alt-text _acrylic';
+			onInit: (el: HTMLElement, pwsp: PhotoSwipe) => {
+				const textBox = document.createElement('div');
+				textBox.classList.add('pwsp__alt-text', '_shadow');
 				el.appendChild(textBox);
 
-				pwsp.on('change', (a) => {
-					textBox.textContent = pwsp.currSlide.data.comment;
+				pwsp.on('change', () => {
+					textBox.textContent = (pwsp.currSlide?.data?.comment as string | undefined) ?? null;
 				});
 			},
 		});
 	});
 
 	lightbox.init();
-	
+
 	window.addEventListener('popstate', () => {
 		if (lightbox.pswp && lightbox.pswp.isOpen === true) {
 			lightbox.pswp.close();
@@ -139,103 +235,130 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 };
 </script>
 
-<style lang="scss" scoped>
-.hoawjimk {
-	> .grid-container {
-		position: relative;
-		width: 100%;
-		margin-top: 4px;
+<style lang="scss" module>
+.container {
+	container-type: inline-size;
+	position: relative;
+	width: 100%;
+	margin-top: 4px;
+}
 
-		> .medias {
-			display: grid;
-			grid-gap: 8px;
-			// for webkit
-			height: 100%;
+.medias {
+	display: grid;
+	gap: 8px;
 
-			&.n1 {
-				aspect-ratio: 16/9;
-				grid-template-rows: 1fr;
-			}
+	width: 100%;
+	height: 100%;
 
-			&.n2 {
-				aspect-ratio: 16/9;
-				grid-template-columns: 1fr 1fr;
-				grid-template-rows: 1fr;
-			}
+	&.n1 {
+		grid-template-rows: 1fr;
 
-			&.n3 {
-				aspect-ratio: 16/9;
-				grid-template-columns: 1fr 0.5fr;
-				grid-template-rows: 1fr 1fr;
+		// default but fallback (expand)
+		min-height: 64px;
+		max-height: clamp(64px, 50vh, min(360px, 50vh)); // fallback (cqh units)
+		max-height: clamp(64px, 50cqh, min(360px, 50vh));
 
-				> .media:nth-child(1) {
-					grid-row: 1 / 3;
-				}
+		&.n1_16_9 {
+			min-height: initial;
+			max-height: initial;
+			aspect-ratio: 16 / 9; // fallback
+		}
 
-				> .media:nth-child(3) {
-					grid-column: 2 / 3;
-					grid-row: 2 / 3;
-				}
-			}
+		&.n1_1_1{
+			min-height: initial;
+			max-height: initial;
+			aspect-ratio: 1 / 1; // fallback
+		}
 
-			&.n4 {
-				aspect-ratio: 16/9;
-				grid-template-columns: 1fr 1fr;
-				grid-template-rows: 1fr 1fr;
-			}
-
-			&.nMany {
-				grid-template-columns: 1fr 1fr;
-
-				> .media {
-					aspect-ratio: 16/9;
-				}
-			}
-
-			> .media {
-				overflow: hidden; // clipにするとバグる
-				border-radius: 8px;
-			}
+		&.n1_2_3 {
+			min-height: initial;
+			max-height: initial;
+			aspect-ratio: 2 / 3; // fallback
 		}
 	}
+
+	&.n2 {
+		aspect-ratio: 16 / 9;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr;
+	}
+
+	&.n3 {
+		aspect-ratio: 16 / 9;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+
+		> .media:nth-child(1) {
+			grid-row: 1 / 3;
+		}
+
+		> .media:nth-child(3) {
+			grid-column: 2 / 3;
+			grid-row: 2 / 3;
+		}
+	}
+
+	&.n4 {
+		aspect-ratio: 16 / 9;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+	}
+
+	&.nMany {
+		grid-template-columns: 1fr 1fr;
+
+		> .media {
+			aspect-ratio: 16 / 9;
+		}
+	}
+
+	&:where(:not(.n1):global(.max-width_320px)) {
+		aspect-ratio: auto !important;
+		grid-template-columns: 1fr !important;
+		grid-template-rows: none !important;
+	}
 }
-</style>
 
-<style lang="scss">
-.pswp {
-	// なぜか機能しない
-	//z-index: v-bind(pswpZIndex);
-	z-index: 2000000;
-	--pswp-bg: var(--modalBg);
+.media {
+	overflow: hidden; // clipにするとバグる
+	border-radius: 8px;
+
+	&:where(:not(.n1):global(.max-width_320px)) {
+		aspect-ratio: 16 / 9 !important;
+		grid-column: auto !important;
+		grid-row: auto !important
+	}
 }
 
-.pswp__bg {
-	background: var(--modalBg);
-	backdrop-filter: var(--modalBgFilter);
+:global(.pswp) {
+	--pswp-root-z-index: var(--mk-pswp-root-z-index, 2000700) !important;
+	--pswp-bg: var(--modalBg) !important;
 }
 
-.pwsp__alt-text-container {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
+// :global(.pswp__bg) {
+// 	background: var(--modalBg);
+// }
 
+:global(.pwsp__alt-text-container) {
 	position: absolute;
-	bottom: 30px;
-	left: 50%;
-	transform: translateX(-50%);
-
-	width: 75%;
+	right: 0;
+	bottom: 20px;
+	left: 0;
+	margin: 0 auto;
+	width: max-content;
 	max-width: 800px;
 }
 
-.pwsp__alt-text {
-	color: var(--fg);
-	margin: 0 auto;
+:global(.pwsp__alt-text) {
+	background-color: rgba(0, 0, 0, 0.7);
+	-webkit-backdrop-filter: var(--blur, blur(15px));
+	backdrop-filter: var(--blur, blur(15px));
+	color: #fff;
 	text-align: center;
 	padding: var(--margin);
 	border-radius: var(--radius);
 	max-height: 8em;
 	overflow-y: auto;
-	text-shadow: var(--bg) 0 0 10px, var(--bg) 0 0 3px, var(--bg) 0 0 3px;
+	white-space: pre-line;
 }
 </style>
