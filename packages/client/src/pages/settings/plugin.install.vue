@@ -7,7 +7,7 @@
 	</FormTextarea>
 
 	<div>
-		<FormSwitch v-model="nextMode" class="_formBlock">
+		<FormSwitch v-model="nextMode">
 			<template #label>AiScript Next Mode</template>
 		</FormSwitch>
 		<MkButton :disabled="!code" primary inline @click="install"><i class="ti ti-check"></i> {{ i18n.ts.install }}</MkButton>
@@ -30,6 +30,7 @@ import { ColdDeviceStorage } from '@/store';
 import { unisonReload } from '@/scripts/unison-reload';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { AISCRIPT_VERSION, AISCRIPT_NEXT_VERSION } from '@/plugin';
 
 const parser = new AiScriptNext.Parser();
 const code = ref('');
@@ -66,23 +67,28 @@ const install = async () => {
 		}
 	}
 
+	const parse = nextMode.value ? parser.parse : AiScript.parse;
+	const Interpreter = nextMode.value ? AiScriptNext.Interpreter : AiScript.AiScript;
+
 	let ast: any;
 	try {
-		ast = (nextMode.value ? parser.parse : AiScript.parse)(code.value);
+		ast = parse(code.value);
 	} catch (err) {
 		os.alert({
 			type: 'error',
 			text: 'Syntax error :(',
 		});
+		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, err);
 		return;
 	}
 
-	const meta = (nextMode.value ? AiScriptNext.Interpreter : AiScript.AiScript).collectMetadata(ast);
+	const meta = Interpreter.collectMetadata(ast);
 	if (meta == null) {
 		os.alert({
 			type: 'error',
 			text: 'No metadata found :(',
 		});
+		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, 'No metadata found');
 		return;
 	}
 
@@ -92,6 +98,7 @@ const install = async () => {
 			type: 'error',
 			text: 'No metadata found :(',
 		});
+		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, 'No metadata found');
 		return;
 	}
 
@@ -101,6 +108,7 @@ const install = async () => {
 			type: 'error',
 			text: 'Required property not found :(',
 		});
+		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, 'Required property not found');
 		return;
 	}
 
