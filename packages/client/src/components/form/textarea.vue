@@ -1,16 +1,21 @@
 <!-- eslint-disable-line vue/multi-word-component-names -->
 <template>
 <div class="adhpbeos">
-	<div class="label" @click="focus">
-		<span v-if="$slots.label || counter.isRemaining" class="label-text"><slot name="label"></slot></span>
-		<span v-if="counter.isRemaining" class="text-count" :class="{ over: counter.isOver }">{{ counter.remainingChars }}</span>
+	<div :class="$style.label" @click="focus">
+		<span v-if="$slots.label || counter.isRemaining" :class="$style.labelText"><slot name="label"></slot></span>
+		<span v-if="counter.isRemaining" :class="[$style.textCount, { [$style.isOver]: counter.isOver }]">{{ counter.remainingChars }}</span>
 	</div>
-	<div class="input" :class="{ disabled, focused, invalid, tall, pre }">
+	<div :class="{
+		[$style.disabled]: disabled,
+		[$style.focused]: focused,
+		[$style.tall]: tall,
+		[$style.pre]: pre,
+	}" style="position: relative;">
 		<textarea
 			ref="inputEl"
 			v-model="v"
 			v-adaptive-border
-			:class="{ code, _monospace: code }"
+			:class="[$style.textarea, { _monospace: code }]"
 			:disabled="disabled"
 			:required="required"
 			:readonly="readonly"
@@ -24,14 +29,14 @@
 			@input="onInput"
 		></textarea>
 	</div>
-	<div class="caption"><slot name="caption"></slot></div>
+	<div :class="$style.caption"><slot name="caption"></slot></div>
 
-	<MkButton v-if="manualSave && changed" primary class="save" @click="updated"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+	<MkButton v-if="manualSave && changed" primary :class="$style.save" @click="updated"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, nextTick, ref, watch, toRefs } from 'vue';
+import { onMounted, nextTick, ref, watch, toRefs, shallowRef } from 'vue';
 import { debounce } from 'throttle-debounce';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n';
@@ -48,11 +53,11 @@ const props = defineProps<{
 	autofocus?: boolean;
 	autocomplete?: string;
 	spellcheck?: boolean;
+	debounce?: boolean;
+	manualSave?: boolean;
 	code?: boolean;
 	tall?: boolean;
 	pre?: boolean;
-	debounce?: boolean;
-	manualSave?: boolean;
 	minLength?: number;
 	maxLength?: number;
 }>();
@@ -65,11 +70,11 @@ const emit = defineEmits<{
 }>();
 
 const { modelValue, autofocus } = toRefs(props);
-const v = ref(modelValue.value);
+const v = ref<string>(modelValue.value ?? '');
 const focused = ref(false);
 const changed = ref(false);
 const invalid = ref(false);
-const inputEl = ref<HTMLTextAreaElement>();
+const inputEl = shallowRef<HTMLTextAreaElement>();
 
 const counter = textCounter({
 	text: v,
@@ -123,105 +128,100 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.adhpbeos {
-	> .label {
-		font-size: 0.85em;
-		padding: 0 0 8px 0;
-		user-select: none;
-		min-height: 1.35em; // line-height
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 8px;
+<style lang="scss" module>
+.label {
+	font-size: 0.85em;
+	padding: 0 0 8px 0;
+	user-select: none;
+	min-height: 1.35em; // line-height
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
 
-		&:empty {
-			display: none;
-		}
-
-		> .label-text {
-			overflow-wrap: break-word;
-		}
-
-		> .text-count {
-			white-space: nowrap;
-			opacity: 0.7;
-
-			&.over {
-				color: var(--error);
-			}
-		}
+	&:empty {
+		display: none;
 	}
 
-	> .caption {
-		font-size: 0.85em;
-		padding: 8px 0 0 0;
-		color: var(--fgTransparentWeak);
-
-		&:empty {
-			display: none;
-		}
+	> .labelText {
+		overflow-wrap: break-word;
 	}
 
-	> .input {
-		position: relative;
+	> .textCount {
+		white-space: nowrap;
+		opacity: 0.7;
 
-		> textarea {
-			-webkit-appearance: none;
-			appearance: none;
-			display: block;
-			width: 100%;
-			min-width: 100%;
-			max-width: 100%;
-			min-height: 130px;
-			margin: 0;
-			padding: 12px;
-			font: inherit;
-			font-weight: normal;
-			font-size: 1em;
-			color: var(--fg);
-			background: var(--panel);
-			border: solid 1px var(--panel);
-			border-radius: 6px;
-			outline: none;
-			box-shadow: none;
-			box-sizing: border-box;
-			transition: border-color 0.1s ease-out;
-
-			&:hover {
-				border-color: var(--inputBorderHover) !important;
-			}
-		}
-
-		&.focused {
-			> textarea {
-				border-color: var(--accent) !important;
-			}
-		}
-
-		&.disabled {
-			opacity: 0.7;
-
-			&, * {
-				cursor: not-allowed !important;
-			}
-		}
-
-		&.tall {
-			> textarea {
-				min-height: 200px;
-			}
-		}
-
-		&.pre {
-			> textarea {
-				white-space: pre;
-			}
+		&.isOver {
+			color: var(--error);
 		}
 	}
+}
 
-	> .save {
-		margin: 8px 0 0 0;
+.caption {
+	font-size: 0.85em;
+	padding: 8px 0 0 0;
+	color: var(--fgTransparentWeak);
+
+	&:empty {
+		display: none;
 	}
+}
+
+.textarea {
+	-webkit-appearance: none;
+	appearance: none;
+	display: block;
+	width: 100%;
+	min-width: 100%;
+	max-width: 100%;
+	min-height: 130px;
+	margin: 0;
+	padding: 12px;
+	font: inherit;
+	font-weight: normal;
+	font-size: 1em;
+	color: var(--fg);
+	background: var(--panel);
+	border: solid 1px var(--panel);
+	border-radius: 6px;
+	outline: none;
+	box-shadow: none;
+	box-sizing: border-box;
+	transition: border-color 0.1s ease-out;
+
+	&:hover {
+		border-color: var(--inputBorderHover) !important;
+	}
+}
+
+.focused {
+	> .textarea {
+		border-color: var(--accent) !important;
+	}
+}
+
+.disabled {
+	opacity: 0.7;
+	cursor: not-allowed !important;
+
+	> .textarea {
+		cursor: not-allowed !important;
+	}
+}
+
+.tall {
+	> .textarea {
+		min-height: 200px;
+	}
+}
+
+.pre {
+	> .textarea {
+		white-space: pre;
+	}
+}
+
+.save {
+	margin: 8px 0 0 0;
 }
 </style>
