@@ -10,6 +10,9 @@
 		<FormSwitch v-model="nextMode">
 			<template #label>AiScript Next Mode</template>
 		</FormSwitch>
+	</div>
+
+	<div>
 		<MkButton :disabled="!code" primary inline @click="install"><i class="ti ti-check"></i> {{ i18n.ts.install }}</MkButton>
 	</div>
 </div>
