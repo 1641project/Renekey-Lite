@@ -1,6 +1,7 @@
 import * as AiScript from '@syuilo/aiscript';
 import { deserialize } from '@syuilo/aiscript/built/serializer';
 import * as AiScriptNext from '@syuilo/aiscript-next';
+import { Parser } from '@syuilo/aiscript-next';
 import { createAiScriptEnv } from '@/scripts/aiscript/api';
 import { inputText } from '@/os';
 import { Plugin, noteActions, notePostInterruptors, noteViewInterruptors, postFormActions, userActions } from '@/store';
@@ -8,7 +9,7 @@ import { Plugin, noteActions, notePostInterruptors, noteViewInterruptors, postFo
 export const AISCRIPT_VERSION = '0.11.1';
 export const AISCRIPT_NEXT_VERSION = '0.15.0';
 
-const parser = new AiScriptNext.Parser();
+const parser = new Parser();
 
 type PluginContext = {
 	interpreter: AiScript.AiScript;

@@ -21,6 +21,7 @@ import { defineAsyncComponent, nextTick, ref } from 'vue';
 import * as AiScript from '@syuilo/aiscript';
 import { serialize } from '@syuilo/aiscript/built/serializer';
 import * as AiScriptNext from '@syuilo/aiscript-next';
+import { Parser } from '@syuilo/aiscript-next';
 import { v4 as uuid } from 'uuid';
 import FormTextarea from '@/components/form/textarea.vue';
 import FormSwitch from '@/components/form/switch.vue';
@@ -33,7 +34,7 @@ import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { AISCRIPT_VERSION, AISCRIPT_NEXT_VERSION } from '@/plugin';
 
-const parser = new AiScriptNext.Parser();
+const parser = new Parser();
 const code = ref('');
 const nextMode = ref(false);
 
