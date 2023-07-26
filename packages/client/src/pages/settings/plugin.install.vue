@@ -1,24 +1,29 @@
 <template>
-<div class="_formRoot">
-	<FormInfo warn class="_formBlock">{{ i18n.ts._plugin.installWarn }}</FormInfo>
+<div class="_gaps_m">
+	<FormInfo warn>{{ i18n.ts._plugin.installWarn }}</FormInfo>
 
-	<FormTextarea v-model="code" tall class="_formBlock">
+	<FormTextarea v-model="code" tall>
 		<template #label>{{ i18n.ts.code }}</template>
 	</FormTextarea>
 
-	<div class="_formBlock">
-		<FormButton :disabled="code == null" primary inline @click="install"><i class="ti ti-check"></i> {{ i18n.ts.install }}</FormButton>
+	<div>
+		<FormSwitch v-model="nextMode" class="_formBlock">
+			<template #label>AiScript Next Mode</template>
+		</FormSwitch>
+		<MkButton :disabled="!code" primary inline @click="install"><i class="ti ti-check"></i> {{ i18n.ts.install }}</MkButton>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
 import { defineAsyncComponent, nextTick, ref } from 'vue';
-import { AiScript, parse } from '@syuilo/aiscript';
+import * as AiScript from '@syuilo/aiscript';
 import { serialize } from '@syuilo/aiscript/built/serializer';
+import * as AiScriptNext from '@syuilo/aiscript-next';
 import { v4 as uuid } from 'uuid';
 import FormTextarea from '@/components/form/textarea.vue';
-import FormButton from '@/components/MkButton.vue';
+import FormSwitch from '@/components/form/switch.vue';
+import MkButton from '@/components/MkButton.vue';
 import FormInfo from '@/components/MkInfo.vue';
 import * as os from '@/os';
 import { ColdDeviceStorage } from '@/store';
@@ -26,23 +31,44 @@ import { unisonReload } from '@/scripts/unison-reload';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
 
-const code = ref(null);
+const parser = new AiScriptNext.Parser();
+const code = ref('');
+const nextMode = ref(false);
 
-function installPlugin({ id, meta, ast, token }) {
+const installPlugin = ({ id, meta, ast, src, token, isNext }) => {
 	ColdDeviceStorage.set('plugins', ColdDeviceStorage.get('plugins').concat({
 		...meta,
 		id,
 		active: true,
 		configData: {},
 		token: token,
-		ast: ast,
+		...isNext ? { isNext: true, src } : { isNext: false, ast },
 	}));
-}
+};
 
-async function install() {
-	let ast;
+const install = async () => {
+	if (!code.value) return;
+
+	if (nextMode.value) {
+		const lv = AiScriptNext.utils.getLangVersion(code.value);
+		if (lv == null) {
+			os.alert({
+				type: 'error',
+				text: 'No language version annotation found :(',
+			});
+			return;
+		} else if (!(lv.startsWith('0.12.') || lv.startsWith('0.13.'))) {
+			os.alert({
+				type: 'error',
+				text: `aiscript version '${lv}' is not supported :(`,
+			});
+			return;
+		}
+	}
+
+	let ast: any;
 	try {
-		ast = parse(code.value);
+		ast = (nextMode.value ? parser.parse : AiScript.parse)(code.value);
 	} catch (err) {
 		os.alert({
 			type: 'error',
@@ -51,7 +77,7 @@ async function install() {
 		return;
 	}
 
-	const meta = AiScript.collectMetadata(ast);
+	const meta = (nextMode.value ? AiScriptNext.Interpreter : AiScript.AiScript).collectMetadata(ast);
 	if (meta == null) {
 		os.alert({
 			type: 'error',
@@ -103,7 +129,15 @@ async function install() {
 			name, version, author, description, permissions, config,
 		},
 		token,
-		ast: serialize(ast),
+		...nextMode.value ? {
+			isNext: true,
+			src: code.value,
+			ast: undefined,
+		} : {
+			isNext: false,
+			src: undefined,
+			ast: serialize(ast),
+		},
 	});
 
 	os.success();
