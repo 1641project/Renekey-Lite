@@ -588,8 +588,8 @@ importers:
         specifier: 0.11.1
         version: 0.11.1
       '@syuilo/aiscript-next':
-        specifier: npm:@syuilo/aiscript@0.15.0
-        version: /@syuilo/aiscript@0.15.0
+        specifier: npm:@syuilo/aiscript@0.14.1
+        version: /@syuilo/aiscript@0.14.1
       '@tabler/icons-webfont':
         specifier: 2.28.0
         version: 2.28.0
@@ -1025,7 +1025,6 @@ packages:
   /@babel/parser@7.22.7:
     resolution: {integrity: sha512-7NF8pOkHP5o2vpmGgNGcfAeCvOYhGLyA3Z4eBQkT1RJlWu47n63bCs93QfJ2hIAFCil7L5P2IWhs1oToVgrL0Q==}
     engines: {node: '>=6.0.0'}
-    hasBin: true
     dependencies:
       '@babel/types': 7.22.5
     dev: false
@@ -2233,7 +2232,6 @@ packages:
   /@swc/cli@0.1.62(@swc/core@1.3.36)(chokidar@3.5.3):
     resolution: {integrity: sha512-kOFLjKY3XH1DWLfXL1/B5MizeNorHR8wHKEi92S/Zi9Md/AK17KSqR8MgyRJ6C1fhKHvbBCl8wboyKAFXStkYw==}
     engines: {node: '>= 12.13'}
-    hasBin: true
     peerDependencies:
       '@swc/core': ^1.2.66
       chokidar: ^3.5.1
@@ -2497,8 +2495,8 @@ packages:
       uuid: 7.0.3
     dev: false
 
-  /@syuilo/aiscript@0.15.0:
-    resolution: {integrity: sha512-vauMbqacuHufE4W7bAm5BDWlci3mWg1ZaerPNHKBMrRXDjEfvBkBGZNXKSWvi+zmhiYAbWyozPIlV6byttYpCw==}
+  /@syuilo/aiscript@0.14.1:
+    resolution: {integrity: sha512-zyX+QWdE/PtEjem+15uPd1J43JIOfaRziGrkwUx+BU/dB9yJADkbwzH9ZkVr2Jzi56TYE4p3Xs5y2Kp+Z6/34A==}
     dependencies:
       autobind-decorator: 2.4.0
       seedrandom: 3.0.5
@@ -3875,13 +3873,11 @@ packages:
   /acorn@7.4.1:
     resolution: {integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==}
     engines: {node: '>=0.4.0'}
-    hasBin: true
     dev: false
 
   /acorn@8.10.0:
     resolution: {integrity: sha512-F0SAmZ8iUtS//m8DmCTA0jlh6TDKkHQyK6xc6V4KDTyZKA9dnvX9/3sRTVQrWm79glUAZbnmmNcdYwUIHWVybw==}
     engines: {node: '>=0.4.0'}
-    hasBin: true
 
   /acorn@8.8.2:
     resolution: {integrity: sha512-xjIYgE8HBrkpd/sJqOGNspf8uHG+NOHGOw6a/Urj8taM2EXfdNAH2oFcPeIFfsv3+kz/mJrS5VuMqbNLjCa2vw==}
@@ -10151,7 +10147,6 @@ packages:
   /nanoid@3.3.6:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
     dev: false
 
   /nanomatch@1.2.13:
@@ -13159,7 +13154,6 @@ packages:
 
   /ts-node@10.9.1(@swc/core@1.3.36)(@types/node@18.14.1)(typescript@4.9.5):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
-    hasBin: true
     peerDependencies:
       '@swc/core': '>=1.2.50'
       '@swc/wasm': '>=1.2.50'
@@ -13373,7 +13367,6 @@ packages:
   /typeorm@0.3.12(ioredis@5.3.1)(pg@8.9.0)(ts-node@10.9.1):
     resolution: {integrity: sha512-sYSxBmCf1nJLLTcYtwqZ+lQIRtLPyUoO93rHTOKk9vJCyT4UfRtU7oRsJvfvKP3nnZTD1hzz2SEy2zwPEN6OyA==}
     engines: {node: '>= 12.9.0'}
-    hasBin: true
     peerDependencies:
       '@google-cloud/spanner': ^5.18.0
       '@sap/hana-client': ^2.12.25
@@ -13613,7 +13606,6 @@ packages:
 
   /update-browserslist-db@1.0.10(browserslist@4.21.5):
     resolution: {integrity: sha512-OztqDenkfFkbSG+tRxBeAnCVPckDBcvibKd35yDONx6OU8N7sqgwc7rCbkJ/WcYtVRZ4ba68d6byhC21GFh7sQ==}
-    hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
@@ -13809,7 +13801,6 @@ packages:
   /vite@4.4.6(sass@1.64.1):
     resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
     engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
     peerDependencies:
       '@types/node': '>= 14'
       less: '*'
