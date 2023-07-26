@@ -329,7 +329,7 @@ $widgets-hide-threshold: 1090px;
 	height: min-content;
 	min-height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
 	min-height: 100dvh;
-	padding: var(--margin) var(--margin) calc(var(--margin) + env(safe-area-inset-bottom, 0px));
+	padding: var(--margin) var(--margin) calc(var(--margin) + var(--safeAreaInsetBottom)) var(--margin);
 	border-left: solid 0.5px var(--divider);
 	background: var(--bg);
 
@@ -364,7 +364,7 @@ $widgets-hide-threshold: 1090px;
 	width: 310px;
 	height: calc(var(--vh, 1vh) * 100); // fallback (dvh units)
 	height: 100dvh;
-	padding: var(--margin) var(--margin) calc(var(--margin) + env(safe-area-inset-bottom, 0px)) !important;
+	padding: var(--margin) var(--margin) calc(var(--margin) + var(--safeAreaInsetBottom)) var(--margin) !important;
 	box-sizing: border-box;
 	overflow: auto;
 	overscroll-behavior: contain;
@@ -386,7 +386,7 @@ $widgets-hide-threshold: 1090px;
 	z-index: 1000;
 	bottom: 0;
 	left: 0;
-	padding: 12px 12px max(12px, env(safe-area-inset-bottom, 0px)) 12px;
+	padding: 12px 12px max(12px, var(--safeAreaInsetBottom)) 12px;
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 	grid-gap: 8px;
