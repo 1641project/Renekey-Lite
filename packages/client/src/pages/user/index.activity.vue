@@ -32,22 +32,26 @@ const props = withDefaults(defineProps<{
 let chartSrc = $ref('per-user-notes');
 
 function showMenu(ev: MouseEvent) {
-	os.popupMenu([{
-		text: i18n.ts.notes,
-		active: true,
-		action: () => {
-			chartSrc = 'per-user-notes';
+	os.popupMenu([
+		{
+			text: i18n.ts.notes,
+			active: true,
+			action: () => {
+				chartSrc = 'per-user-notes';
+			},
 		},
-	},/*, {
-		text: i18n.ts.following,
-		action: () => {
-			chartSrc = 'per-user-following';
-		}
-	}, {
-		text: i18n.ts.followers,
-		action: () => {
-			chartSrc = 'per-user-followers';
-		}
-	}*/], ev.currentTarget ?? ev.target);
+		// {
+		// 	text: i18n.ts.following,
+		// 	action: () => {
+		// 		chartSrc = 'per-user-following';
+		// 	}
+		// },
+		// {
+		// 	text: i18n.ts.followers,
+		// 	action: () => {
+		// 		chartSrc = 'per-user-followers';
+		// 	}
+		// },
+	], ev.currentTarget ?? ev.target);
 }
 </script>

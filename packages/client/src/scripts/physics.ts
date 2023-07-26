@@ -23,7 +23,7 @@ export function physics(container: HTMLElement) {
 	// create renderer
 	const render = Matter.Render.create({
 		engine: engine,
-		//element: document.getElementById('debug'),
+		// element: document.getElementById('debug'),
 		options: {
 			width: containerWidth,
 			height: containerHeight,
@@ -46,13 +46,13 @@ export function physics(container: HTMLElement) {
 		friction: 2
 	});
 
-	//const wallRight = Matter.Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight, wallopts);
-	//const wallLeft = Matter.Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, wallopts);
+	// const wallRight = Matter.Bodies.rectangle(window.innerWidth+50, window.innerHeight/2, 100, window.innerHeight, wallopts);
+	// const wallLeft = Matter.Bodies.rectangle(-50, window.innerHeight/2, 100, window.innerHeight, wallopts);
 
 	Matter.World.add(world, [
 		ground,
-		//wallRight,
-		//wallLeft,
+		// wallRight,
+		// wallLeft,
 	]);
 
 	const objEls = Array.from(container.children);

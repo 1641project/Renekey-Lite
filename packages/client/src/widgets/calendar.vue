@@ -51,8 +51,8 @@ const widgetPropsDef = {
 type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
 
 // 現時点ではvueの制限によりimportしたtypeをジェネリックに渡せない
-//const props = defineProps<WidgetComponentProps<WidgetProps>>();
-//const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
+// const props = defineProps<WidgetComponentProps<WidgetProps>>();
+// const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
 const props = defineProps<{ widget?: Widget<WidgetProps>; }>();
 const emit = defineEmits<{ (ev: 'updateProps', props: WidgetProps); }>();
 
@@ -90,7 +90,7 @@ const tick = () => {
 	][now.getDay()];
 
 	const dayNumer = now.getTime() - new Date(ny, nm, nd).getTime();
-	const dayDenom = 1000/*ms*/ * 60/*s*/ * 60/*m*/ * 24/*h*/;
+	const dayDenom = 1000 /* ms */ * 60 /* s */ * 60 /* m */ * 24 /* h */;
 	const monthNumer = now.getTime() - new Date(ny, nm, 1).getTime();
 	const monthDenom = new Date(ny, nm + 1, 1).getTime() - new Date(ny, nm, 1).getTime();
 	const yearNumer = now.getTime() - new Date(ny, 0, 1).getTime();

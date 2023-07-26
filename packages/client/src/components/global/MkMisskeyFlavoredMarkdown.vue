@@ -81,11 +81,11 @@ withDefaults(defineProps<{
 	font-size: var(--mfm-zoom-size);
 
 	.mfm-x2, .mfm-x3, .mfm-x4 {
-		/* only half effective */
+		// only half effective
 		font-size: calc(var(--mfm-zoom-size) / 2 + 50%);
 
 		.mfm-x2, .mfm-x3, .mfm-x4 {
-			/* disabled */
+			// disabled
 			font-size: 100%;
 		}
 	}

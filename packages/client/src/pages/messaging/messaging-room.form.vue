@@ -30,7 +30,7 @@
 import { onMounted, watch, nextTick } from 'vue';
 import * as Misskey from 'misskey-js';
 import autosize from 'autosize';
-//import insertTextAtCursor from 'insert-text-at-cursor';
+// import insertTextAtCursor from 'insert-text-at-cursor';
 import { throttle } from 'throttle-debounce';
 import { formatTimeString } from '@/scripts/format-time-string';
 import { selectFile } from '@/scripts/select-file';
@@ -38,7 +38,7 @@ import * as os from '@/os';
 import { useStream } from '@/stream';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
-//import { Autocomplete } from '@/scripts/autocomplete';
+// import { Autocomplete } from '@/scripts/autocomplete';
 import { uploadFile } from '@/scripts/upload';
 import { parseObject } from '@/scripts/tms/parse';
 import { getMessageDraft as _getMessageDraft, setMessageDraft as _setMessageDraft, deleteMessageDraft as _deleteMessageDraft } from '@/scripts/tms/drafts';
@@ -193,7 +193,7 @@ onMounted(() => {
 
 	// TODO: detach when unmount
 	// TODO
-	//new Autocomplete(textEl, this, { model: 'text' });
+	// new Autocomplete(textEl, this, { model: 'text' });
 
 	// 書きかけの投稿を復元
 	const draft = _getMessageDraft(draftKey);

@@ -39,20 +39,20 @@ export default defineComponent({
 						ast = parse(props.page.script);
 					} catch (err) {
 						console.error(err);
-						/*os.alert({
-							type: 'error',
-							text: 'Syntax error :('
-						});*/
+						// os.alert({
+						// 	type: 'error',
+						// 	text: 'Syntax error :('
+						// });
 						return;
 					}
 					hpml.aiscript.exec(ast).then(() => {
 						hpml.eval();
 					}).catch(err => {
 						console.error(err);
-						/*os.alert({
-							type: 'error',
-							text: err
-						});*/
+						// os.alert({
+						// 	type: 'error',
+						// 	text: err
+						// });
 					});
 				} else {
 					hpml.eval();

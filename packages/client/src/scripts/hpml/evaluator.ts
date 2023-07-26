@@ -86,7 +86,7 @@ export class Hpml {
 		try {
 			this.vars.value = this.evaluateVars();
 		} catch (err) {
-			//this.onError(e);
+			// this.onError(e);
 		}
 	}
 

@@ -22,7 +22,7 @@ const absolute = _time.toLocaleString();
 
 let now = $shallowRef(new Date());
 const relative = $computed(() => {
-	const ago = (now.getTime() - _time.getTime()) / 1000/*ms*/;
+	const ago = (now.getTime() - _time.getTime()) / 1000 /* ms */;
 	return (
 		ago >= 31536000 ? i18n.t('_ago.yearsAgo', { n: Math.round(ago / 31536000).toString() }) :
 		ago >= 2592000 ? i18n.t('_ago.monthsAgo', { n: Math.round(ago / 2592000).toString() }) :

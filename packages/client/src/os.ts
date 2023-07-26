@@ -141,7 +141,7 @@ export const claimZIndex = (priority: keyof typeof zIndexes = 'low'): number => 
 export const getZIndex = (el: HTMLElement | null): number | null => {
 	if (el == null || el.tagName === 'BODY') return null;
 	const zIndex = parseInt(window.getComputedStyle(el).getPropertyValue('z-index'));
-	if (zIndex >= 500000 /* zIndexes.veryLow */) {
+	if (zIndex >= 500000) { // zIndexes.veryLow
 		return zIndex;
 	} else {
 		return getZIndex(el.parentElement);

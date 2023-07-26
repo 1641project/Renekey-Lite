@@ -53,7 +53,7 @@ export default defineComponent({
 	}
 
 	> .children {
-		//padding 16px
+		// padding 16px
 	}
 }
 </style>

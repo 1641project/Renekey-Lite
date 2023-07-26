@@ -489,15 +489,15 @@ function appendFile(file: Misskey.entities.DriveFile) {
 function appendFolder(folderToAppend: Misskey.entities.DriveFolder) {
 	addFolder(folderToAppend);
 }
-/*
-function prependFile(file: Misskey.entities.DriveFile) {
-	addFile(file, true);
-}
 
-function prependFolder(folderToPrepend: Misskey.entities.DriveFolder) {
-	addFolder(folderToPrepend, true);
-}
-*/
+// function prependFile(file: Misskey.entities.DriveFile) {
+// 	addFile(file, true);
+// }
+
+// function prependFolder(folderToPrepend: Misskey.entities.DriveFolder) {
+// 	addFolder(folderToPrepend, true);
+// }
+
 function goRoot() {
 	// 既にrootにいるなら何もしない
 	if (folder.value == null) return;

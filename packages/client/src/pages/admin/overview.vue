@@ -192,7 +192,7 @@ Chart.register(
 	Tooltip,
 	SubTitle,
 	Filler,
-	//gradient,
+	// gradient,
 );
 
 const rootEl = $ref<HTMLElement>();
@@ -254,7 +254,7 @@ async function renderChart() {
 	chartInstance = new Chart(chartEl, {
 		type: 'bar',
 		data: {
-			//labels: new Array(props.limit).fill(0).map((_, i) => getDate(i).toLocaleString()).slice().reverse(),
+			// labels: new Array(props.limit).fill(0).map((_, i) => getDate(i).toLocaleString()).slice().reverse(),
 			datasets: [{
 				parsing: false,
 				label: 'a',
@@ -265,15 +265,15 @@ async function renderChart() {
 				borderJoinStyle: 'round',
 				borderRadius: 3,
 				backgroundColor: color,
-				/*gradient: props.bar ? undefined : {
-					backgroundColor: {
-						axis: 'y',
-						colors: {
-							0: alpha(x.color ? x.color : getColor(i), 0),
-							[maxes[i]]: alpha(x.color ? x.color : getColor(i), 0.2),
-						},
-					},
-				},*/
+				// gradient: props.bar ? undefined : {
+				// 	backgroundColor: {
+				// 		axis: 'y',
+				// 		colors: {
+				// 			0: alpha(x.color ? x.color : getColor(i), 0),
+				// 			[maxes[i]]: alpha(x.color ? x.color : getColor(i), 0.2),
+				// 		},
+				// 	},
+				// },
 				barPercentage: 0.9,
 				categoryPercentage: 0.9,
 				clip: 8,
@@ -321,7 +321,7 @@ async function renderChart() {
 					},
 					ticks: {
 						display: false,
-						//mirror: true,
+						// mirror: true,
 					},
 				},
 			},
@@ -348,7 +348,7 @@ async function renderChart() {
 					},
 					external: externalTooltipHandler,
 				},
-				//gradient,
+				// gradient,
 			},
 		},
 		plugins: [{
@@ -380,15 +380,13 @@ function onInstanceClick(i) {
 }
 
 onMounted(async () => {
-	/*
-	const magicGrid = new MagicGrid({
-		container: rootEl,
-		static: true,
-		animate: true,
-	});
+	// const magicGrid = new MagicGrid({
+	// 	container: rootEl,
+	// 	static: true,
+	// 	animate: true,
+	// });
 
-	magicGrid.listen();
-	*/
+	// magicGrid.listen();
 
 	renderChart();
 

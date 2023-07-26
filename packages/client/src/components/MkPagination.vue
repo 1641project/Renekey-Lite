@@ -427,7 +427,7 @@ const prependQueue = (newItem: MisskeyEntity): void => {
 	queue.value = new Map([[newItem.id, newItem], ...queue.value].slice(0, props.displayLimit) as [string, MisskeyEntity][]);
 };
 
-/*
+/**
  * アイテムを末尾に追加する（使うの？）
  */
 const appendItem = (item: MisskeyEntity): void => {

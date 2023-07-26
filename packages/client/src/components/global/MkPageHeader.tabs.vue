@@ -133,7 +133,7 @@ const enter = async (el: HTMLElement): Promise<void> => {
 };
 
 const afterEnter = (_el: HTMLElement): void => {
-	//_el.style.width = '';
+	// _el.style.width = '';
 };
 
 const leave = async (el: HTMLElement): Promise<void> => {

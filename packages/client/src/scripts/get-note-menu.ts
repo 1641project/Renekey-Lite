@@ -284,16 +284,15 @@ export function getNoteMenu(props: {
 					return getUserMenu(user);
 				},
 			} : undefined,
-			/*
-		...($i.isModerator || $i.isAdmin ? [
-			null,
-			{
-				icon: 'ti ti-speakerphone',
-				text: i18n.ts.promote,
-				action: promote
-			}]
-			: []
-		),*/
+			// ...($i.isModerator || $i.isAdmin ? [
+			// 	null,
+			// 	{
+			// 		icon: 'ti ti-speakerphone',
+			// 		text: i18n.ts.promote,
+			// 		action: promote,
+			// 	}]
+			// : []
+			// ),
 			...(appearNote.userId !== $i.id ? [
 				null,
 				{

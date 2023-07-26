@@ -211,14 +211,14 @@ onMounted(() => {
 
 	&.wallpaper {
 		background: var(--wallpaperOverlay);
-		//backdrop-filter: var(--blur, blur(4px));
+		// backdrop-filter: var(--blur, blur(4px));
 	}
 
 	> .columns {
 		display: flex;
 		justify-content: center;
 		max-width: 100%;
-		//margin: 32px 0;
+		// margin: 32px 0;
 
 		&.fullView {
 			margin: 0;

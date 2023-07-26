@@ -36,7 +36,7 @@ import { enUS } from 'date-fns/locale';
 import zoomPlugin from 'chartjs-plugin-zoom';
 // https://github.com/misskey-dev/misskey/pull/8575#issuecomment-1114242002
 // We can't use gradient because Vite throws a error.
-//import gradient from 'chartjs-plugin-gradient';
+// import gradient from 'chartjs-plugin-gradient';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { useChartTooltip } from '@/scripts/use-chart-tooltip';
@@ -97,7 +97,7 @@ Chart.register(
 	SubTitle,
 	Filler,
 	zoomPlugin,
-	//gradient,
+	// gradient,
 );
 
 const sum = (...arr) => arr.reduce((r, a) => r.map((b, i) => a[i] + b));
@@ -191,15 +191,15 @@ const render = () => {
 				borderJoinStyle: 'round',
 				borderRadius: props.bar ? 3 : undefined,
 				backgroundColor: props.bar ? (x.color ? x.color : getColor(i)) : alpha(x.color ? x.color : getColor(i), 0.1),
-				/*gradient: props.bar ? undefined : {
-					backgroundColor: {
-						axis: 'y',
-						colors: {
-							0: alpha(x.color ? x.color : getColor(i), 0),
-							[maxes[i]]: alpha(x.color ? x.color : getColor(i), 0.2),
-						},
-					},
-				},*/
+				// gradient: props.bar ? undefined : {
+				// 	backgroundColor: {
+				// 		axis: 'y',
+				// 		colors: {
+				// 			0: alpha(x.color ? x.color : getColor(i), 0),
+				// 			[maxes[i]]: alpha(x.color ? x.color : getColor(i), 0.2),
+				// 		},
+				// 	},
+				// },
 				barPercentage: 0.9,
 				categoryPercentage: 0.9,
 				fill: x.type === 'area',
@@ -252,7 +252,7 @@ const render = () => {
 					},
 					ticks: {
 						display: props.detailed,
-						//mirror: true,
+						// mirror: true,
 					},
 				},
 			},
@@ -310,7 +310,7 @@ const render = () => {
 						},
 					},
 				} : undefined,
-				//gradient,
+				// gradient,
 			},
 		},
 		plugins: [{
