@@ -5,12 +5,6 @@
 	<FormTextarea v-model="code" tall/>
 
 	<div>
-		<FormSwitch v-model="nextMode">
-			<template #label>AiScript Next Mode</template>
-		</FormSwitch>
-	</div>
-
-	<div>
 		<MkButton :disabled="!code" primary inline @click="install"><i class="ti ti-check"></i> {{ i18n.ts.install }}</MkButton>
 	</div>
 </div>
@@ -18,13 +12,10 @@
 
 <script lang="ts" setup>
 import { defineAsyncComponent, nextTick, ref } from 'vue';
-import * as AiScript from '@syuilo/aiscript';
+import { AiScript, parse } from '@syuilo/aiscript';
 import { serialize } from '@syuilo/aiscript/built/serializer';
-import * as AiScriptNext from '@syuilo/aiscript-next';
-import { Parser } from '@syuilo/aiscript-next';
 import { v4 as uuid } from 'uuid';
 import FormTextarea from '@/components/form/textarea.vue';
-import FormSwitch from '@/components/form/switch.vue';
 import MkButton from '@/components/MkButton.vue';
 import FormInfo from '@/components/MkInfo.vue';
 import * as os from '@/os';
@@ -32,47 +23,22 @@ import { ColdDeviceStorage } from '@/store';
 import { unisonReload } from '@/scripts/unison-reload';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
-import { AISCRIPT_VERSION, AISCRIPT_NEXT_VERSION } from '@/plugin';
 
-const parser = new Parser();
 const code = ref('');
-const nextMode = ref(false);
 
-const installPlugin = ({ id, meta, ast, src, token, isNext }) => {
+const installPlugin = ({ id, meta, ast, token }) => {
 	ColdDeviceStorage.set('plugins', ColdDeviceStorage.get('plugins').concat({
 		...meta,
 		id,
 		active: true,
 		configData: {},
 		token: token,
-		...isNext ? { isNext: true, src } : { isNext: false, ast },
+		ast: ast,
 	}));
 };
 
 const install = async () => {
-	if (!code.value) return;
-
-	if (nextMode.value) {
-		const lv = AiScriptNext.utils.getLangVersion(code.value);
-		if (lv == null) {
-			os.alert({
-				type: 'error',
-				text: 'No language version annotation found :(',
-			});
-			return;
-		} else if (!(lv.startsWith('0.12.') || lv.startsWith('0.13.'))) {
-			os.alert({
-				type: 'error',
-				text: `aiscript version '${lv}' is not supported :(`,
-			});
-			return;
-		}
-	}
-
-	const parse = nextMode.value ? parser.parse : AiScript.parse;
-	const Interpreter = nextMode.value ? AiScriptNext.Interpreter : AiScript.AiScript;
-
-	let ast: any;
+	let ast;
 	try {
 		ast = parse(code.value);
 	} catch (err) {
@@ -80,17 +46,15 @@ const install = async () => {
 			type: 'error',
 			text: 'Syntax error :(',
 		});
-		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, err);
 		return;
 	}
 
-	const meta = Interpreter.collectMetadata(ast);
+	const meta = AiScript.collectMetadata(ast);
 	if (meta == null) {
 		os.alert({
 			type: 'error',
 			text: 'No metadata found :(',
 		});
-		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, 'No metadata found');
 		return;
 	}
 
@@ -100,7 +64,6 @@ const install = async () => {
 			type: 'error',
 			text: 'No metadata found :(',
 		});
-		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, 'No metadata found');
 		return;
 	}
 
@@ -110,7 +73,6 @@ const install = async () => {
 			type: 'error',
 			text: 'Required property not found :(',
 		});
-		console.log(`[AiScript v${nextMode.value ? AISCRIPT_NEXT_VERSION : AISCRIPT_VERSION}]:`, 'Required property not found');
 		return;
 	}
 
@@ -139,15 +101,7 @@ const install = async () => {
 			name, version, author, description, permissions, config,
 		},
 		token,
-		...nextMode.value ? {
-			isNext: true,
-			src: code.value,
-			ast: undefined,
-		} : {
-			isNext: false,
-			src: undefined,
-			ast: serialize(ast),
-		},
+		ast: serialize(ast),
 	});
 
 	os.success();
@@ -155,7 +109,7 @@ const install = async () => {
 	nextTick(() => {
 		unisonReload();
 	});
-}
+};
 
 const headerActions = $computed(() => []);
 

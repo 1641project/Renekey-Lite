@@ -22,10 +22,6 @@
 					<template #key>{{ i18n.ts.permission }}</template>
 					<template #value>{{ plugin.permission }}</template>
 				</MkKeyValue>
-				<MkKeyValue>
-					<template #key>AiScript Next Mode</template>
-					<template #value>{{ plugin.isNext ? i18n.ts.enabled : i18n.ts.disabled }}</template>
-				</MkKeyValue>
 
 				<div class="_buttons">
 					<MkButton v-if="plugin.config" inline @click="config(plugin)"><i class="ti ti-settings"></i> {{ i18n.ts.settings }}</MkButton>

@@ -362,18 +362,6 @@ export type Plugin = {
 	token: string;
 	version: string;
 	ast: any[];
-	isNext?: false;
-} | {
-	id: string;
-	name: string;
-	active: boolean;
-	config?: Record<string, { default: any }>;
-	configData: Record<string, any>;
-	token: string;
-	src: string | null;
-	version: string;
-	ast: any[];
-	isNext: true;
 };
 
 interface Watcher {

@@ -1,5 +1,4 @@
-import * as AiScript from '@syuilo/aiscript';
-import * as AiScriptNext from '@syuilo/aiscript-next';
+import { utils, values } from '@syuilo/aiscript';
 import * as os from '@/os';
 import { $i } from '@/account';
 import { instance } from '@/instance';
@@ -10,7 +9,6 @@ export const createAiScriptEnv = (opts: {
 	storageKey: string;
 	token: string;
 }) => {
-	const { values, utils } = opts.plugin.isNext ? AiScriptNext : AiScript;
 	let apiRequests = 0;
 	return {
 		USER_ID: $i ? values.STR($i.id) : values.NULL,
@@ -18,7 +16,7 @@ export const createAiScriptEnv = (opts: {
 		USER_USERNAME: $i ? values.STR($i.username) : values.NULL,
 		CUSTOM_EMOJIS: utils.jsToVal(instance.emojis ?? []),
 		CURRENT_URL: values.STR(window.location.href),
-		'Mk:dialog': values.FN_NATIVE(async ([title, text, type]: any[]) => {
+		'Mk:dialog': values.FN_NATIVE(async ([title, text, type]) => {
 			await os.alert({
 				type: type ? type.value : 'info',
 				title: title.value,
@@ -27,7 +25,7 @@ export const createAiScriptEnv = (opts: {
 			});
 			return values.NULL;
 		}),
-		'Mk:confirm': values.FN_NATIVE(async ([title, text, type]: any[]) => {
+		'Mk:confirm': values.FN_NATIVE(async ([title, text, type]) => {
 			const confirm = await os.confirm({
 				type: type ? type.value : 'question',
 				title: title.value,
@@ -36,7 +34,7 @@ export const createAiScriptEnv = (opts: {
 			});
 			return confirm.canceled ? values.FALSE : values.TRUE;
 		}),
-		'Mk:api': values.FN_NATIVE(async ([ep, param, token]: any[]) => {
+		'Mk:api': values.FN_NATIVE(async ([ep, param, token]) => {
 			if (token) {
 				utils.assertString(token);
 				// バグがあればundefinedもあり得るため念のため
@@ -45,16 +43,16 @@ export const createAiScriptEnv = (opts: {
 			apiRequests++;
 			if (apiRequests > 16) return values.NULL;
 			const res = await os.api(ep.value, utils.valToJs(param), token ? token.value : (opts.token ?? null));
-			return utils.jsToVal(res) as any;
+			return utils.jsToVal(res);
 		}),
-		'Mk:save': values.FN_NATIVE(([key, value]: any[]) => {
+		'Mk:save': values.FN_NATIVE(([key, value]) => {
 			utils.assertString(key);
 			localStorage.setItem(`aiscript:${opts.storageKey}:${key.value}`, JSON.stringify(utils.valToJs(value)));
 			return values.NULL;
 		}),
-		'Mk:load': values.FN_NATIVE(([key]: any[]) => {
+		'Mk:load': values.FN_NATIVE(([key]) => {
 			utils.assertString(key);
-			return utils.jsToVal(JSON.parse(localStorage.getItem(`aiscript:${opts.storageKey}:${key.value}`)!)) as any;
+			return utils.jsToVal(JSON.parse(localStorage.getItem(`aiscript:${opts.storageKey}:${key.value}`)));
 		}),
 	};
 };
