@@ -7,7 +7,7 @@ import { inputText } from '@/os';
 import { Plugin, noteActions, notePostInterruptors, noteViewInterruptors, postFormActions, userActions } from '@/store';
 
 export const AISCRIPT_VERSION = '0.11.1';
-export const AISCRIPT_NEXT_VERSION = '0.15.0';
+export const AISCRIPT_NEXT_VERSION = '0.14.1';
 
 const parser = new Parser();
 
