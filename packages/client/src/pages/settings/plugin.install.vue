@@ -2,9 +2,7 @@
 <div class="_gaps_m">
 	<FormInfo warn>{{ i18n.ts._plugin.installWarn }}</FormInfo>
 
-	<FormTextarea v-model="code" tall>
-		<template #label>{{ i18n.ts.code }}</template>
-	</FormTextarea>
+	<FormTextarea v-model="code" tall/>
 
 	<div>
 		<FormSwitch v-model="nextMode">
