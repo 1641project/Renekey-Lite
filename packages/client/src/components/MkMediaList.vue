@@ -155,23 +155,26 @@ onMounted(() => {
 		children: '.image',
 		thumbSelector: '.image',
 		loop: false,
-		padding: window.innerWidth > 500 ? {
-			top: 32,
-			bottom: 90,
-			left: 32,
-			right: 32,
-		} : {
-			top: 0,
-			bottom: 78,
-			left: 0,
-			right: 0,
-		},
+		padding: window.innerWidth > 500
+			? {
+				top: 32,
+				right: 32,
+				bottom: 32,
+				left: 32,
+			}
+			: {
+				top: 0,
+				right: 0,
+				bottom: 0,
+				left: 0,
+			},
 		imageClickAction: 'toggle-controls',
 		tapAction: 'toggle-controls',
 		doubleTapAction: 'zoom',
 		bgOpacity: 1,
-		showAnimationDuration: 100,
-		hideAnimationDuration: 100,
+		showHideAnimationType: 'fade',
+		showAnimationDuration: 150,
+		hideAnimationDuration: 150,
 		pswpModule: PhotoSwipe,
 	});
 
@@ -204,11 +207,16 @@ onMounted(() => {
 			appendTo: 'wrapper',
 			onInit: (el: HTMLElement, pwsp: PhotoSwipe) => {
 				const textBox = document.createElement('div');
+				const textBoxInner = document.createElement('div');
+
 				textBox.classList.add('pwsp__alt-text', '_shadow');
+				textBoxInner.classList.add('pwsp__alt-text-inner');
+
+				textBox.appendChild(textBoxInner);
 				el.appendChild(textBox);
 
 				pwsp.on('change', () => {
-					textBox.textContent = (pwsp.currSlide?.data?.comment as string | undefined) ?? null;
+					textBoxInner.textContent = (pwsp.currSlide?.data?.comment as string | undefined) ?? null;
 				});
 			},
 		});
@@ -347,12 +355,12 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 
 :global(.pwsp__alt-text-container) {
 	position: absolute;
-	right: 0;
-	bottom: 20px;
-	left: 0;
+	right: 8px;
+	bottom: max(12px, var(--safeAreaInsetBottom));
+	left: 8px;
 	margin: 0 auto;
 	width: max-content;
-	max-width: 800px;
+	max-width: min(calc(100% - 16px), 800px);
 }
 
 :global(.pwsp__alt-text) {
@@ -363,8 +371,14 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	text-align: center;
 	padding: var(--margin);
 	border-radius: var(--radius);
-	max-height: 8em;
-	overflow-y: auto;
+}
+
+:global(.pwsp__alt-text-inner) {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 	white-space: pre-line;
 }
 </style>
