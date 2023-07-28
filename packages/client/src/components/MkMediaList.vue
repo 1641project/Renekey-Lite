@@ -173,8 +173,8 @@ onMounted(() => {
 		doubleTapAction: 'zoom',
 		bgOpacity: 1,
 		showHideAnimationType: 'fade',
-		showAnimationDuration: 150,
-		hideAnimationDuration: 150,
+		showAnimationDuration: 100,
+		hideAnimationDuration: 100,
 		pswpModule: PhotoSwipe,
 	});
 
