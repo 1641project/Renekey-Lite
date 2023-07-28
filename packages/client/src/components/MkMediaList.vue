@@ -209,7 +209,7 @@ onMounted(() => {
 				const textBox = document.createElement('div');
 				const textBoxInner = document.createElement('div');
 
-				textBox.classList.add('pwsp__alt-text', '_shadow');
+				textBox.classList.add('pwsp__alt-text', '_shadow', '_noSelect');
 				textBoxInner.classList.add('pwsp__alt-text-inner');
 
 				textBox.appendChild(textBoxInner);
