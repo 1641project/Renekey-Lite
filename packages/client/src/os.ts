@@ -14,6 +14,7 @@ import MkEmojiPickerDialog from '@/components/MkEmojiPickerDialog.vue';
 import MkEmojiPickerWindow from '@/components/MkEmojiPickerWindow.vue';
 import MkPopupMenu from '@/components/MkPopupMenu.vue';
 import MkContextMenu from '@/components/MkContextMenu.vue';
+import { PropsForm } from '@/components/MkFormDialog.vue';
 import { MenuItem } from '@/types/menu';
 import { i18n } from '@/i18n';
 import { copyText } from '@/scripts/tms/clipboard';
@@ -411,7 +412,7 @@ export const waiting = (): Promise<void> => {
 	});
 };
 
-export const form = (title, form) => {
+export const form = (title: string, form: PropsForm) => {
 	return new Promise((resolve) => {
 		popup(defineAsyncComponent(() => import('@/components/MkFormDialog.vue')), { title, form }, {
 			done: (result) => {
