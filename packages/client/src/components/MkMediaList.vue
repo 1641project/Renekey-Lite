@@ -42,8 +42,49 @@
 </div>
 </template>
 
+<script lang="ts">
+/**
+ * expand表示の最小の高さを指定します
+ * MkMediaImageのボタンが被るのを防ぐため
+ */
+const EXPANDED_MIN_HEIGHT = 100;
+
+/**
+ * アスペクト比算出のためにHTMLElement.clientWidthを使うが、
+ * 大変重たいのでコンテナ要素とメディアリスト幅のペアをキャッシュする
+ * （タイムラインごとにスクロールコンテナが存在する前提だが……）
+ */
+const widthCache = new Map<Element, number>();
+
+/**
+ * コンテナ要素がリサイズされたらキャッシュを削除する
+ */
+const ro = new ResizeObserver(entries => {
+	for (const entry of entries) {
+		widthCache.delete(entry.target);
+	}
+});
+
+const getClientWidthWithCache = async (targetEl: HTMLElement, containerEl: HTMLElement, count = 0): Promise<number> => {
+	if (_DEV_) console.log('getClientWidthWithCache', { targetEl, containerEl, count, cache: widthCache.get(containerEl) });
+	if (widthCache.has(containerEl)) return widthCache.get(containerEl)!;
+
+	const width = targetEl.clientWidth;
+
+	if (count <= 10 && width < EXPANDED_MIN_HEIGHT) {
+		// widthが64未満はおかしいのでリトライする
+		await new Promise(resolve => setTimeout(resolve, 50));
+		return getClientWidthWithCache(targetEl, containerEl, count + 1);
+	}
+
+	widthCache.set(containerEl, width);
+	ro.observe(containerEl);
+	return width;
+};
+</script>
+
 <script lang="ts" setup>
-import { onMounted, shallowRef, computed } from 'vue';
+import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
 // @ts-expect-error https://photoswipe.com/
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
@@ -56,12 +97,6 @@ import * as os from '@/os';
 import { FILE_TYPE_BROWSERSAFE } from '@/const';
 import { defaultStore } from '@/store';
 import { getScrollContainer, getBodyScrollHeight } from '@/scripts/scroll';
-
-/**
- * expand表示の最小の高さを指定します
- * MkMediaImageのボタンが被るのを防ぐため
- */
-const EXPANDED_MIN_HEIGHT = 100;
 
 const props = defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
@@ -76,12 +111,19 @@ const pswpZIndex = os.claimZIndex('middle');
 document.documentElement.style.setProperty('--mk-pswp-root-z-index', pswpZIndex.toString());
 
 const count = computed(() => props.mediaList.filter(media => previewable(media)).length);
+let lightbox: PhotoSwipeLightbox | null;
+
+const popstateHandler = (): void => {
+	if (lightbox.pswp && lightbox.pswp.isOpen === true) {
+		lightbox.pswp.close();
+	}
+};
 
 /**
  * アスペクト比をmediaListWithOneImageAppearanceに基づいていい感じに調整する
  * aspect-ratioではなくheightを使う
  */
-const calcAspectRatio = (): void => {
+const calcAspectRatio = async (): Promise<void> => {
 	if (!galleryEl.value || !rootEl.value) return;
 
 	const img = props.mediaList[0];
@@ -91,7 +133,8 @@ const calcAspectRatio = (): void => {
 		return;
 	}
 
-	const width = galleryEl.value.clientWidth;
+	if (!containerEl.value) containerEl.value = getScrollContainer(rootEl.value);
+	const width = containerEl.value ? await getClientWidthWithCache(rootEl.value, containerEl.value) : rootEl.value.clientWidth;
 
 	const heightMin = (ratio: number) => {
 		const imgResizeRatio = width / img.properties.width;
@@ -113,7 +156,6 @@ const calcAspectRatio = (): void => {
 			galleryEl.value.style.height = heightMin(3 / 2);
 			break;
 		default: {
-			if (!containerEl.value) containerEl.value = getScrollContainer(rootEl.value);
 			const maxHeight = Math.max(EXPANDED_MIN_HEIGHT, (containerEl.value ? containerEl.value.clientHeight : getBodyScrollHeight()) * 0.5 || 360);
 			if (width === 0 || !maxHeight) return;
 			const imgResizeRatio = width / img.properties.width;
@@ -131,7 +173,7 @@ const calcAspectRatio = (): void => {
 onMounted(() => {
 	calcAspectRatio();
 
-	const lightbox = new PhotoSwipeLightbox({
+	lightbox = new PhotoSwipeLightbox({
 		dataSource: props.mediaList
 			.filter(media => {
 				if (media.type === 'image/svg+xml') return true; // svgのwebpublicはpngなのでtrue
@@ -224,12 +266,7 @@ onMounted(() => {
 
 	lightbox.init();
 
-	window.addEventListener('popstate', () => {
-		if (lightbox.pswp && lightbox.pswp.isOpen === true) {
-			lightbox.pswp.close();
-			return;
-		}
-	});
+	window.addEventListener('popstate', popstateHandler);
 
 	lightbox.on('beforeOpen', () => {
 		history.pushState(null, '', '#pswp');
@@ -240,6 +277,12 @@ onMounted(() => {
 			history.back();
 		}
 	});
+});
+
+onUnmounted(() => {
+	window.removeEventListener('popstate', popstateHandler);
+	lightbox?.destroy();
+	lightbox = null;
 });
 
 const previewable = (file: Misskey.entities.DriveFile): boolean => {
