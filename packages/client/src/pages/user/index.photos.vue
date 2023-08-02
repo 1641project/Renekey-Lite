@@ -11,7 +11,7 @@
 				:class="$style.img"
 				:to="notePage(image.note)"
 			>
-				<ImgWithBlurhash :hash="image.file.blurhash" :src="thumbnail(image.file)" :title="image.file.name"/>
+				<MkImgWithBlurhash :hash="image.file.blurhash" :src="thumbnail(image.file)" :title="image.file.name"/>
 			</MkA>
 		</div>
 		<p v-if="!fetching && images.length == 0" :class="$style.empty">{{ i18n.ts.nothing }}</p>
@@ -26,7 +26,7 @@ import { getStaticImageUrl } from '@/scripts/get-static-image-url';
 import { notePage } from '@/filters/note';
 import * as os from '@/os';
 import MkContainer from '@/components/MkContainer.vue';
-import ImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
+import MkImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
 

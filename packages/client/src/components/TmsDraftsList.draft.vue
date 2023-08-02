@@ -8,7 +8,7 @@
 			<span v-if="hasRenote" :class="$style.quoteMark">RN:</span>
 		</div>
 		<div v-if="files.length !== 0" :class="$style.files">
-			<ImgWithBlurhash
+			<MkImgWithBlurhash
 				v-for="{ id: fileId, url: src, blurhash: hash, comment, name } in files"
 				:key="fileId"
 				:src="src"
@@ -27,18 +27,18 @@ import { } from 'vue';
 import * as Misskey from 'misskey-js';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
-import { Draft } from '@/scripts/tms/drafts';
+import { DraftEntity } from '@/scripts/tms/drafts';
 import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
-import ImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
+import MkImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
 
 const props = defineProps<{
-	draft: Draft;
+	draft: DraftEntity;
 	active?: boolean;
 }>();
 
 const emit = defineEmits<{
-	(ev: 'chosen', draftId: Draft['id']): void;
-	(ev: 'deleted', draftId: Draft['id']): void;
+	(ev: 'chosen', draftId: DraftEntity['id']): void;
+	(ev: 'deleted', draftId: DraftEntity['id']): void;
 	(ev: 'closed'): void;
 }>();
 
