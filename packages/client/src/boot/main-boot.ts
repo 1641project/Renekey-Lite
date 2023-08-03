@@ -11,10 +11,11 @@ import { makeHotkey } from '@/scripts/hotkey';
 import { reactionPicker } from '@/scripts/reaction-picker';
 import { mainRouter } from '@/router';
 import { initializeSw } from '@/scripts/initialize-sw';
+import { deckStore } from '@/ui/deck/deck-store';
 
 export const mainBoot = async (): Promise<void> => {
 	const { isClientUpdated } = await common(() => createApp(
-		new URLSearchParams(window.location.search).has('zen') ? defineAsyncComponent(() => import('@/ui/zen.vue')) :
+		new URLSearchParams(window.location.search).has('zen') || (ui === 'deck' && deckStore.state.useSimpleUiForNonRootPages && location.pathname !== '/') ? defineAsyncComponent(() => import('@/ui/zen.vue')) :
 		!$i ? defineAsyncComponent(() => import('@/ui/visitor.vue')) :
 		ui === 'deck' ? defineAsyncComponent(() => import('@/ui/deck.vue')) :
 		ui === 'classic' ? defineAsyncComponent(() => import('@/ui/classic.vue')) :
