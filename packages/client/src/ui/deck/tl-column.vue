@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
 	<template #header>
 		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
@@ -15,12 +15,12 @@
 		</p>
 		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
 	</div>
-	<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl" :src="column.tl"/>
+	<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl" :src="column.tl" @queue="queueUpdated" @note="onNote"/>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import XColumn from './column.vue';
 import { removeColumn, updateColumn, Column } from './deck-store';
 import MkTimeline from '@/components/MkTimeline.vue';
@@ -34,13 +34,15 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-let disabled = $ref(false);
+const disabled = ref(false);
+const indicated = ref(false);
+const columnActive = ref(true);
 
 onMounted(() => {
 	if (props.column.tl == null) {
 		setType();
 	} else if ($i) {
-		disabled = !$i.isModerator && !$i.isAdmin && (
+		disabled.value = !$i.isModerator && !$i.isAdmin && (
 			instance.disableLocalTimeline && ['local', 'social'].includes(props.column.tl) ||
 			instance.disableGlobalTimeline && ['global'].includes(props.column.tl)
 		);
@@ -73,6 +75,25 @@ const setType = async (): Promise<void> => {
 	updateColumn(props.column.id, {
 		tl: src,
 	});
+};
+
+const queueUpdated = (q: number): void => {
+	if (columnActive.value) {
+		indicated.value = q !== 0;
+	}
+};
+
+const onNote = (): void => {
+	if (!columnActive.value) {
+		indicated.value = true;
+	}
+};
+
+const onChangeActiveState = (state: boolean): void => {
+	columnActive.value = state;
+	if (columnActive.value) {
+		indicated.value = false;
+	}
 };
 
 const menu = [

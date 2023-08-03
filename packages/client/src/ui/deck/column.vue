@@ -1,12 +1,21 @@
 <template>
 <div
-	:class="[$style.root, { [$style.paged]: isMainColumn, [$style.naked]: naked, [$style.active]: active, [$style.draghover]: draghover, [$style.dragging]: dragging, [$style.dropready]: dropready }]"
+	:class="[$style.root, {
+		[$style.paged]: isMainColumn,
+		[$style.naked]: naked,
+		[$style.active]: active,
+		[$style.draghover]: draghover,
+		[$style.dragging]: dragging,
+		[$style.dropready]: dropready,
+	}]"
 	@dragover.prevent.stop="onDragover"
 	@dragleave="onDragleave"
 	@drop.prevent.stop="onDrop"
 >
 	<header
-		:class="[$style.header]"
+		:class="[$style.header, {
+			[$style.indicated]: indicated,
+		}]"
 		draggable="true"
 		@click="goTop"
 		@dragstart="onDragstart"
@@ -30,14 +39,12 @@
 		</svg>
 		<button v-tooltip="i18n.ts.settings" :class="$style.menu" class="_button" @click.stop="showSettingsMenu"><i class="ti ti-dots"></i></button>
 	</header>
-	<div v-if="active" ref="body" :class="$style.body">
-		<slot></slot>
-	</div>
+	<div v-if="active" ref="body" :class="$style.body"><slot></slot></div>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, provide, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
 import { updateColumn, swapLeftColumn, swapRightColumn, swapUpColumn, swapDownColumn, stackLeftColumn, popRightColumn, removeColumn, swapColumn, Column } from './deck-store';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
@@ -53,27 +60,31 @@ const props = withDefaults(defineProps<{
 	column: Column;
 	isStacked?: boolean;
 	naked?: boolean;
+	indicated?: boolean;
 	menu?: MenuItem[];
 }>(), {
 	isStacked: false,
 	naked: false,
+	indicated: false,
 	menu: undefined,
 });
 
 const emit = defineEmits<{
+	(ev: 'change-active-state', v: boolean): void;
 	(ev: 'headerWheel', ctx: WheelEvent): void;
 }>();
 
-const body = $shallowRef<HTMLDivElement | null>(null);
+const body = shallowRef<HTMLElement>();
 
-let dragging = $ref(false);
-watch($$(dragging), v => os.deckGlobalEvents.emit(v ? 'column.dragStart' : 'column.dragEnd'));
+const dragging = ref(false);
+watch(dragging, v => os.deckGlobalEvents.emit(v ? 'column.dragStart' : 'column.dragEnd'));
 
-let draghover = $ref(false);
-let dropready = $ref(false);
+const draghover = ref(false);
+const dropready = ref(false);
 
-const isMainColumn = $computed(() => props.column.type === 'main');
-const active = $computed(() => props.column.active !== false);
+const isMainColumn = computed(() => props.column.type === 'main');
+const active = computed(() => props.column.active !== false);
+watch(active, v => emit('change-active-state', v));
 
 onMounted(() => {
 	os.deckGlobalEvents.on('column.dragStart', onOtherDragStart);
@@ -86,11 +97,11 @@ onBeforeUnmount(() => {
 });
 
 const onOtherDragStart = (): void => {
-	dropready = true;
+	dropready.value = true;
 };
 
 const onOtherDragEnd = (): void => {
-	dropready = false;
+	dropready.value = false;
 };
 
 const toggleActive = (): void => {
@@ -192,7 +203,7 @@ const onContextmenu = (ev: MouseEvent): void => {
 };
 
 const goTop = (): void => {
-	body?.scrollTo({
+	body.value?.scrollTo({
 		top: 0,
 		behavior: 'smooth',
 	});
@@ -207,12 +218,12 @@ const onDragstart = (ev: DragEvent): void => {
 	// Chromeのバグで、Dragstartハンドラ内ですぐにDOMを変更する(=リアクティブなプロパティを変更する)とDragが終了してしまう
 	// SEE: https://stackoverflow.com/questions/19639969/html5-dragend-event-firing-immediately
 	window.setTimeout(() => {
-		dragging = true;
+		dragging.value = true;
 	}, 10);
 };
 
 const onDragend = (_ev: DragEvent): void => {
-	dragging = false;
+	dragging.value = false;
 };
 
 const onDragover = (ev: DragEvent): void => {
@@ -227,18 +238,18 @@ const onDragover = (ev: DragEvent): void => {
 
 		ev.dataTransfer.dropEffect = isDeckColumn ? 'move' : 'none';
 
-		if (isDeckColumn) draghover = true;
+		if (isDeckColumn) draghover.value = true;
 	}
 };
 
 const onDragleave = (): void => {
-	draghover = false;
+	draghover.value = false;
 };
 
 const onDrop = (ev: DragEvent): void => {
 	if (!ev.dataTransfer) return;
 
-	draghover = false;
+	draghover.value = false;
 	os.deckGlobalEvents.emit('column.dragEnd');
 
 	const id = ev.dataTransfer.getData(_DATA_TRANSFER_DECK_COLUMN_);
@@ -260,7 +271,7 @@ const onDrop = (ev: DragEvent): void => {
 	border-radius: 10px;
 
 	&.draghover {
-		&:after {
+		&::after {
 			content: "";
 			display: block;
 			position: absolute;
@@ -274,7 +285,7 @@ const onDrop = (ev: DragEvent): void => {
 	}
 
 	&.dragging {
-		&:after {
+		&::after {
 			content: "";
 			display: block;
 			position: absolute;
@@ -349,6 +360,10 @@ const onDrop = (ev: DragEvent): void => {
 	box-shadow: 0 1px 0 0 var(--panelHeaderDivider);
 	cursor: pointer;
 	user-select: none;
+
+	&.indicated {
+		box-shadow: 0 3px 0 0 var(--accent);
+	}
 }
 
 .color {
