@@ -1,16 +1,33 @@
 <template>
-<div :class="[$style.root, { [$style.rootIsMobile]: isMobile }]">
+<div
+	:class="[$style.root, {
+		[$style.rootIsMobile]: isMobile,
+	}]">
 	<XSidebar v-if="!isMobile"/>
 
 	<div :class="$style.main">
 		<XStatusBars/>
-		<div ref="columnsEl" :class="[$style.sections, { [$style.center]: deckStore.reactiveState.columnAlign.value === 'center', [$style.snapScroll]: snapScroll }]" @contextmenu.self.prevent="onContextmenu" @wheel.self="onWheel">
+		<div
+			ref="columnsEl"
+			:class="[$style.sections, {
+				[$style.center]: deckStore.reactiveState.columnAlign.value === 'center',
+				[$style.snapScroll]: snapScroll,
+			}]"
+			@contextmenu.self.prevent="onContextmenu"
+			@wheel.self="onWheel"
+		>
 			<!-- sectionを利用しているのは、deck.vue側でcolumnに対してfirst-of-typeを効かせるため -->
 			<section
 				v-for="ids in layout"
 				:key="ids.join('-')"
 				:class="$style.section"
-				:style="columns.filter(c => ids.includes(c.id)).some(c => c.flexible) ? { flex: 1, minWidth: '350px' } : { width: Math.max(...columns.filter(c => ids.includes(c.id)).map(c => c.width)) + 'px' }"
+				:style="(
+					isMobile
+						? { width: `calc(100% - (var(--columnGap) * 2))` }
+						: columns.filter(c => ids.includes(c.id)).some(c => c.flexible)
+							? { flex: 1, minWidth: '350px' }
+							: { width: `${Math.max(...columns.filter(c => ids.includes(c.id)).map(c => c.width))}px` }
+				)"
 				@wheel.self="onWheel"
 			>
 				<component
@@ -82,7 +99,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { v4 as uuid } from 'uuid';
 import * as os from '@/os';
 import { navbarItemDef } from '@/navbar';
@@ -148,13 +165,15 @@ window.addEventListener('resize', () => {
 	isMobile.value = window.innerWidth <= 500;
 });
 
-const snapScroll = deviceKind === 'smartphone' || deviceKind === 'tablet';
+const snapScroll = computed(() => {
+	return isMobile.value || deviceKind === 'smartphone' || deviceKind === 'tablet';
+});
 const drawerMenuShowing = ref(false);
 
-const route = 'TODO';
-watch(route, () => {
-	drawerMenuShowing.value = false;
-});
+// const route = 'TODO';
+// watch(route, () => {
+// 	drawerMenuShowing.value = false;
+// });
 
 const columns = deckStore.reactiveState.columns;
 const layout = deckStore.reactiveState.layout;
@@ -184,12 +203,13 @@ const addColumn = async (): Promise<void> => {
 		'channel',
 		'mentions',
 		'direct',
-	];
+	] as const;
 
 	const { canceled, result: column_ } = await os.select({
 		title: i18n.ts._deck.addColumn,
 		items: columns_.map(column => ({
-			value: column, text: i18n.t('_deck._columns.' + column),
+			value: column,
+			text: i18n.t(`_deck._columns.${column}`),
 		})),
 	});
 	if (canceled) return;
@@ -197,7 +217,7 @@ const addColumn = async (): Promise<void> => {
 	addColumnToStore({
 		type: column_,
 		id: uuid(),
-		name: i18n.t('_deck._columns.' + column_),
+		name: i18n.t(`_deck._columns.${column_}`),
 		width: 330,
 	});
 };
@@ -306,7 +326,7 @@ const deleteProfile = async (): Promise<void> => {
 }
 
 .rootIsMobile {
-	padding-bottom: 100px;
+	padding-bottom: var(--minBottomSpacing);
 }
 
 .main {
@@ -343,11 +363,11 @@ const deleteProfile = async (): Promise<void> => {
 .section {
 	display: flex;
 	flex-direction: column;
-	scroll-snap-align: start;
 	flex-shrink: 0;
 	padding-top: var(--columnGap);
 	padding-bottom: var(--columnGap);
 	padding-left: var(--columnGap);
+	scroll-snap-align: start;
 
 	> .column:not(:last-of-type) {
 		margin-bottom: var(--columnGap);
@@ -369,6 +389,7 @@ const deleteProfile = async (): Promise<void> => {
 	flex-direction: column;
 	justify-content: center;
 	width: 32px;
+	scroll-snap-align: end;
 }
 
 .sideMenuButton {
