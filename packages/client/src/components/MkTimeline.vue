@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, onUnmounted } from 'vue';
+import { computed, provide, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkNotes from '@/components/MkNotes.vue';
 import { useStream } from '@/stream';
@@ -26,10 +26,10 @@ const emit = defineEmits<{
 
 provide('inChannel', computed(() => props.src === 'channel'));
 
-const tlComponent = $ref<InstanceType<typeof MkNotes>>();
+const tlComponent = ref<InstanceType<typeof MkNotes>>();
 
 const prepend = (note: Misskey.entities.Note): void => {
-	tlComponent?.pagingComponent?.prepend(note);
+	tlComponent.value?.pagingComponent?.prepend(note);
 
 	emit('note');
 
@@ -38,29 +38,18 @@ const prepend = (note: Misskey.entities.Note): void => {
 	}
 };
 
-const onUserAdded = (): void => {
-	tlComponent?.pagingComponent?.reload();
-};
+type Endpoints = keyof Misskey.Endpoints;
+type EndpointReq<T extends Endpoints> = Misskey.Endpoints[T]['req'];
 
-const onUserRemoved = (): void => {
-	tlComponent?.pagingComponent?.reload();
-};
-
-const onChangeFollowing = (): void => {
-	if (!tlComponent?.pagingComponent?.backed) {
-		tlComponent?.pagingComponent?.reload();
-	}
-};
-
-let endpoint: keyof Misskey.Endpoints | undefined;
-let query: Misskey.Endpoints[keyof Misskey.Endpoints]['req'] | undefined;
+let endpoint: Endpoints | null = null;
+let query: EndpointReq<Endpoints> | null = null;
 let connection: Misskey.ChannelConnection | null = null;
 let connection2: Misskey.ChannelConnection | null = null;
 
 const stream = useStream();
 
 if (props.src === 'antenna') {
-	endpoint = 'antennas/notes';
+	endpoint = 'antennas/notes' as const;
 	query = {
 		antennaId: props.antenna,
 	};
@@ -69,31 +58,29 @@ if (props.src === 'antenna') {
 	});
 	connection.on('note', prepend);
 } else if (props.src === 'home') {
-	endpoint = 'notes/timeline';
+	endpoint = 'notes/timeline' as const;
 	connection = stream.useChannel('homeTimeline');
 	connection.on('note', prepend);
 
 	connection2 = stream.useChannel('main');
-	connection2.on('follow', onChangeFollowing);
-	connection2.on('unfollow', onChangeFollowing);
 } else if (props.src === 'local') {
-	endpoint = 'notes/local-timeline';
+	endpoint = 'notes/local-timeline' as const;
 	connection = stream.useChannel('localTimeline');
 	connection.on('note', prepend);
 } else if (props.src === 'social') {
-	endpoint = 'notes/hybrid-timeline';
+	endpoint = 'notes/hybrid-timeline' as const;
 	connection = stream.useChannel('hybridTimeline');
 	connection.on('note', prepend);
 } else if (props.src === 'global') {
-	endpoint = 'notes/global-timeline';
+	endpoint = 'notes/global-timeline' as const;
 	connection = stream.useChannel('globalTimeline');
 	connection.on('note', prepend);
 } else if (props.src === 'mentions') {
-	endpoint = 'notes/mentions';
+	endpoint = 'notes/mentions' as const;
 	connection = stream.useChannel('main');
 	connection.on('mention', prepend);
 } else if (props.src === 'directs') {
-	endpoint = 'notes/mentions';
+	endpoint = 'notes/mentions' as const;
 	query = {
 		visibility: 'specified',
 	};
@@ -105,7 +92,7 @@ if (props.src === 'antenna') {
 	connection = stream.useChannel('main');
 	connection.on('mention', onNote);
 } else if (props.src === 'list') {
-	endpoint = 'notes/user-list-timeline';
+	endpoint = 'notes/user-list-timeline' as const;
 	query = {
 		listId: props.list,
 	};
@@ -113,10 +100,8 @@ if (props.src === 'antenna') {
 		listId: props.list,
 	});
 	connection.on('note', prepend);
-	connection.on('userAdded', onUserAdded);
-	connection.on('userRemoved', onUserRemoved);
 } else if (props.src === 'channel') {
-	endpoint = 'channels/timeline';
+	endpoint = 'channels/timeline' as const;
 	query = {
 		channelId: props.channel,
 	};
@@ -137,14 +122,10 @@ const pagination = {
 };
 
 onUnmounted(() => {
-	if (connection) {
-		connection.dispose();
-		connection = null;
-	}
-	if (connection2) {
-		connection2.dispose();
-		connection2 = null;
-	}
+	connection?.dispose();
+	connection = null;
+	connection2?.dispose();
+	connection2 = null;
 });
 
 // const timetravel = (date?: Date) => {
