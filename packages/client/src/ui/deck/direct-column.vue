@@ -3,15 +3,15 @@
 	<template #icon><i class="ti ti-mail"></i></template>
 	<template #header>{{ column.name }}</template>
 
-	<MkNotes :pagination="pagination" @queue="queueUpdated"/>
+	<MkTimeline ref="timeline" src="directs" @queue="queueUpdated"/>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, shallowRef } from 'vue';
 import XColumn from './column.vue';
 import { Column } from './deck-store';
-import MkNotes from '@/components/MkNotes.vue';
+import MkTimeline from '@/components/MkTimeline.vue';
 
 defineProps<{
 	column: Column;
@@ -24,11 +24,5 @@ const queueUpdated = (q: number): void => {
 	indicated.value = q !== 0;
 };
 
-const pagination = {
-	endpoint: 'notes/mentions' as const,
-	limit: 10,
-	params: {
-		visibility: 'specified',
-	},
-};
+const timeline = shallowRef<InstanceType<typeof MkTimeline>>();
 </script>
