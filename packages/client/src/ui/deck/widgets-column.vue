@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import { ref } from 'vue';
 import XColumn from './column.vue';
 import { addColumnWidget, Column, removeColumnWidget, setColumnWidgets, updateColumnWidget } from './deck-store';
 import MkWidgets, { Widget, EditedWidget } from '@/components/MkWidgets.vue';
@@ -21,7 +21,7 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-let edit = $ref(false);
+const edit = ref(false);
 
 const addWidget = (widget: Widget): void => {
 	addColumnWidget(props.column.id, widget);
@@ -40,7 +40,7 @@ const updateWidgets = (widgets: Widget[]): void => {
 };
 
 const toggleWidgetEdit = (): void => {
-	edit = !edit;
+	edit.value = !edit.value;
 };
 
 const menu = [

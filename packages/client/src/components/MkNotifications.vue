@@ -1,5 +1,5 @@
 <template>
-<MkPagination ref="pagingComponent" :pagination="pagination">
+<MkPagination ref="pagingComponent" :pagination="pagination" @queue="emit('queue', $event)">
 	<template #empty>
 		<div class="_fullinfo">
 			<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
@@ -30,6 +30,10 @@ import { i18n } from '@/i18n';
 const props = defineProps<{
 	includeTypes?: typeof Misskey.notificationTypes[number][] | null;
 	unreadOnly?: boolean;
+}>();
+
+const emit = defineEmits<{
+	(ev: 'queue', count: number): void;
 }>();
 
 const pagingComponent = ref<InstanceType<typeof MkPagination>>();

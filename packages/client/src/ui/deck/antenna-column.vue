@@ -1,15 +1,15 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
 	<template #header>
 		<i class="ti ti-antenna"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<MkTimeline v-if="column.antennaId" ref="timeline" src="antenna" :antenna="column.antennaId"/>
+	<MkTimeline v-if="column.antennaId" ref="timeline" src="antenna" :antenna="column.antennaId" @queue="queueUpdated"/>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { onMounted, ref, shallowRef } from 'vue';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
 import MkTimeline from '@/components/MkTimeline.vue';
@@ -21,7 +21,13 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
+const indicated = ref(false);
+
+const queueUpdated = (q: number): void => {
+	indicated.value = q !== 0;
+};
+
+const timeline = shallowRef<InstanceType<typeof MkTimeline>>();
 
 onMounted(() => {
 	if (props.column.antennaId == null) {
@@ -35,7 +41,8 @@ const setAntenna = async (): Promise<void> => {
 	const { canceled, result: antenna } = await os.select({
 		title: i18n.ts.selectAntenna,
 		items: antennas.map(x => ({
-			value: x, text: x.name,
+			value: x,
+			text: x.name,
 		})),
 		default: props.column.antennaId,
 	});
@@ -64,7 +71,7 @@ const menu = [
 ];
 
 // const focus = (): void => {
-// 	timeline?.focus();
+// 	timeline.value?.focus();
 // };
 
 // defineExpose({

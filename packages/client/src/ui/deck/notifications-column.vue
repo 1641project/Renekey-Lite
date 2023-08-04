@@ -1,13 +1,13 @@
 <template>
-<XColumn :column="column" :is-stacked="isStacked" :menu="menu">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
 	<template #header><i class="ti ti-bell" style="margin-right: 8px;"></i>{{ column.name }}</template>
 
-	<MkNotifications :include-types="column.includingTypes"/>
+	<MkNotifications :include-types="column.includingTypes" @queue="queueUpdated"/>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 import { notificationTypes } from 'misskey-js';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
@@ -19,6 +19,12 @@ const props = defineProps<{
 	column: Column;
 	isStacked: boolean;
 }>();
+
+const indicated = ref(false);
+
+const queueUpdated = (q: number): void => {
+	indicated.value = q !== 0;
+};
 
 const openNotificationSetting = (): void => {
 	os.popup(defineAsyncComponent(() => import('@/components/MkNotificationSettingWindow.vue')), {

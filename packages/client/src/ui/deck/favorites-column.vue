@@ -1,8 +1,8 @@
 <template>
-<XColumn :column="column" :is-stacked="isStacked">
+<XColumn :column="column" :is-stacked="isStacked" :indicated="indicated">
 	<template #header><i class="ti ti-star" style="margin-right: 8px;"></i>{{ column.name }}</template>
 
-	<MkPagination ref="pagingComponent" :pagination="pagination">
+	<MkPagination ref="pagingComponent" :pagination="pagination" @queue="queueUpdated">
 		<template #empty>
 			<div class="_fullinfo">
 				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, shallowRef } from 'vue';
 import XColumn from './column.vue';
 import { Column } from './deck-store';
 import MkPagination from '@/components/MkPagination.vue';
@@ -35,7 +35,13 @@ defineProps<{
 	isStacked: boolean;
 }>();
 
-const pagingComponent = ref<InstanceType<typeof MkPagination>>();
+const indicated = ref(false);
+
+const queueUpdated = (q: number): void => {
+	indicated.value = q !== 0;
+};
+
+const pagingComponent = shallowRef<InstanceType<typeof MkPagination>>();
 
 const pagination = {
 	endpoint: 'i/favorites' as const,

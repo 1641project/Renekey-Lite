@@ -86,6 +86,8 @@ const isMainColumn = computed(() => props.column.type === 'main');
 const active = computed(() => props.column.active !== false);
 watch(active, v => emit('change-active-state', v));
 
+const indicated = computed(() => active.value && props.indicated);
+
 onMounted(() => {
 	os.deckGlobalEvents.on('column.dragStart', onOtherDragStart);
 	os.deckGlobalEvents.on('column.dragEnd', onOtherDragEnd);

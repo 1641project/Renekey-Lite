@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
 	<template #header>
 		<i class="ti ti-device-tv"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
@@ -8,13 +8,13 @@
 		<div style="padding: 8px; text-align: center;">
 			<MkButton primary gradate rounded inline @click="post"><i class="ti ti-pencil"></i></MkButton>
 		</div>
-		<MkTimeline ref="timeline" src="channel" :channel="column.channelId"/>
+		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" @queue="queueUpdated"/>
 	</template>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import { onMounted, ref, shallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
@@ -28,18 +28,31 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
-let channel = $shallowRef<Misskey.entities.Channel>();
+const indicated = ref(false);
+
+const queueUpdated = (q: number): void => {
+	indicated.value = q !== 0;
+};
+
+const timeline = shallowRef<InstanceType<typeof MkTimeline>>();
+const channel = shallowRef<Misskey.entities.Channel | null>(null);
+
+onMounted(() => {
+	if (props.column.channelId == null) {
+		setChannel();
+	}
+});
 
 const setChannel = async (): Promise<void> => {
 	const channels = await os.api('channels/followed', {
 		limit: 100,
-	});
+	}) as any[];
 
 	const { canceled, result: channel_ } = await os.select({
 		title: i18n.ts.selectChannel,
 		items: channels.map(x => ({
-			value: x, text: x.name,
+			value: x,
+			text: x.name,
 		})),
 		default: props.column.channelId,
 	});
@@ -52,20 +65,16 @@ const setChannel = async (): Promise<void> => {
 };
 
 const post = async (): Promise<void> => {
-	if (!channel || channel.id !== props.column.channelId) {
-		channel = await os.api('channels/show', {
+	if (!channel.value || channel.value.id !== props.column.channelId) {
+		channel.value = await os.api('channels/show', {
 			channelId: props.column.channelId,
-		});
+		}) as any;
 	}
 
 	os.post({
-		channel,
+		channel: channel.value,
 	});
 };
-
-if (props.column.channelId == null) {
-	setChannel();
-}
 
 const menu = [{
 	icon: 'ti ti-pencil',

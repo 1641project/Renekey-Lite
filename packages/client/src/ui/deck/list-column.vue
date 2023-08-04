@@ -1,15 +1,15 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
 	<template #header>
 		<i class="ti ti-list"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId"/>
+	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId" @queue="queueUpdated"/>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import { onMounted, ref, shallowRef } from 'vue';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
 import MkTimeline from '@/components/MkTimeline.vue';
@@ -21,7 +21,19 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
+const indicated = ref(false);
+
+const queueUpdated = (q: number): void => {
+	indicated.value = q !== 0;
+};
+
+const timeline = shallowRef<InstanceType<typeof MkTimeline>>();
+
+onMounted(() => {
+	if (props.column.listId == null) {
+		setList();
+	}
+});
 
 const setList = async (): Promise<void> => {
 	const lists = await os.api('users/lists/list');
@@ -43,10 +55,6 @@ const setList = async (): Promise<void> => {
 const editList = (): void => {
 	os.pageWindow('my/lists/' + props.column.listId);
 };
-
-if (props.column.listId == null) {
-	setList();
-}
 
 const menu = [
 	{

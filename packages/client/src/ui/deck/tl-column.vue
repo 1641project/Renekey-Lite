@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
 	<template #header>
 		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
@@ -15,7 +15,7 @@
 		</p>
 		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
 	</div>
-	<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl" :src="column.tl" @queue="queueUpdated" @note="onNote"/>
+	<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl" :src="column.tl" @queue="queueUpdated"/>
 </XColumn>
 </template>
 
@@ -34,9 +34,13 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const disabled = ref(false);
 const indicated = ref(false);
-const columnActive = ref(true);
+
+const queueUpdated = (q: number): void => {
+	indicated.value = q !== 0;
+};
+
+const disabled = ref(false);
 
 onMounted(() => {
 	if (props.column.tl == null) {
@@ -75,25 +79,6 @@ const setType = async (): Promise<void> => {
 	updateColumn(props.column.id, {
 		tl: src,
 	});
-};
-
-const queueUpdated = (q: number): void => {
-	if (columnActive.value) {
-		indicated.value = q !== 0;
-	}
-};
-
-const onNote = (): void => {
-	if (!columnActive.value) {
-		indicated.value = true;
-	}
-};
-
-const onChangeActiveState = (state: boolean): void => {
-	columnActive.value = state;
-	if (columnActive.value) {
-		indicated.value = false;
-	}
 };
 
 const menu = [
