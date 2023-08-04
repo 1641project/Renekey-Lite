@@ -33,7 +33,10 @@
 			<template v-if="active"><i class="ti ti-chevron-up"></i></template>
 			<template v-else><i class="ti ti-chevron-down"></i></template>
 		</button>
-		<span :class="$style.title"><slot name="header"></slot></span>
+		<span :class="$style.title">
+			<span :class="$style.titleIcon"><slot name="icon"></slot></span>
+			<slot name="header"></slot>
+		</span>
 		<svg viewBox="0 0 16 16" version="1.1" :class="$style.grabber">
 			<path fill="currentColor" d="M10 13a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm0-4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm-4 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5-9a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path>
 		</svg>
@@ -393,6 +396,14 @@ const onDrop = (ev: DragEvent): void => {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	width: 100%;
+}
+
+.titleIcon {
+	margin-right: 8px;
+
+	&:empty {
+		display: none;
+	}
 }
 
 .toggleActive,

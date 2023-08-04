@@ -1,6 +1,7 @@
 <template>
 <XColumn :column="column" :is-stacked="isStacked" :indicated="indicated">
-	<template #header><i class="ti ti-star" style="margin-right: 8px;"></i>{{ column.name }}</template>
+	<template #icon><i class="ti ti-star"></i></template>
+	<template #header>{{ column.name }}</template>
 
 	<MkPagination ref="pagingComponent" :pagination="pagination" @queue="queueUpdated">
 		<template #empty>

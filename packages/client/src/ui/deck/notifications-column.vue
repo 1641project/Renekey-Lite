@@ -1,6 +1,7 @@
 <template>
 <XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
-	<template #header><i class="ti ti-bell" style="margin-right: 8px;"></i>{{ column.name }}</template>
+	<template #icon><i class="ti ti-bell"></i></template>
+	<template #header>{{ column.name }}</template>
 
 	<MkNotifications :include-types="column.includingTypes" @queue="queueUpdated"/>
 </XColumn>

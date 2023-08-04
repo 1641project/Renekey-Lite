@@ -1,11 +1,7 @@
 <template>
 <XColumn v-if="deckStore.state.alwaysShowMainColumn || mainRouter.currentRoute.value.name !== 'index'" :column="column" :is-stacked="isStacked">
-	<template #header>
-		<template v-if="pageMetadata?.value">
-			<i :class="pageMetadata?.value.icon"></i>
-			{{ pageMetadata?.value.title }}
-		</template>
-	</template>
+	<template v-if="pageMetadata?.value" #icon><i :class="pageMetadata.value.icon"></i></template>
+	<template v-if="pageMetadata?.value" #header>{{ pageMetadata.value.title }}</template>
 
 	<div ref="contents">
 		<RouterView @contextmenu.stop="onContextmenu"/>

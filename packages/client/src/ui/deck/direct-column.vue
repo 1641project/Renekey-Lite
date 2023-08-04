@@ -1,6 +1,7 @@
 <template>
 <XColumn :column="column" :is-stacked="isStacked" :indicated="indicated">
-	<template #header><i class="ti ti-mail" style="margin-right: 8px;"></i>{{ column.name }}</template>
+	<template #icon><i class="ti ti-mail"></i></template>
+	<template #header>{{ column.name }}</template>
 
 	<MkNotes :pagination="pagination" @queue="queueUpdated"/>
 </XColumn>

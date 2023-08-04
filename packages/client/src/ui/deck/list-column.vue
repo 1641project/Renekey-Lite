@@ -1,8 +1,7 @@
 <template>
 <XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
-	<template #header>
-		<i class="ti ti-list"></i><span style="margin-left: 8px;">{{ column.name }}</span>
-	</template>
+	<template #icon><i class="ti ti-list"></i></template>
+	<template #header>{{ column.name }}</template>
 
 	<MkTimeline v-if="column.listId" ref="timeline" src="list" :list="column.listId" @queue="queueUpdated"/>
 </XColumn>

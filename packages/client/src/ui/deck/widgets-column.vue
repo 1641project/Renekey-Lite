@@ -1,6 +1,7 @@
 <template>
 <XColumn :menu="menu" :naked="true" :column="column" :is-stacked="isStacked">
-	<template #header><i class="ti ti-apps" style="margin-right: 8px;"></i>{{ column.name }}</template>
+	<template #icon><i class="ti ti-apps"></i></template>
+	<template #header>{{ column.name }}</template>
 
 	<div :class="$style.root">
 		<div v-if="!(column.widgets && column.widgets.length > 0) && !edit" :class="$style.intro">{{ i18n.ts._deck.widgetsIntroduction }}</div>

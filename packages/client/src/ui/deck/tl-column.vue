@@ -1,12 +1,12 @@
 <template>
 <XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
-	<template #header>
+	<template #icon>
 		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
 		<i v-else-if="column.tl === 'social'" class="ti ti-rocket"></i>
 		<i v-else-if="column.tl === 'global'" class="ti ti-whirl"></i>
-		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
+	<template #header>{{ column.name }}</template>
 
 	<div v-if="disabled" :class="$style.disabled">
 		<p :class="$style.disabledTitle">

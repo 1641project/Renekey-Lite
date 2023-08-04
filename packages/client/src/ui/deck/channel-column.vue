@@ -1,8 +1,7 @@
 <template>
 <XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
-	<template #header>
-		<i class="ti ti-device-tv"></i><span style="margin-left: 8px;">{{ column.name }}</span>
-	</template>
+	<template #icon><i class="ti ti-device-tv"></i></template>
+	<template #header>{{ column.name }}</template>
 
 	<template v-if="column.channelId">
 		<div style="padding: 8px; text-align: center;">
