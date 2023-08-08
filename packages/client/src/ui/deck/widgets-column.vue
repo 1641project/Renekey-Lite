@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :naked="true" :column="column" :is-stacked="isStacked">
+<XColumn :menu="menu" :naked="true" :column="column" :is-stacked="isStacked" :is-mobile="isMobile">
 	<template #icon><i class="ti ti-apps"></i></template>
 	<template #header>{{ column.name }}</template>
 
@@ -20,6 +20,7 @@ import { i18n } from '@/i18n';
 const props = defineProps<{
 	column: Column;
 	isStacked: boolean;
+	isMobile: boolean;
 }>();
 
 const edit = ref(false);

@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated">
+<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated" :is-mobile="isMobile">
 	<template #icon>
 		<i v-if="column.tl === 'home'" class="ti ti-home"></i>
 		<i v-else-if="column.tl === 'local'" class="ti ti-planet"></i>
@@ -32,6 +32,7 @@ import { instance } from '@/instance';
 const props = defineProps<{
 	column: Column;
 	isStacked: boolean;
+	isMobile: boolean;
 }>();
 
 const indicated = ref(false);

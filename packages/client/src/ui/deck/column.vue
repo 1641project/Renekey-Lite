@@ -16,7 +16,7 @@
 		:class="[$style.header, {
 			[$style.indicated]: indicated,
 		}]"
-		draggable="true"
+		:draggable="draggable"
 		@click="goTop"
 		@dragstart="onDragstart"
 		@dragend="onDragend"
@@ -37,7 +37,7 @@
 			<span :class="$style.titleIcon"><slot name="icon"></slot></span>
 			<slot name="header"></slot>
 		</span>
-		<svg viewBox="0 0 16 16" version="1.1" :class="$style.grabber">
+		<svg v-if="draggable" viewBox="0 0 16 16" version="1.1" :class="$style.grabber">
 			<path fill="currentColor" d="M10 13a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm0-4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm-4 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5-9a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path>
 		</svg>
 		<button v-tooltip="i18n.ts.settings" :class="$style.menu" class="_button" @click.stop="showSettingsMenu"><i class="ti ti-dots"></i></button>
@@ -65,11 +65,13 @@ const props = withDefaults(defineProps<{
 	naked?: boolean;
 	indicated?: boolean;
 	menu?: MenuItem[];
+	isMobile?: boolean;
 }>(), {
 	isStacked: false,
 	naked: false,
 	indicated: false,
 	menu: undefined,
+	isMobile: false,
 });
 
 const emit = defineEmits<{
@@ -91,6 +93,8 @@ watch(active, v => emit('change-active-state', v));
 
 const indicated = computed(() => active.value && props.indicated);
 
+const draggable = computed(() => !props.isMobile);
+
 onMounted(() => {
 	os.deckGlobalEvents.on('column.dragStart', onOtherDragStart);
 	os.deckGlobalEvents.on('column.dragEnd', onOtherDragEnd);
@@ -102,10 +106,12 @@ onBeforeUnmount(() => {
 });
 
 const onOtherDragStart = (): void => {
+	if (!draggable.value) return;
 	dropready.value = true;
 };
 
 const onOtherDragEnd = (): void => {
+	if (!draggable.value) return;
 	dropready.value = false;
 };
 
@@ -215,6 +221,7 @@ const goTop = (): void => {
 };
 
 const onDragstart = (ev: DragEvent): void => {
+	if (!draggable.value) return;
 	if (!ev.dataTransfer) return;
 
 	ev.dataTransfer.effectAllowed = 'move';
@@ -228,14 +235,16 @@ const onDragstart = (ev: DragEvent): void => {
 };
 
 const onDragend = (_ev: DragEvent): void => {
+	if (!draggable.value) return;
 	dragging.value = false;
 };
 
 const onDragover = (ev: DragEvent): void => {
+	if (!draggable.value) return;
 	if (!ev.dataTransfer) return;
 
 	// 自分自身がドラッグされている場合
-	if (dragging) {
+	if (dragging.value) {
 		// 自分自身にはドロップさせない
 		ev.dataTransfer.dropEffect = 'none';
 	} else {
@@ -248,10 +257,12 @@ const onDragover = (ev: DragEvent): void => {
 };
 
 const onDragleave = (): void => {
+	if (!draggable.value) return;
 	draghover.value = false;
 };
 
 const onDrop = (ev: DragEvent): void => {
+	if (!draggable.value) return;
 	if (!ev.dataTransfer) return;
 
 	draghover.value = false;

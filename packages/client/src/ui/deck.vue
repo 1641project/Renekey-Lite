@@ -16,7 +16,6 @@
 			@contextmenu.self.prevent="onContextmenu"
 			@wheel.self="onWheel"
 		>
-			<!-- sectionを利用しているのは、deck.vue側でcolumnに対してfirst-of-typeを効かせるため -->
 			<section
 				v-for="ids in layout"
 				:key="ids.join('-')"
@@ -38,6 +37,7 @@
 					:class="$style.column"
 					:column="columns.find(c => c.id === id)!"
 					:is-stacked="ids.length > 1"
+					:is-mobile="isMobile"
 					@header-wheel="onWheel"
 				/>
 			</section>

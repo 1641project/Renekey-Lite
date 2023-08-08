@@ -1,5 +1,5 @@
 <template>
-<XColumn v-if="deckStore.state.alwaysShowMainColumn || mainRouter.currentRoute.value.name !== 'index'" :column="column" :is-stacked="isStacked">
+<XColumn v-if="deckStore.state.alwaysShowMainColumn || mainRouter.currentRoute.value.name !== 'index'" :column="column" :is-stacked="isStacked" :is-mobile="isMobile">
 	<template v-if="pageMetadata?.value" #icon><i :class="pageMetadata.value.icon"></i></template>
 	<template v-if="pageMetadata?.value" #header>{{ pageMetadata.value.title }}</template>
 
@@ -24,6 +24,7 @@ import { getScrollContainer } from '@/scripts/scroll';
 defineProps<{
 	column: Column;
 	isStacked: boolean;
+	isMobile: boolean;
 }>();
 
 const contents = shallowRef<HTMLElement | null>(null);

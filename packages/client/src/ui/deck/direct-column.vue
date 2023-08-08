@@ -1,5 +1,5 @@
 <template>
-<XColumn :column="column" :is-stacked="isStacked" :indicated="indicated">
+<XColumn :column="column" :is-stacked="isStacked" :indicated="indicated" :is-mobile="isMobile">
 	<template #icon><i class="ti ti-mail"></i></template>
 	<template #header>{{ column.name }}</template>
 
@@ -16,6 +16,7 @@ import MkTimeline from '@/components/MkTimeline.vue';
 defineProps<{
 	column: Column;
 	isStacked: boolean;
+	isMobile: boolean;
 }>();
 
 const indicated = ref(false);
