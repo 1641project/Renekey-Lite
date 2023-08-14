@@ -614,8 +614,14 @@ export const contextMenu = (items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent)
 	});
 };
 
+const activePostFormDialog = ref(false);
 export const post = (props: Record<string, any> = {}): Promise<void> => {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
+		if (activePostFormDialog.value) {
+			reject();
+			return;
+		}
+		activePostFormDialog.value = true;
 		// NOTE: MkPostFormDialogをdynamic importするとiOSでテキストエリアに自動フォーカスできない
 		// NOTE: ただ、dynamic importしない場合、MkPostFormDialogインスタンスが使いまわされ、
 		//       Vueが渡されたコンポーネントに内部的に__propsというプロパティを生やす影響で、
@@ -626,6 +632,7 @@ export const post = (props: Record<string, any> = {}): Promise<void> => {
 			closed: () => {
 				resolve();
 				dispose();
+				activePostFormDialog.value = false;
 			},
 		}).then(res => {
 			dispose = res.dispose;

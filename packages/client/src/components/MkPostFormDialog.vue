@@ -1,5 +1,5 @@
 <template>
-<MkModal ref="modal" :prefer-type="'dialog'" @click="onClick" @closed="onModalClosed()">
+<MkModal ref="modal" prefer-type="dialog" @click="onClick" @closed="onModalClosed()">
 	<TmsPostForm
 		ref="form"
 		style="margin: 0 auto auto auto;"
