@@ -629,12 +629,10 @@ export const post = (props: Record<string, any> = {}): Promise<void> => {
 		//       もちろん複数のpost formを開けること自体Misskeyサイドのバグなのだが
 		let dispose: () => void;
 		popup(MkPostFormDialog, props, {
-			close: () => {
-				activePostFormDialog.value = false;
-			},
 			closed: () => {
 				resolve();
 				dispose();
+				activePostFormDialog.value = false;
 			},
 		}).then(res => {
 			dispose = res.dispose;
