@@ -11,6 +11,7 @@
 	@cancel="cancel"
 	@esc="esc"
 	@reopen="reopen"
+	@submit="submit"
 />
 </template>
 
@@ -63,6 +64,7 @@ const emit = defineEmits<{
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
 	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
+	(ev: 'submit'): void;
 }>();
 
 let bindProps = $ref<{
@@ -191,5 +193,9 @@ const reopen = async (draft?: Draft.DraftEntity | null): Promise<void> => {
 	}, isEdit);
 
 	nextTick(shown);
+};
+
+const submit = (): void => {
+	emit('submit');
 };
 </script>
