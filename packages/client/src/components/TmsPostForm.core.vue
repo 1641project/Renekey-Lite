@@ -128,6 +128,7 @@ import { imanonashi } from '@/scripts/tms/imanonashi';
 import { textCounter } from '@/scripts/tms/text-counter';
 import { migrateNoteVisibility as _migrateNoteVisibility } from '@/scripts/tms/note-visibility';
 import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
+import { enqueuePendingPost } from '@/scripts/tms/post';
 import MkInfo from '@/components/MkInfo.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkNotePreview from '@/components/MkNotePreview.vue';
@@ -175,6 +176,7 @@ const emit = defineEmits<{
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
 	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
+	(ev: 'submit'): void;
 }>();
 
 const modal = inject<boolean>('modal', false);
@@ -844,6 +846,8 @@ const togglePreview = (): void => {
 };
 
 const post = async (ev?: MouseEvent): Promise<void> => {
+	emit('submit');
+
 	const el = getHtmlElementFromEvent(ev);
 	if (el) {
 		const rect = el.getBoundingClientRect();
@@ -877,7 +881,9 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 	}
 
 	posting = true;
-	os.api('notes/create', postData, token).then(({ createdNote }) => {
+	const { canceled, result } = await enqueuePendingPost(postData, token);
+
+	if (!canceled) {
 		if (props.freezeAfterPosted) {
 			posted = true;
 		} else {
@@ -898,10 +904,10 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 			posting = false;
 			updatePostAccount(null);
 
-			imanonashi(createdNote);
+			imanonashi(result);
 		});
-	}).catch((err: unknown) => {
-		const { id, message } = err as {
+	} else {
+		const { id, message } = result as {
 			id: string;
 			message: string;
 		};
@@ -912,7 +918,7 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 			type: 'error',
 			text: `${message}\n${id}`,
 		});
-	});
+	}
 };
 //#endregion
 

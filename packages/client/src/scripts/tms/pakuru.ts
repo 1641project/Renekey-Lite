@@ -5,9 +5,11 @@ import * as os from '@/os';
 import { $i } from '@/account';
 import { useStream } from '@/stream';
 import { defaultStore } from '@/store';
+import { i18n } from '@/i18n';
 import { deepClone } from '@/scripts/clone';
 import { isPureRenote } from '@/scripts/tms/is-pure-renote';
-import { i18n } from '@/i18n';
+import { enqueuePendingPost } from '@/scripts/tms/post';
+import { EditedPoll } from '@/components/MkPollEditor.vue';
 
 type SomeRequired<T, K extends keyof T> = Omit<T, K> & Required<RequiredNotNull<Pick<T, K>>>;
 type RequiredNotNull<T> = {
@@ -27,12 +29,7 @@ type PostDataBase = Partial<{
 	replyId: string | null;
 	renoteId: string | null;
 	channelId: string | null;
-	poll: {
-		choices: string[];
-		multiple?: boolean;
-		expiresAt?: number | null;
-		expiredAfter?: number | null;
-	} | null;
+	poll: EditedPoll | null;
 }>;
 
 type PostData = (
@@ -117,9 +114,10 @@ const makePoll = ({ poll, createdAt }: Note): PostData['poll'] => {
 
 	const choices = poll.choices.map(choice => choice.text);
 	const multiple = poll.multiple;
+	const expiresAt = null;
 	const expiredAfter = poll.expiresAt && Date.parse(poll.expiresAt) - Date.parse(createdAt) || null;
 
-	return { choices, multiple, expiredAfter };
+	return { choices, multiple, expiresAt, expiredAfter };
 };
 
 const makeParams = async (_note: Note): Promise<PostData> => {
@@ -173,8 +171,9 @@ export const pakuru = async (note: Note): Promise<{
 }> => {
 	if (!(await confirmNyaize(note))) return { canceled: true, createdNote: undefined };
 	const makedParams = await makeParams(note);
-	const { createdNote } = await os.api('notes/create', makedParams);
-	return { canceled: false, createdNote };
+	const { canceled, result } = await enqueuePendingPost(makedParams);
+	if (canceled) return { canceled, createdNote: undefined };
+	return { canceled, createdNote: result };
 };
 
 export const numberquote = async (note: Note): Promise<{
@@ -188,6 +187,7 @@ export const numberquote = async (note: Note): Promise<{
 	const makedParams = await makeParams(note).then(params => {
 		return { ...params, text: _nqadd(params.text) };
 	});
-	const { createdNote } = await os.api('notes/create', makedParams);
-	return { canceled: false, createdNote };
+	const { canceled, result } = await enqueuePendingPost(makedParams);
+	if (canceled) return { canceled, createdNote: undefined };
+	return { canceled, createdNote: result };
 };

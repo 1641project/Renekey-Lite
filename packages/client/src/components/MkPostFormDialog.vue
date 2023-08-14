@@ -1,6 +1,16 @@
 <template>
 <MkModal ref="modal" :prefer-type="'dialog'" @click="onClick" @closed="onModalClosed()">
-	<TmsPostForm ref="form" style="margin: 0 auto auto auto;" v-bind="props" autofocus freeze-after-posted @posted="onPosted" @cancel="modal?.close()" @esc="modal?.close()"/>
+	<TmsPostForm
+		ref="form"
+		style="margin: 0 auto auto auto;"
+		v-bind="props"
+		autofocus
+		freeze-after-posted
+		@posted="onPosted"
+		@cancel="modal?.close()"
+		@esc="modal?.close()"
+		@submit="onPosted"
+	/>
 </MkModal>
 </template>
 

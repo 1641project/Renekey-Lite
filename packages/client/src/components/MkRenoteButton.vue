@@ -21,6 +21,7 @@ import { i18n } from '@/i18n';
 import { pakuru, numberquote } from '@/scripts/tms/pakuru';
 import { tmsStore } from '@/tms/store';
 import { MenuItem } from '@/types/menu';
+import { enqueuePendingPost } from '@/scripts/tms/post';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -74,15 +75,14 @@ const renote = (viaKeyboard = false): void => {
 			{
 				text: i18n.ts.inChannelRenote,
 				icon: 'ti ti-repeat',
-				action: (): void => {
+				action: async (): Promise<void> => {
 					renoteAnime();
 
-					os.api('notes/create', {
+					const { canceled } = await enqueuePendingPost({
 						renoteId: props.note.id,
 						channelId: (props.note as any).channelId,
-					}).then(() => {
-						os.toast(i18n.ts.renoted);
 					});
+					if (!canceled) os.toast(i18n.ts.renoted);
 				},
 			},
 			// チャンネル内引用
@@ -106,14 +106,13 @@ const renote = (viaKeyboard = false): void => {
 			{
 				text: i18n.ts.renote,
 				icon: 'ti ti-repeat',
-				action: (): void => {
+				action: async (): Promise<void> => {
 					renoteAnime();
 
-					os.api('notes/create', {
+					const { canceled } = await enqueuePendingPost({
 						renoteId: props.note.id,
-					}).then(() => {
-						os.toast(i18n.ts.renoted);
 					});
+					if (!canceled) os.toast(i18n.ts.renoted);
 				},
 			},
 			// 引用
@@ -136,22 +135,22 @@ const renote = (viaKeyboard = false): void => {
 			tmsStore.state.usePakuru ? {
 				text: i18n.ts._tms.pakuru,
 				icon: 'ti ti-swipe',
-				action: (): void => {
+				action: async (): Promise<void> => {
 					renoteAnime();
-					pakuru(props.note).then(({ canceled }) => {
-						if (!canceled) os.toast(i18n.ts._tms.pakured);
-					});
+
+					const { canceled } = await pakuru(props.note);
+					if (!canceled) os.toast(i18n.ts._tms.pakured);
 				},
 			} : undefined,
 			// 数字引用
 			tmsStore.state.useNumberquote ? {
 				text: i18n.ts._tms.numberquote,
 				icon: 'ti ti-exposure-plus-1',
-				action: (): void => {
+				action: async (): Promise<void> => {
 					renoteAnime();
-					numberquote(props.note).then(({ canceled }) => {
-						if (!canceled) os.toast(i18n.ts._tms.numberquoted);
-					});
+
+					const { canceled } = await numberquote(props.note);
+					if (!canceled) os.toast(i18n.ts._tms.numberquoted);
 				},
 			} : undefined,
 		]);
