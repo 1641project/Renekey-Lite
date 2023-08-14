@@ -1,5 +1,11 @@
 <template>
-<MkModal ref="modal" prefer-type="dialog" @click="onClick" @closed="onModalClosed()">
+<MkModal
+	ref="modal"
+	prefer-type="dialog"
+	@click="onClick"
+	@close="onModalClose()"
+	@closed="onModalClosed()"
+>
 	<TmsPostForm
 		ref="form"
 		style="margin: 0 auto auto auto;"
@@ -15,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import { shallowRef } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkModal from '@/components/MkModal.vue';
 import TmsPostForm from '@/components/TmsPostForm.vue';
@@ -38,20 +44,25 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+	(ev: 'close'): void;
 	(ev: 'closed'): void;
 }>();
 
-const modal = $shallowRef<InstanceType<typeof MkModal>>();
-const form = $shallowRef<InstanceType<typeof TmsPostForm>>();
+const modal = shallowRef<InstanceType<typeof MkModal>>();
+const form = shallowRef<InstanceType<typeof TmsPostForm>>();
 
 const onClick = (): void => {
-	modal?.close();
+	modal.value?.close();
 };
 
 const onPosted = (): void => {
-	modal?.close({
+	modal.value?.close({
 		useSendAnimation: true,
 	});
+};
+
+const onModalClose = (): void => {
+	emit('close');
 };
 
 const onModalClosed = (): void => {
