@@ -63,7 +63,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import FormSwitch from '@/components/form/switch.vue';
 import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
@@ -76,7 +76,7 @@ import { signout, $i } from '@/account';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
-import { unisonReload } from '@/scripts/unison-reload';
+// import { unisonReload } from '@/scripts/unison-reload';
 
 // const reportError = computed(defaultStore.makeGetterSetter('reportError'));
 // const enableCondensedLineForAcct = computed(defaultStore.makeGetterSetter('enableCondensedLineForAcct'));
@@ -116,25 +116,25 @@ const deleteAccount = async (): Promise<void> => {
 	await signout();
 };
 
-const reloadAsk = async (): Promise<void> => {
-	const { canceled } = await os.confirm({
-		type: 'info',
-		text: i18n.ts.reloadToApplySetting,
-	});
-	if (canceled) return;
+// const reloadAsk = async (): Promise<void> => {
+// 	const { canceled } = await os.confirm({
+// 		type: 'info',
+// 		text: i18n.ts.reloadToApplySetting,
+// 	});
+// 	if (canceled) return;
 
-	unisonReload();
-};
+// 	unisonReload();
+// };
 
-watch([
-	enableCondensedLineForAcct,
-], async () => {
-	await reloadAsk();
-});
+// watch([
+// 	enableCondensedLineForAcct,
+// ], async () => {
+// 	await reloadAsk();
+// });
 
-const headerActions = $computed(() => []);
+// const headerActions = $computed(() => []);
 
-const headerTabs = $computed(() => []);
+// const headerTabs = $computed(() => []);
 
 definePageMetadata({
 	title: i18n.ts.other,
