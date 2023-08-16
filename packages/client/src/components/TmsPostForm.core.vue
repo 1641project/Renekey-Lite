@@ -19,6 +19,9 @@
 			</button>
 		</div>
 		<div :class="$style.headerRight">
+			<button v-if="!channel && !fixed" v-tooltip="i18n.ts._tms.drafts" :class="['_button', $style.headerRightButton]" @click="chooseDraft">
+				<span><i class="ti ti-notes"></i></span>
+			</button>
 			<template v-if="!(channel && fixed)">
 				<button v-tooltip="i18n.ts._visibility.disableFederation" :class="['_button', $style.headerRightButton]" :disabled="!!channel || visibility === 'specified'" @click="toggleLocalOnly">
 					<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
@@ -120,12 +123,12 @@ import { uploadFile } from '@/scripts/upload';
 import { erase, unique } from '@/scripts/array';
 import { deepClone } from '@/scripts/clone';
 import { parseObject, parseArray } from '@/scripts/tms/parse';
+import * as Draft from '@/scripts/tms/drafts';
 import { imanonashi } from '@/scripts/tms/imanonashi';
 import { textCounter } from '@/scripts/tms/text-counter';
 import { migrateNoteVisibility as _migrateNoteVisibility } from '@/scripts/tms/note-visibility';
 import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
 import { enqueuePendingPost } from '@/tms/post';
-import { PostDraftEntity, PostDraft } from '@/tms/post-drafts';
 import { tmsStore } from '@/tms/store';
 import MkInfo from '@/components/MkInfo.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
@@ -136,7 +139,7 @@ import MkRippleEffect from '@/components/MkRippleEffect.vue';
 
 //#region define
 const props = withDefaults(defineProps<{
-	draft: PostDraftEntity | null;
+	draft: Draft.DraftEntity | null;
 	reply: Misskey.entities.Note | null;
 	renote: Misskey.entities.Note | null;
 	channel: Misskey.entities.Channel | null;
@@ -147,7 +150,6 @@ const props = withDefaults(defineProps<{
 	initialFiles: Misskey.entities.DriveFile[] | null;
 	initialLocalOnly: boolean | null;
 	initialVisibleUsers: Misskey.entities.User[] | null;
-	initialNote: Misskey.entities.Note | null;
 	instant: boolean | null;
 	fixed: boolean | null;
 	autofocus: boolean | null;
@@ -164,7 +166,6 @@ const props = withDefaults(defineProps<{
 	initialFiles: null,
 	initialLocalOnly: null,
 	initialVisibleUsers: null,
-	initialNote: null,
 	instant: null,
 	fixed: null,
 	autofocus: true,
@@ -175,18 +176,11 @@ const emit = defineEmits<{
 	(ev: 'posted'): void;
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
+	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
 	(ev: 'submit'): void;
 }>();
 
 const modal = inject<boolean>('modal', false);
-//#endregion
-
-//#region cleanup
-const cleanups: (() => void)[] = [];
-const cleanup = () => {
-	if (_DEV_) console.log('post form cleanup', cleanups);
-	for (const cl of cleanups) cl();
-};
 //#endregion
 
 //#region params, flags
@@ -204,19 +198,15 @@ const renote = $ref<Misskey.entities.Note | null>(props.renote);
 const channel = $ref<Misskey.entities.Channel | null>(props.channel);
 
 let quote = $ref<Misskey.entities.Note | null>(null);
-const setQuote = async (quoteObjectOrId?: string | Misskey.entities.Note | null): Promise<void> => {
-	if (!quoteObjectOrId || renote) {
+const setQuote = async (quoteId?: string | null): Promise<void> => {
+	if (!quoteId || renote) {
 		quote = null;
 		return;
 	}
 
-	if (typeof quoteObjectOrId === 'string') {
-		await os.api('notes/show', { noteId: quoteObjectOrId }, token)
-			.then(_quote => quote = _quote)
-			.catch(() => quote = null);
-	} else {
-		quote = quoteObjectOrId;
-	}
+	await os.api('notes/show', { noteId: quoteId }, token)
+		.then(_quote => quote = _quote)
+		.catch(() => quote = null);
 
 	migrateNoteVisibility();
 };
@@ -296,9 +286,9 @@ const addMissingMention = (): void => {
 	}
 };
 
-cleanups.push(watch($$(text), checkMissingMention, { immediate: true }));
-cleanups.push(watch($$(visibility), checkMissingMention));
-cleanups.push(watch($$(visibleUsers), checkMissingMention, { deep: true }));
+watch($$(text), checkMissingMention, { immediate: true });
+watch($$(visibility), checkMissingMention);
+watch($$(visibleUsers), checkMissingMention, { deep: true });
 
 // MFM
 let hasAnnoyingText = $ref(false);
@@ -318,30 +308,62 @@ const checkAnnoyingText = (): void => {
 	hasAnnoyingText = false;
 };
 
-cleanups.push(watch($$(text), checkAnnoyingText, { immediate: true }));
-cleanups.push(watch($$(useCw), checkAnnoyingText));
-cleanups.push(watch($$(visibility), checkAnnoyingText));
+watch($$(text), checkAnnoyingText, { immediate: true });
+watch($$(useCw), checkAnnoyingText);
+watch($$(visibility), checkAnnoyingText);
 //#endregion
 
 //#region draft
-const postDraft = $ref(new PostDraft({
-	draftId: props.draft?.draftId ?? PostDraft.genDraftId({
-		replyId: reply?.id,
-		renoteId: renote?.id,
-		channelId: channel?.id,
-	}),
-}));
+const draft = $ref<Draft.DraftEntity | null>(props.draft);
+const draftId = $computed<string | null>(() => {
+	if (draft) return draft.id;
+	return Draft.genDraftId({
+		user: $i,
+		reply,
+		renote,
+		channel,
+	});
+});
+
+const isEdit = $computed<boolean>(() => {
+	return Draft.parseDraftId(draftId).isEdit;
+});
+
+const saveDraft = (): void => {
+	Draft.setDraft(draftId, {
+		text,
+		useCw,
+		cw,
+		visibility,
+		localOnly,
+		files,
+		poll,
+		replyId: reply?.id ?? null,
+		renoteId: renote?.id ?? null,
+		channelId: channel?.id ?? null,
+		quoteId: quote?.id ?? null,
+		visibleUserIds: visibleUsers.map(({ id }) => id),
+	}, isEdit);
+};
+
+const deleteDraft = (): void => {
+	Draft.deleteDraft(draftId);
+};
 
 const watchForDraft = (): void => {
-	cleanups.push(watch($$(text), _text => postDraft.update({ text: _text })));
-	cleanups.push(watch($$(useCw), _useCw => postDraft.update({ useCw: _useCw })));
-	cleanups.push(watch($$(cw), _cw => postDraft.update({ cw: _cw })));
-	cleanups.push(watch($$(visibility), _visibility => postDraft.update({ visibility: _visibility })));
-	cleanups.push(watch($$(localOnly), _localOnly => postDraft.update({ localOnly: _localOnly })));
-	cleanups.push(watch($$(files), _files => postDraft.update({ files: _files }), { deep: true }));
-	cleanups.push(watch($$(poll), _poll => postDraft.update({ poll: _poll ?? undefined }), { deep: true }));
-	cleanups.push(watch($$(quote), _quote => postDraft.update({ quote: _quote ?? undefined }), { deep: true }));
-	cleanups.push(watch($$(visibleUsers), _visibleUsers => postDraft.update({ visibleUsers: _visibleUsers }), { deep: true }));
+	watch([
+		$$(text),
+		$$(useCw),
+		$$(cw),
+		$$(visibility),
+		$$(localOnly),
+	], saveDraft, { deep: false });
+	watch([
+		$$(files),
+		$$(poll),
+		$$(quote),
+		$$(visibleUsers),
+	], saveDraft, { deep: true });
 };
 //#endregion
 
@@ -383,6 +405,11 @@ const textareaEl = $shallowRef<HTMLTextAreaElement | null>(null);
 const textCountEl = $shallowRef<HTMLElement | null>(null);
 const hashtagsInputEl = $shallowRef<HTMLInputElement | null>(null);
 
+let cwInputElAutocomplete: Autocomplete | null = null;
+let textareaElAutocomplete: Autocomplete | null = null;
+let hashtagsInputElAutocomplete: Autocomplete | null = null;
+
+let textCountElResizeObserver: ResizeObserver | null = null;
 let textCountElWidth = $ref(0);
 
 const focus = (): void => {
@@ -394,28 +421,16 @@ const focus = (): void => {
 
 onMounted(() => {
 	if (cwInputEl) {
-		let cwAutocomplete: Autocomplete | null = new Autocomplete(cwInputEl, $$(cw));
-		cleanups.push(() => {
-			cwAutocomplete?.detach();
-			cwAutocomplete = null;
-		});
+		cwInputElAutocomplete = new Autocomplete(cwInputEl, $$(cw));
 	}
 	if (textareaEl) {
-		let textareaAutocomplete: Autocomplete | null = new Autocomplete(textareaEl, $$(text));
-		cleanups.push(() => {
-			textareaAutocomplete?.detach();
-			textareaAutocomplete = null;
-		});
+		textareaElAutocomplete = new Autocomplete(textareaEl, $$(text));
 	}
 	if (hashtagsInputEl) {
-		let hashtagsAutocomplete: Autocomplete | null = new Autocomplete(hashtagsInputEl, $$(hashtags));
-		cleanups.push(() => {
-			hashtagsAutocomplete?.detach();
-			hashtagsAutocomplete = null;
-		});
+		hashtagsInputElAutocomplete = new Autocomplete(hashtagsInputEl, $$(hashtags));
 	}
 	if (textCountEl) {
-		let textCountResizeObserver: ResizeObserver | null = new ResizeObserver(entries => {
+		textCountElResizeObserver = new ResizeObserver(entries => {
 			entries.forEach(({ borderBoxSize }) => {
 				borderBoxSize.forEach(({ inlineSize }) => {
 					const width = Math.ceil(inlineSize);
@@ -423,11 +438,7 @@ onMounted(() => {
 				});
 			});
 		});
-		textCountResizeObserver.observe(textCountEl);
-		cleanups.push(() => {
-			textCountResizeObserver?.disconnect();
-			textCountResizeObserver = null;
-		});
+		textCountElResizeObserver.observe(textCountEl);
 	}
 	if (props.autofocus) {
 		focus();
@@ -436,17 +447,24 @@ onMounted(() => {
 
 	nextTick(async () => {
 		if (!props.instant && !props.mention && !props.specified) {
-			const draft = postDraft.get();
-			if (draft) {
-				text = draft.text ?? '';
-				useCw = draft.useCw ?? false;
-				cw = draft.cw ?? '';
-				visibility = draft.visibility ?? 'public';
-				localOnly = draft.localOnly ?? false;
-				files = draft.files ?? [];
-				poll = draft.poll ?? null;
-				visibleUsers = draft.visibleUsers ?? [];
-				await setQuote(draft.quote);
+			const _draft = draft ?? Draft.getDraft(draftId);
+			if (_draft) {
+				text = _draft.data.text;
+				useCw = _draft.data.useCw;
+				cw = _draft.data.cw;
+				visibility = _draft.data.visibility;
+				localOnly = _draft.data.localOnly;
+				files = _draft.data.files;
+				poll = _draft.data.poll;
+				if (_draft.data.visibleUserIds.length) {
+					await os.api('users/show', { userIds: _draft.data.visibleUserIds }, token)
+						.then(users => {
+							users.forEach(user => {
+								pushVisibleUser(user);
+							});
+						});
+				}
+				await setQuote(_draft.data.quoteId);
 			}
 		}
 
@@ -455,7 +473,22 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	cleanup();
+	if (cwInputElAutocomplete) {
+		cwInputElAutocomplete.detach();
+		cwInputElAutocomplete = null;
+	}
+	if (textareaElAutocomplete) {
+		textareaElAutocomplete.detach();
+		textareaElAutocomplete = null;
+	}
+	if (hashtagsInputElAutocomplete) {
+		hashtagsInputElAutocomplete.detach();
+		hashtagsInputElAutocomplete = null;
+	}
+	if (textCountElResizeObserver) {
+		textCountElResizeObserver.disconnect();
+		textCountElResizeObserver = null;
+	}
 });
 //#endregion
 
@@ -761,6 +794,16 @@ const openAccountMenu = (ev: MouseEvent): void => {
 	}, ev);
 };
 
+const chooseDraft = (): void => {
+	os.popup(defineAsyncComponent(() => import('@/components/TmsDraftsList.vue')), {
+		active: draftId,
+	}, {
+		chosen: (draft_: Draft.DraftEntity) => {
+			emit('reopen', draft_);
+		},
+	}, 'closed');
+};
+
 const toggleLocalOnly = (): void => {
 	if (channel) {
 		visibility = 'public';
@@ -839,9 +882,6 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 		}
 	}
 
-	const tempDraft = postDraft.get();
-	postDraft.delete();
-
 	posting = true;
 	const { canceled, result } = await enqueuePendingPost(postData, token);
 
@@ -853,6 +893,8 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 		}
 
 		nextTick(() => {
+			deleteDraft();
+
 			emit('posted');
 
 			if (postData.text && postData.text !== '') {
@@ -873,7 +915,6 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 		};
 
 		posting = false;
-		new PostDraft({ draftId: tempDraft.draftId }).set(tempDraft);
 
 		os.alert({
 			type: 'error',

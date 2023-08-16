@@ -10,6 +10,7 @@
 	@posted="posted"
 	@cancel="cancel"
 	@esc="esc"
+	@reopen="reopen"
 	@submit="submit"
 />
 </template>
@@ -17,9 +18,11 @@
 <script lang="ts" setup>
 import { ref, shallowRef, nextTick, onMounted } from 'vue';
 import * as Misskey from 'misskey-js';
-import { v4 as uuid } from 'uuid';
 import * as os from '@/os';
-import { PostDraftEntity, PostDraft } from '@/tms/post-drafts';
+import { i18n } from '@/i18n';
+import { $i } from '@/account';
+import * as Draft from '@/scripts/tms/drafts';
+import MkWaitingDialog from '@/components/MkWaitingDialog.vue';
 import TmsPostFormCore from '@/components/TmsPostForm.core.vue';
 
 const props = withDefaults(defineProps<{
@@ -60,11 +63,12 @@ const emit = defineEmits<{
 	(ev: 'posted'): void;
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
+	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
 	(ev: 'submit'): void;
 }>();
 
 let bindProps = $ref<{
-	draft?: PostDraftEntity | null;
+	draft?: Draft.DraftEntity | null;
 	reply?: Misskey.entities.Note | null;
 	renote?: Misskey.entities.Note | null;
 	channel?: Misskey.entities.Channel | null;
@@ -101,7 +105,7 @@ const hidden = (): void => {
 	showPostForm.value = false;
 };
 
-onMounted(async () => {
+onMounted(() => {
 	hidden();
 
 	if (props.initialNote) {
@@ -109,11 +113,12 @@ onMounted(async () => {
 			channel?: Misskey.entities.Channel;
 		};
 
-		const postDraft = new PostDraft({
-			draftId: `edit:${uuid()}`,
+		const draftId = Draft.genDraftId({
+			user: $i,
+			isEdit: true,
 		});
 
-		postDraft.set({
+		bindProps.draft = Draft.setDraft(draftId, {
 			text: init.text ?? '',
 			useCw: init.cw != null,
 			cw: init.cw ?? '',
@@ -123,17 +128,15 @@ onMounted(async () => {
 			poll: init.poll ? {
 				choices: init.poll.choices.map(x => x.text),
 				multiple: init.poll.multiple,
-				expiresAt: init.poll.expiresAt ? Date.parse(init.poll.expiresAt) : null,
+				expiresAt: init.poll.expiresAt ? new Date(init.poll.expiresAt).getTime() : null,
 				expiredAfter: null,
-			} : undefined,
-			reply: init.reply,
-			renote: init.renote,
-			channel: init.channel,
-			quote: undefined,
-			visibleUsers: init.visibleUserIds?.length ? await os.api('users/show', { userIds: init.visibleUserIds }) : [],
-		});
-
-		bindProps.draft = postDraft.get();
+			} : null,
+			replyId: init.reply?.id ?? null,
+			renoteId: init.renote?.id ?? null,
+			channelId: init.channel?.id ?? null,
+			quoteId: null,
+			visibleUserIds: init.visibleUserIds ?? [],
+		}, true);
 	}
 
 	nextTick(shown);
@@ -149,6 +152,47 @@ const cancel = (): void => {
 
 const esc = (): void => {
 	emit('esc');
+};
+
+const reopen = async (draft?: Draft.DraftEntity | null): Promise<void> => {
+	hidden();
+
+	bindProps = {};
+
+	if (!draft) {
+		nextTick(shown);
+		return;
+	}
+
+	const { replyId, renoteId, channelId, isEdit } = Draft.parseDraftId(draft.id);
+
+	const reply = replyId ? os.api('notes/show', { noteId: replyId }).catch(() => null) : null;
+	const renote = renoteId ? os.api('notes/show', { noteId: renoteId }).catch(() => null) : null;
+	const channel = channelId ? (os.api('channels/show', { channelId: channelId }) as Promise<Misskey.entities.Channel>).catch(() => null) : null;
+
+	const showing = ref(true);
+	Promise.allSettled([reply, renote, channel]).then(() => {
+		showing.value = false;
+	});
+
+	os.popup(MkWaitingDialog, {
+		success: false,
+		showing,
+		text: i18n.ts.processing,
+	}, {}, 'closed');
+
+	bindProps.reply = await reply;
+	bindProps.renote = await renote;
+	bindProps.channel = await channel;
+
+	bindProps.draft = Draft.setDraft(draft.id, {
+		...draft.data,
+		replyId: bindProps.reply?.id ?? null,
+		renoteId: bindProps.renote?.id ?? null,
+		channelId: bindProps.channel?.id ?? null,
+	}, isEdit);
+
+	nextTick(shown);
 };
 
 const submit = (): void => {
