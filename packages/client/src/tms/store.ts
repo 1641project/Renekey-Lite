@@ -66,4 +66,8 @@ export const tmsStore = markRaw(new Storage('tms', {
 		where: 'account',
 		default: false,
 	},
+	postFormShowPreview: {
+		where: 'device',
+		default: false,
+	},
 }));

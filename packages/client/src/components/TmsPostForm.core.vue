@@ -129,6 +129,7 @@ import { textCounter } from '@/scripts/tms/text-counter';
 import { migrateNoteVisibility as _migrateNoteVisibility } from '@/scripts/tms/note-visibility';
 import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
 import { enqueuePendingPost } from '@/tms/post';
+import { tmsStore } from '@/tms/store';
 import MkInfo from '@/components/MkInfo.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkNotePreview from '@/components/MkNotePreview.vue';
@@ -214,9 +215,9 @@ let withHashtags = $ref<boolean>(defaultStore.state.postFormWithHashtags);
 const hashtags = $computed<string>(defaultStore.makeGetterSetter('postFormHashtags'));
 const recentHashtags = $ref(parseArray<string[]>(localStorage.getItem('hashtags')));
 
-let imeText = $ref('');
+let showPreview = $ref<boolean>(tmsStore.state.postFormShowPreview);
 
-let showPreview = $ref(false);
+let imeText = $ref('');
 
 let posting = $ref(false);
 let posted = $ref(false);
@@ -843,6 +844,7 @@ const openVisibilityPicker = (): void => {
 
 const togglePreview = (): void => {
 	showPreview = !showPreview;
+	tmsStore.set('postFormShowPreview', showPreview);
 };
 
 const post = async (ev?: MouseEvent): Promise<void> => {
