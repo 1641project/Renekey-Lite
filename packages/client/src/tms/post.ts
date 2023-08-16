@@ -4,11 +4,14 @@ import { Ref, ref } from 'vue';
 import { v4 as uuid } from 'uuid';
 import { api } from '@/os';
 import { EditedPoll } from '@/components/MkPollEditor.vue';
+import { stopPageTransitionFlags } from '@/scripts/tms/stop-page-transition';
 
 export const pendingPosts: Ref<PendingPost[]> = ref([]);
 export const processedCount = ref(0);
 export const totalProcessCount = ref(0);
 export const isProcessing = ref(false);
+
+stopPageTransitionFlags.value.push(isProcessing);
 
 export const enqueuePendingPost = async (postData: ValueOrPromise<PostData>, credential?: string | null): Promise<CallbackResult<Note>> => {
 	return new Promise<CallbackResult<Note>>(resolve => {

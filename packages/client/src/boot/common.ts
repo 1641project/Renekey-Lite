@@ -16,6 +16,7 @@ import { getUrlWithoutLoginId } from '@/scripts/login-id';
 import { getAccountFromId } from '@/scripts/get-account-from-id';
 import { deckStore } from '@/ui/deck/deck-store';
 import { parseObject } from '@/scripts/tms/parse';
+import { stopPageTransition } from '@/scripts/tms/stop-page-transition';
 
 export const common = async (createVue: () => App<Element>): Promise<{
 	isClientUpdated: boolean;
@@ -54,7 +55,7 @@ export const common = async (createVue: () => App<Element>): Promise<{
 
 	const splash = document.getElementById('splash');
 	// 念のためnullチェック(HTMLが古い場合があるため(そのうち消す))
-	if (splash) splash.addEventListener('transitionend', () => {
+	splash?.addEventListener('transitionend', () => {
 		splash.remove();
 	});
 
@@ -111,7 +112,7 @@ export const common = async (createVue: () => App<Element>): Promise<{
 			const vh = window.innerHeight * 0.01;
 			document.documentElement.style.setProperty('--vh', `${vh}px`);
 		};
-		window.addEventListener('resize', setViewportHeight);
+		window.addEventListener('resize', setViewportHeight, { passive: true });
 	}
 	//#endregion
 
@@ -123,9 +124,17 @@ export const common = async (createVue: () => App<Element>): Promise<{
 		}
 	}
 
+	// ページ離脱防止
+	window.addEventListener('beforeunload', (ev): string | void => {
+		if (stopPageTransition.value) {
+			ev.preventDefault();
+			ev.returnValue = '';
+			return '';
+		}
+	});
+
 	//#region Set lang attr
-	const html = document.documentElement;
-	html.setAttribute('lang', lang);
+	document.documentElement.setAttribute('lang', lang);
 	//#endregion
 
 	await defaultStore.ready;
