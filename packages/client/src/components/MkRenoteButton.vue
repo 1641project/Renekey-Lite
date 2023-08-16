@@ -21,7 +21,7 @@ import { i18n } from '@/i18n';
 import { pakuru, numberquote } from '@/scripts/tms/pakuru';
 import { tmsStore } from '@/tms/store';
 import { MenuItem } from '@/types/menu';
-import { enqueuePendingPost } from '@/scripts/tms/post';
+import { enqueuePendingPost } from '@/tms/post';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;

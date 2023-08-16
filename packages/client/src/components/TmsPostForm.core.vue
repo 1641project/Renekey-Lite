@@ -128,7 +128,7 @@ import { imanonashi } from '@/scripts/tms/imanonashi';
 import { textCounter } from '@/scripts/tms/text-counter';
 import { migrateNoteVisibility as _migrateNoteVisibility } from '@/scripts/tms/note-visibility';
 import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
-import { enqueuePendingPost } from '@/scripts/tms/post';
+import { enqueuePendingPost } from '@/tms/post';
 import MkInfo from '@/components/MkInfo.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkNotePreview from '@/components/MkNotePreview.vue';

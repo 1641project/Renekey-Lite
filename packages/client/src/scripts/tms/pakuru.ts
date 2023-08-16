@@ -8,7 +8,7 @@ import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
 import { deepClone } from '@/scripts/clone';
 import { isPureRenote } from '@/scripts/tms/is-pure-renote';
-import { enqueuePendingPost } from '@/scripts/tms/post';
+import { enqueuePendingPost } from '@/tms/post';
 import { EditedPoll } from '@/components/MkPollEditor.vue';
 
 type SomeRequired<T, K extends keyof T> = Omit<T, K> & Required<RequiredNotNull<Pick<T, K>>>;
