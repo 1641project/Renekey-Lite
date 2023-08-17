@@ -213,7 +213,7 @@ async function insertEmoji(ev: MouseEvent) {
 	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
 }
 
-onMounted(() => {
+onMounted(async () => {
 	autosize(textEl);
 
 	// TODO: detach when unmount
@@ -221,7 +221,7 @@ onMounted(() => {
 	// new Autocomplete(textEl, this, { model: 'text' });
 
 	// 書きかけの投稿を復元
-	const draft = getMessageDraft(messageDraftKeyOrObj);
+	const draft = await getMessageDraft(messageDraftKeyOrObj);
 	if (draft) {
 		text = draft.text ?? '';
 		file = draft.file ?? null;

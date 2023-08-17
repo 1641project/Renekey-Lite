@@ -451,7 +451,7 @@ onMounted(() => {
 
 	nextTick(async () => {
 		if (!props.instant && !props.mention && !props.specified) {
-			const draft = getPostDraft(postDraftKeyOrObj);
+			const draft = await getPostDraft(postDraftKeyOrObj);
 			if (draft) {
 				text = draft.text ?? '';
 				useCw = draft.useCw ?? false;
@@ -856,7 +856,7 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 
 	posting = true;
 
-	const tempDraft = getPostDraft(postDraftKeyOrObj);
+	const tempDraft = await getPostDraft(postDraftKeyOrObj);
 	deletePostDraft(postDraftKeyOrObj);
 
 	const { canceled, result } = await enqueuePendingPost(postData, token);
