@@ -1,6 +1,6 @@
 // TODO: なんでもかんでもos.tsに突っ込むのやめたいのでよしなに分割する
 
-import { Component, markRaw, Ref, ref, defineAsyncComponent } from 'vue';
+import { Component, computed, markRaw, Ref, ref, defineAsyncComponent } from 'vue';
 import { EventEmitter } from 'eventemitter3';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import * as Misskey from 'misskey-js';
@@ -614,14 +614,16 @@ export const contextMenu = (items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent)
 	});
 };
 
-const activePostFormDialog = ref(false);
+const activePostFormDialog = computed(() => activePostFormDialogFlags.value.some(flag => flag.value === true));
+const activePostFormDialogFlags = ref<Ref<boolean>[]>([]);
 export const post = (props: Record<string, any> = {}): Promise<void> => {
 	return new Promise((resolve, reject) => {
 		if (activePostFormDialog.value) {
 			reject();
 			return;
 		}
-		activePostFormDialog.value = true;
+		const isProcessing = ref(true);
+		activePostFormDialogFlags.value.push(isProcessing);
 		// NOTE: MkPostFormDialogをdynamic importするとiOSでテキストエリアに自動フォーカスできない
 		// NOTE: ただ、dynamic importしない場合、MkPostFormDialogインスタンスが使いまわされ、
 		//       Vueが渡されたコンポーネントに内部的に__propsというプロパティを生やす影響で、
@@ -632,7 +634,7 @@ export const post = (props: Record<string, any> = {}): Promise<void> => {
 			closed: () => {
 				resolve();
 				dispose();
-				activePostFormDialog.value = false;
+				isProcessing.value = false;
 			},
 		}).then(res => {
 			dispose = res.dispose;
