@@ -86,6 +86,7 @@ export const updatePostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDr
 		...removeUndefinedFromObject(params),
 		key,
 	});
+	return set(newPostDrafts);
 };
 
 export const deletePostDraft = (keyOrObj: PostDraftKeyOrObj): void => {

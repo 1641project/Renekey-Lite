@@ -71,6 +71,7 @@ export const updateMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<
 		...removeUndefinedFromObject(params),
 		key,
 	});
+	return set(newMessageDrafts);
 };
 
 export const deleteMessageDraft = (keyOrObj: MessageDraftKeyOrObj): void => {
