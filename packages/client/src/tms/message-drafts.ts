@@ -1,9 +1,12 @@
 import * as Misskey from 'misskey-js';
 import { $i } from '@/account';
-import { get, set } from '@/scripts/idb-proxy';
+import { parseArray } from '@/scripts/tms/parse';
 import { removeUndefinedFromObject } from '@/scripts/tms/utils';
 
 const MESSAGE_DRAFTS_KEY = `tmsMessageDrafts:${$i?.id ?? 'unknown'}` as const;
+
+const get = (): MessageDraftEntity[] => parseArray<MessageDraftEntity[]>(window.localStorage.getItem(MESSAGE_DRAFTS_KEY));
+const set = (val: MessageDraftEntity[]): void => window.localStorage.setItem(MESSAGE_DRAFTS_KEY, JSON.stringify(val));
 
 export type MessageDraftEntity = {
 	key: string;
@@ -36,32 +39,32 @@ const _getMessageDraftKey = (keyOrObj: MessageDraftKeyOrObj): string => {
 	return entries.map(([k, v]) => v ? `${k}:${v}` : k).join('/');
 };
 
-export const getMessageDraft = async (keyOrObj: MessageDraftKeyOrObj): Promise<MessageDraftEntity | null> => {
+export const getMessageDraft = (keyOrObj: MessageDraftKeyOrObj): MessageDraftEntity | null => {
 	console.log('[getMessageDraft]:', { keyOrObj }); // develop
 
 	const key = _getMessageDraftKey(keyOrObj);
-	const messageDrafts = await get<MessageDraftEntity[]>(MESSAGE_DRAFTS_KEY) ?? [];
+	const messageDrafts = get();
 	return messageDrafts.findLast(pd => pd.key === key) ?? null;
 };
 
-export const setMessageDraft = async (keyOrObj: MessageDraftKeyOrObj, params: Omit<MessageDraftEntity, 'key'>): Promise<void> => {
+export const setMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<MessageDraftEntity, 'key'>): void => {
 	console.log('[setMessageDraft]:', { keyOrObj, params }); // develop
 
 	const key = _getMessageDraftKey(keyOrObj);
-	const messageDrafts = await get<MessageDraftEntity[]>(MESSAGE_DRAFTS_KEY) ?? [];
+	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.filter(pd => pd.key !== key);
 	newMessageDrafts.push({
 		...removeUndefinedFromObject(params),
 		key,
 	});
-	return set(MESSAGE_DRAFTS_KEY, newMessageDrafts);
+	return set(newMessageDrafts);
 };
 
-export const updateMessageDraft = async (keyOrObj: MessageDraftKeyOrObj, params: Omit<MessageDraftEntity, 'key'>): Promise<void> => {
+export const updateMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<MessageDraftEntity, 'key'>): void => {
 	console.log('[updateMessageDraft]:', { keyOrObj, params }); // develop
 
 	const key = _getMessageDraftKey(keyOrObj);
-	const messageDrafts = await get<MessageDraftEntity[]>(MESSAGE_DRAFTS_KEY) ?? [];
+	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.filter(pd => pd.key !== key);
 	newMessageDrafts.push({
 		...removeUndefinedFromObject(messageDrafts.findLast(pd => pd.key === key) ?? {}),
@@ -70,21 +73,21 @@ export const updateMessageDraft = async (keyOrObj: MessageDraftKeyOrObj, params:
 	});
 };
 
-export const deleteMessageDraft = async (keyOrObj: MessageDraftKeyOrObj): Promise<void> => {
+export const deleteMessageDraft = (keyOrObj: MessageDraftKeyOrObj): void => {
 	console.log('[deleteMessageDraft]:', { keyOrObj }); // develop
 
 	const key = _getMessageDraftKey(keyOrObj);
-	const messageDrafts = await get<MessageDraftEntity[]>(MESSAGE_DRAFTS_KEY) ?? [];
+	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.filter(pd => pd.key !== key);
-	return set(MESSAGE_DRAFTS_KEY, newMessageDrafts);
+	return set(newMessageDrafts);
 };
 
-export const renameMessageDraft = async (oldKeyOrObj: MessageDraftKeyOrObj, newKeyOrObj: MessageDraftKeyOrObj): Promise<void> => {
+export const renameMessageDraft = (oldKeyOrObj: MessageDraftKeyOrObj, newKeyOrObj: MessageDraftKeyOrObj): void => {
 	console.log('[renameMessageDraft]:', { oldKeyOrObj, newKeyOrObj }); // develop
 
 	const oldKey = _getMessageDraftKey(oldKeyOrObj);
 	const newKey = _getMessageDraftKey(newKeyOrObj);
-	const messageDrafts = await get<MessageDraftEntity[]>(MESSAGE_DRAFTS_KEY) ?? [];
+	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.map(pd => pd.key === oldKey ? { ...pd, key: newKey } : pd);
-	return set(MESSAGE_DRAFTS_KEY, newMessageDrafts);
+	return set(newMessageDrafts);
 };
