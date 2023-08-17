@@ -44,6 +44,10 @@ export const typedEntries = <T extends Record<string, unknown>>(obj: T): TypedEn
 	return Object.entries(obj) as unknown as TypedEntries<T>;
 };
 
+export const removeUndefinedFromObject = <T extends Record<string, unknown>>(obj: T): T => {
+	return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as unknown as T;
+};
+
 const toArray = <T>(arrayLike: T[] | ArrayLike<T>): T[] => Array.isArray(arrayLike) ? arrayLike : Array.from(arrayLike);
 
 // Array<T>.prototype.at(index: number): T | undefined;

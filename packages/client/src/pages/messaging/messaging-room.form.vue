@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, watch, nextTick } from 'vue';
+import { Ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import * as Misskey from 'misskey-js';
 import autosize from 'autosize';
 // import insertTextAtCursor from 'insert-text-at-cursor';
@@ -41,7 +41,7 @@ import { i18n } from '@/i18n';
 // import { Autocomplete } from '@/scripts/autocomplete';
 import { uploadFile } from '@/scripts/upload';
 import { parseObject } from '@/scripts/tms/parse';
-import { getMessageDraft as _getMessageDraft, setMessageDraft as _setMessageDraft, deleteMessageDraft as _deleteMessageDraft } from '@/scripts/tms/drafts';
+import { MessageDraftEntity, MessageDraftKeyObject, getMessageDraft, deleteMessageDraft, updateMessageDraft, renameMessageDraft } from '@/tms/message-drafts';
 
 const props = defineProps<{
 	user?: Misskey.entities.UserDetailed | null;
@@ -58,16 +58,45 @@ const typing = throttle(3000, () => {
 	useStream().send('typingOnMessaging', props.user ? { partner: props.user.id } : { group: props.group?.id });
 });
 
-const draftKey = $computed(() => {
-	if (props.user) return `user:${props.user.id}`;
-	if (props.group) return `group:${props.group.id}`;
-	return null;
+//#region cleanup
+const cleanups: (() => void)[] = [];
+const cleanup = () => {
+	if (_DEV_) console.log('messaging-room form cleanup', cleanups);
+	for (const cl of cleanups) cl();
+};
+//#endregion
+
+onUnmounted(() => {
+	cleanup();
 });
+
+const messageDraftKeyOrObj = $computed<MessageDraftKeyObject>(() => {
+	return {
+		userId: props.user?.id,
+		groupId: props.group?.id,
+	};
+});
+cleanups.push(watch($$(messageDraftKeyOrObj), (newKeyOrObj, oldKeyOrObj) => {
+	renameMessageDraft(oldKeyOrObj, newKeyOrObj);
+}, { deep: true }));
+
 const canSend = $computed(() => (text != null && text !== '') || file != null);
 
 const watchForDraft = (): void => {
-	watch($$(text), () => saveDraft());
-	watch($$(file), () => saveDraft());
+	const setWatchHandler = <
+		T extends Omit<MessageDraftEntity, 'key'>,
+		K extends keyof T
+	>(
+		source: Ref<T[K] | null | undefined>,
+		updateKey: K,
+		watchDeep = false,
+	): void => {
+		cleanups.push(watch(source, updateValue => {
+			updateMessageDraft(messageDraftKeyOrObj, { [updateKey]: updateValue ?? undefined });
+		}, { deep: watchDeep }));
+	};
+	setWatchHandler($$(text), 'text');
+	setWatchHandler($$(file), 'file', true);
 };
 
 async function onPaste(ev: ClipboardEvent) {
@@ -177,18 +206,14 @@ function send() {
 function clear() {
 	text = '';
 	file = null;
-	deleteDraft();
+	deleteMessageDraft(messageDraftKeyOrObj);
 }
-
-const saveDraft = (): void => _setMessageDraft(draftKey, { text, file });
-
-const deleteDraft = (): void => _deleteMessageDraft(draftKey);
 
 async function insertEmoji(ev: MouseEvent) {
 	os.openEmojiPicker(ev.currentTarget ?? ev.target, {}, textEl);
 }
 
-onMounted(() => {
+onMounted(async () => {
 	autosize(textEl);
 
 	// TODO: detach when unmount
@@ -196,14 +221,13 @@ onMounted(() => {
 	// new Autocomplete(textEl, this, { model: 'text' });
 
 	// 書きかけの投稿を復元
-	const draft = _getMessageDraft(draftKey);
+	const draft = await getMessageDraft(messageDraftKeyOrObj);
 	if (draft) {
-		text = draft.data.text;
-		file = draft.data.file;
+		text = draft.text ?? '';
+		file = draft.file ?? null;
 	}
 
 	nextTick(() => {
-		saveDraft();
 		watchForDraft();
 	});
 });

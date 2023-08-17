@@ -19,9 +19,6 @@
 			</button>
 		</div>
 		<div :class="$style.headerRight">
-			<button v-if="!channel && !fixed" v-tooltip="i18n.ts._tms.drafts" :class="['_button', $style.headerRightButton]" @click="chooseDraft">
-				<span><i class="ti ti-notes"></i></span>
-			</button>
 			<template v-if="!(channel && fixed)">
 				<button v-tooltip="i18n.ts._visibility.disableFederation" :class="['_button', $style.headerRightButton]" :disabled="!!channel || visibility === 'specified'" @click="toggleLocalOnly">
 					<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
@@ -103,7 +100,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, inject, watch, defineAsyncComponent } from 'vue';
+import { Ref, nextTick, onMounted, onUnmounted, inject, watch, defineAsyncComponent } from 'vue';
 import * as Misskey from 'misskey-js';
 import * as mfm from 'mfm-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
@@ -123,12 +120,12 @@ import { uploadFile } from '@/scripts/upload';
 import { erase, unique } from '@/scripts/array';
 import { deepClone } from '@/scripts/clone';
 import { parseObject, parseArray } from '@/scripts/tms/parse';
-import * as Draft from '@/scripts/tms/drafts';
 import { imanonashi } from '@/scripts/tms/imanonashi';
 import { textCounter } from '@/scripts/tms/text-counter';
 import { migrateNoteVisibility as _migrateNoteVisibility } from '@/scripts/tms/note-visibility';
 import { getHtmlElementFromEvent } from '@/scripts/tms/utils';
 import { enqueuePendingPost } from '@/tms/post';
+import { PostDraftEntity, PostDraftKeyOrObj, getPostDraft, setPostDraft, updatePostDraft, deletePostDraft, renamePostDraft } from '@/tms/post-drafts';
 import { tmsStore } from '@/tms/store';
 import MkInfo from '@/components/MkInfo.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
@@ -139,7 +136,7 @@ import MkRippleEffect from '@/components/MkRippleEffect.vue';
 
 //#region define
 const props = withDefaults(defineProps<{
-	draft: Draft.DraftEntity | null;
+	draft: PostDraftEntity | null;
 	reply: Misskey.entities.Note | null;
 	renote: Misskey.entities.Note | null;
 	channel: Misskey.entities.Channel | null;
@@ -150,6 +147,7 @@ const props = withDefaults(defineProps<{
 	initialFiles: Misskey.entities.DriveFile[] | null;
 	initialLocalOnly: boolean | null;
 	initialVisibleUsers: Misskey.entities.User[] | null;
+	initialNote: Misskey.entities.Note | null;
 	instant: boolean | null;
 	fixed: boolean | null;
 	autofocus: boolean | null;
@@ -166,6 +164,7 @@ const props = withDefaults(defineProps<{
 	initialFiles: null,
 	initialLocalOnly: null,
 	initialVisibleUsers: null,
+	initialNote: null,
 	instant: null,
 	fixed: null,
 	autofocus: true,
@@ -176,11 +175,18 @@ const emit = defineEmits<{
 	(ev: 'posted'): void;
 	(ev: 'cancel'): void;
 	(ev: 'esc'): void;
-	(ev: 'reopen', draft?: Draft.DraftEntity | null): void;
 	(ev: 'submit'): void;
 }>();
 
 const modal = inject<boolean>('modal', false);
+//#endregion
+
+//#region cleanup
+const cleanups: (() => void)[] = [];
+const cleanup = () => {
+	if (_DEV_) console.log('post form cleanup', cleanups);
+	for (const cl of cleanups) cl();
+};
 //#endregion
 
 //#region params, flags
@@ -198,15 +204,19 @@ const renote = $ref<Misskey.entities.Note | null>(props.renote);
 const channel = $ref<Misskey.entities.Channel | null>(props.channel);
 
 let quote = $ref<Misskey.entities.Note | null>(null);
-const setQuote = async (quoteId?: string | null): Promise<void> => {
-	if (!quoteId || renote) {
+const setQuote = async (quoteObjectOrId?: string | Misskey.entities.Note | null): Promise<void> => {
+	if (!quoteObjectOrId || renote) {
 		quote = null;
 		return;
 	}
 
-	await os.api('notes/show', { noteId: quoteId }, token)
-		.then(_quote => quote = _quote)
-		.catch(() => quote = null);
+	if (typeof quoteObjectOrId === 'string') {
+		await os.api('notes/show', { noteId: quoteObjectOrId }, token)
+			.then(_quote => quote = _quote)
+			.catch(() => quote = null);
+	} else {
+		quote = quoteObjectOrId;
+	}
 
 	migrateNoteVisibility();
 };
@@ -286,9 +296,9 @@ const addMissingMention = (): void => {
 	}
 };
 
-watch($$(text), checkMissingMention, { immediate: true });
-watch($$(visibility), checkMissingMention);
-watch($$(visibleUsers), checkMissingMention, { deep: true });
+cleanups.push(watch($$(text), checkMissingMention, { immediate: true }));
+cleanups.push(watch($$(visibility), checkMissingMention));
+cleanups.push(watch($$(visibleUsers), checkMissingMention, { deep: true }));
 
 // MFM
 let hasAnnoyingText = $ref(false);
@@ -308,62 +318,45 @@ const checkAnnoyingText = (): void => {
 	hasAnnoyingText = false;
 };
 
-watch($$(text), checkAnnoyingText, { immediate: true });
-watch($$(useCw), checkAnnoyingText);
-watch($$(visibility), checkAnnoyingText);
+cleanups.push(watch($$(text), checkAnnoyingText, { immediate: true }));
+cleanups.push(watch($$(useCw), checkAnnoyingText));
+cleanups.push(watch($$(visibility), checkAnnoyingText));
 //#endregion
 
 //#region draft
-const draft = $ref<Draft.DraftEntity | null>(props.draft);
-const draftId = $computed<string | null>(() => {
-	if (draft) return draft.id;
-	return Draft.genDraftId({
-		user: $i,
-		reply,
-		renote,
-		channel,
-	});
+const postDraftKeyOrObj = $computed<PostDraftKeyOrObj>(() => {
+	return props.draft?.key ?? {
+		replyId: reply?.id,
+		renoteId: renote?.id,
+		channelId: channel?.id,
+	};
 });
-
-const isEdit = $computed<boolean>(() => {
-	return Draft.parseDraftId(draftId).isEdit;
-});
-
-const saveDraft = (): void => {
-	Draft.setDraft(draftId, {
-		text,
-		useCw,
-		cw,
-		visibility,
-		localOnly,
-		files,
-		poll,
-		replyId: reply?.id ?? null,
-		renoteId: renote?.id ?? null,
-		channelId: channel?.id ?? null,
-		quoteId: quote?.id ?? null,
-		visibleUserIds: visibleUsers.map(({ id }) => id),
-	}, isEdit);
-};
-
-const deleteDraft = (): void => {
-	Draft.deleteDraft(draftId);
-};
+cleanups.push(watch($$(postDraftKeyOrObj), (newKeyOrObj, oldKeyOrObj) => {
+	renamePostDraft(oldKeyOrObj, newKeyOrObj);
+}, { deep: true }));
 
 const watchForDraft = (): void => {
-	watch([
-		$$(text),
-		$$(useCw),
-		$$(cw),
-		$$(visibility),
-		$$(localOnly),
-	], saveDraft, { deep: false });
-	watch([
-		$$(files),
-		$$(poll),
-		$$(quote),
-		$$(visibleUsers),
-	], saveDraft, { deep: true });
+	const setWatchHandler = <
+		T extends Omit<PostDraftEntity, 'key'>,
+		K extends keyof T
+	>(
+		source: Ref<T[K] | null | undefined>,
+		updateKey: K,
+		watchDeep = false,
+	): void => {
+		cleanups.push(watch(source, updateValue => {
+			updatePostDraft(postDraftKeyOrObj, { [updateKey]: updateValue ?? undefined });
+		}, { deep: watchDeep }));
+	};
+	setWatchHandler($$(text), 'text');
+	setWatchHandler($$(useCw), 'useCw');
+	setWatchHandler($$(cw), 'cw');
+	setWatchHandler($$(visibility), 'visibility');
+	setWatchHandler($$(localOnly), 'localOnly');
+	setWatchHandler($$(files), 'files', true);
+	setWatchHandler($$(poll), 'poll', true);
+	setWatchHandler($$(quote), 'quote', true);
+	setWatchHandler($$(visibleUsers), 'visibleUsers', true);
 };
 //#endregion
 
@@ -405,11 +398,6 @@ const textareaEl = $shallowRef<HTMLTextAreaElement | null>(null);
 const textCountEl = $shallowRef<HTMLElement | null>(null);
 const hashtagsInputEl = $shallowRef<HTMLInputElement | null>(null);
 
-let cwInputElAutocomplete: Autocomplete | null = null;
-let textareaElAutocomplete: Autocomplete | null = null;
-let hashtagsInputElAutocomplete: Autocomplete | null = null;
-
-let textCountElResizeObserver: ResizeObserver | null = null;
 let textCountElWidth = $ref(0);
 
 const focus = (): void => {
@@ -421,16 +409,28 @@ const focus = (): void => {
 
 onMounted(() => {
 	if (cwInputEl) {
-		cwInputElAutocomplete = new Autocomplete(cwInputEl, $$(cw));
+		let cwAutocomplete: Autocomplete | null = new Autocomplete(cwInputEl, $$(cw));
+		cleanups.push(() => {
+			cwAutocomplete?.detach();
+			cwAutocomplete = null;
+		});
 	}
 	if (textareaEl) {
-		textareaElAutocomplete = new Autocomplete(textareaEl, $$(text));
+		let textareaAutocomplete: Autocomplete | null = new Autocomplete(textareaEl, $$(text));
+		cleanups.push(() => {
+			textareaAutocomplete?.detach();
+			textareaAutocomplete = null;
+		});
 	}
 	if (hashtagsInputEl) {
-		hashtagsInputElAutocomplete = new Autocomplete(hashtagsInputEl, $$(hashtags));
+		let hashtagsAutocomplete: Autocomplete | null = new Autocomplete(hashtagsInputEl, $$(hashtags));
+		cleanups.push(() => {
+			hashtagsAutocomplete?.detach();
+			hashtagsAutocomplete = null;
+		});
 	}
 	if (textCountEl) {
-		textCountElResizeObserver = new ResizeObserver(entries => {
+		let textCountResizeObserver: ResizeObserver | null = new ResizeObserver(entries => {
 			entries.forEach(({ borderBoxSize }) => {
 				borderBoxSize.forEach(({ inlineSize }) => {
 					const width = Math.ceil(inlineSize);
@@ -438,7 +438,11 @@ onMounted(() => {
 				});
 			});
 		});
-		textCountElResizeObserver.observe(textCountEl);
+		textCountResizeObserver.observe(textCountEl);
+		cleanups.push(() => {
+			textCountResizeObserver?.disconnect();
+			textCountResizeObserver = null;
+		});
 	}
 	if (props.autofocus) {
 		focus();
@@ -447,24 +451,17 @@ onMounted(() => {
 
 	nextTick(async () => {
 		if (!props.instant && !props.mention && !props.specified) {
-			const _draft = draft ?? Draft.getDraft(draftId);
-			if (_draft) {
-				text = _draft.data.text;
-				useCw = _draft.data.useCw;
-				cw = _draft.data.cw;
-				visibility = _draft.data.visibility;
-				localOnly = _draft.data.localOnly;
-				files = _draft.data.files;
-				poll = _draft.data.poll;
-				if (_draft.data.visibleUserIds.length) {
-					await os.api('users/show', { userIds: _draft.data.visibleUserIds }, token)
-						.then(users => {
-							users.forEach(user => {
-								pushVisibleUser(user);
-							});
-						});
-				}
-				await setQuote(_draft.data.quoteId);
+			const draft = await getPostDraft(postDraftKeyOrObj);
+			if (draft) {
+				text = draft.text ?? '';
+				useCw = draft.useCw ?? false;
+				cw = draft.cw ?? '';
+				visibility = draft.visibility ?? 'public';
+				localOnly = draft.localOnly ?? false;
+				files = draft.files ?? [];
+				poll = draft.poll ?? null;
+				visibleUsers = draft.visibleUsers ?? [];
+				await setQuote(draft.quote);
 			}
 		}
 
@@ -473,22 +470,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	if (cwInputElAutocomplete) {
-		cwInputElAutocomplete.detach();
-		cwInputElAutocomplete = null;
-	}
-	if (textareaElAutocomplete) {
-		textareaElAutocomplete.detach();
-		textareaElAutocomplete = null;
-	}
-	if (hashtagsInputElAutocomplete) {
-		hashtagsInputElAutocomplete.detach();
-		hashtagsInputElAutocomplete = null;
-	}
-	if (textCountElResizeObserver) {
-		textCountElResizeObserver.disconnect();
-		textCountElResizeObserver = null;
-	}
+	cleanup();
 });
 //#endregion
 
@@ -794,16 +776,6 @@ const openAccountMenu = (ev: MouseEvent): void => {
 	}, ev);
 };
 
-const chooseDraft = (): void => {
-	os.popup(defineAsyncComponent(() => import('@/components/TmsDraftsList.vue')), {
-		active: draftId,
-	}, {
-		chosen: (draft_: Draft.DraftEntity) => {
-			emit('reopen', draft_);
-		},
-	}, 'closed');
-};
-
 const toggleLocalOnly = (): void => {
 	if (channel) {
 		visibility = 'public';
@@ -883,6 +855,10 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 	}
 
 	posting = true;
+
+	const tempDraft = await getPostDraft(postDraftKeyOrObj);
+	deletePostDraft(postDraftKeyOrObj);
+
 	const { canceled, result } = await enqueuePendingPost(postData, token);
 
 	if (!canceled) {
@@ -893,8 +869,6 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 		}
 
 		nextTick(() => {
-			deleteDraft();
-
 			emit('posted');
 
 			if (postData.text && postData.text !== '') {
@@ -915,6 +889,10 @@ const post = async (ev?: MouseEvent): Promise<void> => {
 		};
 
 		posting = false;
+
+		if (tempDraft) {
+			setPostDraft(tempDraft.key, tempDraft);
+		}
 
 		os.alert({
 			type: 'error',
