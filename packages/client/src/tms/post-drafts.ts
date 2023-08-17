@@ -1,13 +1,13 @@
 import * as Misskey from 'misskey-js';
 import { $i } from '@/account';
-import { get as iget, set as iset } from '@/scripts/idb-proxy';
+import { parseArray } from '@/scripts/tms/parse';
 import { removeUndefinedFromObject } from '@/scripts/tms/utils';
 import { EditedPoll } from '@/components/MkPollEditor.vue';
 
 const POST_DRAFTS_KEY = `tmsPostDrafts:${$i?.id ?? 'unknown'}` as const;
 
-const get = async (): Promise<PostDraftEntity[]> => (await iget(POST_DRAFTS_KEY)) ?? [];
-const set = async (val: PostDraftEntity[]): Promise<void> => await iset(POST_DRAFTS_KEY, val);
+const get = (): PostDraftEntity[] => parseArray<PostDraftEntity[]>(window.localStorage.getItem(POST_DRAFTS_KEY));
+const set = (val: PostDraftEntity[]): void => window.localStorage.setItem(POST_DRAFTS_KEY, JSON.stringify(val));
 
 export type PostDraftEntity = {
 	key: string;
@@ -54,19 +54,19 @@ const _getPostDraftKey = (keyOrObj: PostDraftKeyOrObj): string => {
 	return entries.map(([k, v]) => v ? `${k}:${v}` : k).join('/');
 };
 
-export const getPostDraft = async (keyOrObj: PostDraftKeyOrObj): Promise<PostDraftEntity | null> => {
+export const getPostDraft = (keyOrObj: PostDraftKeyOrObj): PostDraftEntity | null => {
 	console.log('[getPostDraft]:', { keyOrObj }); // develop
 
 	const key = _getPostDraftKey(keyOrObj);
-	const postDrafts = await get();
+	const postDrafts = get();
 	return postDrafts.findLast(pd => pd.key === key) ?? null;
 };
 
-export const setPostDraft = async (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraftEntity, 'key'>): Promise<void> => {
+export const setPostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraftEntity, 'key'>): void => {
 	console.log('[setPostDraft]:', { keyOrObj, params }); // develop
 
 	const key = _getPostDraftKey(keyOrObj);
-	const postDrafts = await get();
+	const postDrafts = get();
 	const newPostDrafts = postDrafts.filter(pd => pd.key !== key);
 	newPostDrafts.push({
 		...removeUndefinedFromObject(params),
@@ -75,11 +75,11 @@ export const setPostDraft = async (keyOrObj: PostDraftKeyOrObj, params: Omit<Pos
 	return set(newPostDrafts);
 };
 
-export const updatePostDraft = async (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraftEntity, 'key'>): Promise<void> => {
+export const updatePostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraftEntity, 'key'>): void => {
 	console.log('[updatePostDraft]:', { keyOrObj, params }); // develop
 
 	const key = _getPostDraftKey(keyOrObj);
-	const postDrafts = await get();
+	const postDrafts = get();
 	const newPostDrafts = postDrafts.filter(pd => pd.key !== key);
 	newPostDrafts.push({
 		...removeUndefinedFromObject(postDrafts.findLast(pd => pd.key === key) ?? {}),
@@ -89,21 +89,21 @@ export const updatePostDraft = async (keyOrObj: PostDraftKeyOrObj, params: Omit<
 	return set(newPostDrafts);
 };
 
-export const deletePostDraft = async (keyOrObj: PostDraftKeyOrObj): Promise<void> => {
+export const deletePostDraft = (keyOrObj: PostDraftKeyOrObj): void => {
 	console.log('[deletePostDraft]:', { keyOrObj }); // develop
 
 	const key = _getPostDraftKey(keyOrObj);
-	const postDrafts = await get();
+	const postDrafts = get();
 	const newPostDrafts = postDrafts.filter(pd => pd.key !== key);
 	return set(newPostDrafts);
 };
 
-export const renamePostDraft = async (oldKeyOrObj: PostDraftKeyOrObj, newKeyOrObj: PostDraftKeyOrObj): Promise<void> => {
+export const renamePostDraft = (oldKeyOrObj: PostDraftKeyOrObj, newKeyOrObj: PostDraftKeyOrObj): void => {
 	console.log('[renamePostDraft]:', { oldKeyOrObj, newKeyOrObj }); // develop
 
 	const oldKey = _getPostDraftKey(oldKeyOrObj);
 	const newKey = _getPostDraftKey(newKeyOrObj);
-	const postDrafts = await get();
+	const postDrafts = get();
 	const newPostDrafts = postDrafts.map(pd => pd.key === oldKey ? { ...pd, key: newKey } : pd);
 	return set(newPostDrafts);
 };
