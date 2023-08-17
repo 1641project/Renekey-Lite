@@ -34,8 +34,6 @@ export type PostDraftKeyObject = {
 export type PostDraftKeyOrObj = PostDraftKey | PostDraftKeyObject;
 
 const _getPostDraftKey = (keyOrObj: PostDraftKeyOrObj): string => {
-	console.log('[_getPostDraftKey]:', { keyOrObj }); // develop
-
 	if (typeof keyOrObj === 'string') return keyOrObj;
 
 	const { replyId, renoteId, channelId } = keyOrObj;
@@ -55,16 +53,12 @@ const _getPostDraftKey = (keyOrObj: PostDraftKeyOrObj): string => {
 };
 
 export const getPostDraft = (keyOrObj: PostDraftKeyOrObj): PostDraftEntity | null => {
-	console.log('[getPostDraft]:', { keyOrObj }); // develop
-
 	const key = _getPostDraftKey(keyOrObj);
 	const postDrafts = get();
 	return postDrafts.findLast(pd => pd.key === key) ?? null;
 };
 
 export const setPostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraftEntity, 'key'>): void => {
-	console.log('[setPostDraft]:', { keyOrObj, params }); // develop
-
 	const key = _getPostDraftKey(keyOrObj);
 	const postDrafts = get();
 	const newPostDrafts = postDrafts.filter(pd => pd.key !== key);
@@ -76,8 +70,6 @@ export const setPostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraft
 };
 
 export const updatePostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDraftEntity, 'key'>): void => {
-	console.log('[updatePostDraft]:', { keyOrObj, params }); // develop
-
 	const key = _getPostDraftKey(keyOrObj);
 	const postDrafts = get();
 	const newPostDrafts = postDrafts.filter(pd => pd.key !== key);
@@ -90,8 +82,6 @@ export const updatePostDraft = (keyOrObj: PostDraftKeyOrObj, params: Omit<PostDr
 };
 
 export const deletePostDraft = (keyOrObj: PostDraftKeyOrObj): void => {
-	console.log('[deletePostDraft]:', { keyOrObj }); // develop
-
 	const key = _getPostDraftKey(keyOrObj);
 	const postDrafts = get();
 	const newPostDrafts = postDrafts.filter(pd => pd.key !== key);
@@ -99,8 +89,6 @@ export const deletePostDraft = (keyOrObj: PostDraftKeyOrObj): void => {
 };
 
 export const renamePostDraft = (oldKeyOrObj: PostDraftKeyOrObj, newKeyOrObj: PostDraftKeyOrObj): void => {
-	console.log('[renamePostDraft]:', { oldKeyOrObj, newKeyOrObj }); // develop
-
 	const oldKey = _getPostDraftKey(oldKeyOrObj);
 	const newKey = _getPostDraftKey(newKeyOrObj);
 	const postDrafts = get();

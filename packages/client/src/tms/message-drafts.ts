@@ -22,8 +22,6 @@ export type MessageDraftKeyObject = {
 export type MessageDraftKeyOrObj = MessageDraftKey | MessageDraftKeyObject;
 
 const _getMessageDraftKey = (keyOrObj: MessageDraftKeyOrObj): string => {
-	console.log('[_getMessageDraftKey]:', { keyOrObj }); // develop
-
 	if (typeof keyOrObj === 'string') return keyOrObj;
 
 	const { userId, groupId } = keyOrObj;
@@ -40,16 +38,12 @@ const _getMessageDraftKey = (keyOrObj: MessageDraftKeyOrObj): string => {
 };
 
 export const getMessageDraft = (keyOrObj: MessageDraftKeyOrObj): MessageDraftEntity | null => {
-	console.log('[getMessageDraft]:', { keyOrObj }); // develop
-
 	const key = _getMessageDraftKey(keyOrObj);
 	const messageDrafts = get();
 	return messageDrafts.findLast(pd => pd.key === key) ?? null;
 };
 
 export const setMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<MessageDraftEntity, 'key'>): void => {
-	console.log('[setMessageDraft]:', { keyOrObj, params }); // develop
-
 	const key = _getMessageDraftKey(keyOrObj);
 	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.filter(pd => pd.key !== key);
@@ -61,8 +55,6 @@ export const setMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<Mes
 };
 
 export const updateMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<MessageDraftEntity, 'key'>): void => {
-	console.log('[updateMessageDraft]:', { keyOrObj, params }); // develop
-
 	const key = _getMessageDraftKey(keyOrObj);
 	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.filter(pd => pd.key !== key);
@@ -75,8 +67,6 @@ export const updateMessageDraft = (keyOrObj: MessageDraftKeyOrObj, params: Omit<
 };
 
 export const deleteMessageDraft = (keyOrObj: MessageDraftKeyOrObj): void => {
-	console.log('[deleteMessageDraft]:', { keyOrObj }); // develop
-
 	const key = _getMessageDraftKey(keyOrObj);
 	const messageDrafts = get();
 	const newMessageDrafts = messageDrafts.filter(pd => pd.key !== key);
@@ -84,8 +74,6 @@ export const deleteMessageDraft = (keyOrObj: MessageDraftKeyOrObj): void => {
 };
 
 export const renameMessageDraft = (oldKeyOrObj: MessageDraftKeyOrObj, newKeyOrObj: MessageDraftKeyOrObj): void => {
-	console.log('[renameMessageDraft]:', { oldKeyOrObj, newKeyOrObj }); // develop
-
 	const oldKey = _getMessageDraftKey(oldKeyOrObj);
 	const newKey = _getMessageDraftKey(newKeyOrObj);
 	const messageDrafts = get();
