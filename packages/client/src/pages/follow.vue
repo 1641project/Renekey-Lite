@@ -5,58 +5,74 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
+import { UserDetailed } from 'misskey-js/built/entities';
 import * as Acct from 'misskey-js/built/acct';
 import * as os from '@/os';
 import { mainRouter } from '@/router';
 import { i18n } from '@/i18n';
+import { $i } from '@/account';
 
-async function follow(user): Promise<void> {
+const follow = async (user: UserDetailed): Promise<void> => {
+	if ($i?.id === user.id) throw error('Followee is yourself.');
+	if (user.isFollowing) throw error('You are already following that user.');
+	if (user.isBlocking) throw error('You are blocking that user.');
+	if (user.isBlocked) throw error('You are blocked by that user.');
+
 	const { canceled } = await os.confirm({
 		type: 'question',
 		text: i18n.t('followConfirm', { name: user.name || user.username }),
 	});
 
-	if (canceled) {
-		window.close();
-		return;
-	}
+	if (canceled) close();
 
 	os.apiWithDialog('following/create', {
 		userId: user.id,
 	});
-}
+};
 
-const acct = new URL(location.href).searchParams.get('acct');
+const close = (): void => {
+	window.close();
+
+	// 閉じなければ100ms後タイムラインに
+	window.setTimeout(() => {
+		mainRouter.push('/');
+	}, 100);
+};
+
+const error = (message: string): TypeError => {
+	os.alert({
+		type: 'error',
+		text: message,
+	}).then(close);
+	return new TypeError(message);
+};
+
+const acct = new URLSearchParams(window.location.search).get('acct');
+
 if (acct == null) {
-	throw new Error('acct required');
+	throw error('Missing required query: acct.');
 }
 
-let promise;
-
-if (acct.startsWith('https://')) {
-	promise = os.api('ap/show', {
+if (acct.startsWith('http://') || acct.startsWith('https://')) {
+	const promise = os.api('ap/show', {
 		uri: acct,
 	});
-	promise.then(res => {
-		if (res.type === 'User') {
-			follow(res.object);
-		} else if (res.type === 'Note') {
-			mainRouter.push(`/notes/${res.object.id}`);
-		} else {
-			os.alert({
-				type: 'error',
-				text: 'Not a user',
-			}).then(() => {
-				window.close();
-			});
-		}
-	});
-} else {
-	promise = os.api('users/show', Acct.parse(acct));
-	promise.then(user => {
-		follow(user);
-	});
-}
+	os.promiseDialog(promise, null, null, i18n.ts.fetchingAsApObject);
 
-os.promiseDialog(promise, null, null, i18n.ts.fetchingAsApObject);
+	const res = await promise;
+
+	if (res.type === 'User') {
+		follow(res.object);
+	} else {
+		throw error(`${acct} is not User.`);
+	}
+} else {
+	const { username, host } = Acct.parse(acct);
+	const promise = os.api('users/show', { username, host: host ?? undefined });
+	os.promiseDialog(promise, null, null, i18n.ts.fetchingAsApObject);
+
+	const user = await promise;
+
+	follow(user);
+}
 </script>
