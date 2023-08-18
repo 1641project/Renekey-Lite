@@ -180,6 +180,8 @@ const deleteFile = async (): Promise<void> => {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.t('driveFileDeleteConfirm', { name: props.file.name }),
+		okText: i18n.ts.delete,
+		dangerOkButton: true,
 	});
 
 	if (canceled) return;

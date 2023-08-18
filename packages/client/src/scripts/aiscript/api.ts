@@ -26,13 +26,13 @@ export const createAiScriptEnv = (opts: {
 			return values.NULL;
 		}),
 		'Mk:confirm': values.FN_NATIVE(async ([title, text, type]) => {
-			const confirm = await os.confirm({
+			const { canceled } = await os.confirm({
 				type: type ? type.value : 'question',
 				title: title.value,
 				text: text.value,
 				allowMfm: true,
 			});
-			return confirm.canceled ? values.FALSE : values.TRUE;
+			return canceled ? values.FALSE : values.TRUE;
 		}),
 		'Mk:api': values.FN_NATIVE(async ([ep, param, token]) => {
 			if (token) {

@@ -115,6 +115,8 @@ const remove = (announcement: Announcement | EditedAnnouncement): void => {
 	os.confirm({
 		type: 'warning',
 		text: i18n.t('removeAreYouSure', { x: announcement.title }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 		announcements = announcements.filter(x => x !== announcement);

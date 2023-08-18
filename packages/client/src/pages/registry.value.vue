@@ -83,6 +83,7 @@ async function save() {
 	os.confirm({
 		type: 'warning',
 		text: i18n.ts.saveConfirm,
+		okText: i18n.ts.save,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 		os.apiWithDialog('i/registry/set', {
@@ -97,6 +98,8 @@ function del() {
 	os.confirm({
 		type: 'warning',
 		text: i18n.ts.deleteConfirm,
+		okText: i18n.ts.delete,
+		dangerOkButton: true,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 		os.apiWithDialog('i/registry/remove', {

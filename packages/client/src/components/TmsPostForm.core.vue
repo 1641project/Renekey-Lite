@@ -747,6 +747,9 @@ const onPaste = async (ev: ClipboardEvent): Promise<void> => {
 		os.confirm({
 			type: 'info',
 			text: i18n.ts.quoteQuestion,
+			okText: i18n.ts.yes,
+			cancelText: i18n.ts.no,
+			cancelableByBgClick: false,
 		}).then(({ canceled }) => {
 			if (canceled) {
 				if (textareaEl) insertTextAtCursor(textareaEl, paste);

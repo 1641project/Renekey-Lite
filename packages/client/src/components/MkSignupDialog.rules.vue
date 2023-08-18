@@ -91,6 +91,7 @@ const updateAgreeServerRules = async (v: boolean): Promise<void> => {
 			type: 'question',
 			title: i18n.ts.doYouAgree,
 			text: i18n.t('iHaveReadXCarefullyAndAgree', { x: i18n.ts.serverRules }),
+			okText: i18n.ts.agree,
 		});
 		if (confirm.canceled) return;
 		agreeServerRules.value = true;
@@ -105,6 +106,7 @@ const updateAgreeTos = async (v: boolean): Promise<void> => {
 			type: 'question',
 			title: i18n.ts.doYouAgree,
 			text: i18n.t('iHaveReadXCarefullyAndAgree', { x: i18n.ts.termsOfService }),
+			okText: i18n.ts.agree,
 		});
 		if (confirm.canceled) return;
 		agreeTos.value = true;
@@ -119,6 +121,7 @@ const updateAgreeNote = async (v: boolean): Promise<void> => {
 			type: 'question',
 			title: i18n.ts.doYouAgree,
 			text: i18n.t('iHaveReadXCarefullyAndAgree', { x: i18n.ts.basicNotesBeforeCreateAccount }),
+			okText: i18n.ts.agree,
 		});
 		if (confirm.canceled) return;
 		agreeNote.value = true;

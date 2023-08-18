@@ -81,6 +81,8 @@ function remove(ad) {
 	os.confirm({
 		type: 'warning',
 		text: i18n.t('removeAreYouSure', { x: ad.url }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 		ads = ads.filter(x => x !== ad);

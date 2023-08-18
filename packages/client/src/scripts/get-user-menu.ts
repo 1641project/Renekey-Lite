@@ -100,7 +100,13 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 	}
 
 	async function toggleBlock() {
-		if (!await getConfirmed(user.isBlocking ? i18n.ts.unblockConfirm : i18n.ts.blockConfirm)) return;
+		const { canceled } = await os.confirm({
+			type: 'warning',
+			text: user.isBlocking ? i18n.ts.unblockConfirm : i18n.ts.blockConfirm,
+			okText: user.isBlocking ? i18n.ts.unblock : i18n.ts.block,
+			dangerOkButton: true,
+		});
+		if (canceled) return;
 
 		os.apiWithDialog(user.isBlocking ? 'blocking/delete' : 'blocking/create', {
 			userId: user.id,
@@ -110,7 +116,13 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 	}
 
 	async function toggleSilence() {
-		if (!await getConfirmed(i18n.t(user.isSilenced ? 'unsilenceConfirm' : 'silenceConfirm'))) return;
+		const { canceled } = await os.confirm({
+			type: 'warning',
+			text: user.isSilenced ? i18n.ts.unsilenceConfirm : i18n.ts.silenceConfirm,
+			okText: user.isSilenced ? i18n.ts.unsilence : i18n.ts.silence,
+			dangerOkButton: true,
+		});
+		if (canceled) return;
 
 		os.apiWithDialog(user.isSilenced ? 'admin/unsilence-user' : 'admin/silence-user', {
 			userId: user.id,
@@ -120,7 +132,13 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 	}
 
 	async function toggleSuspend() {
-		if (!await getConfirmed(i18n.t(user.isSuspended ? 'unsuspendConfirm' : 'suspendConfirm'))) return;
+		const { canceled } = await os.confirm({
+			type: 'warning',
+			text: user.isSuspended ? i18n.ts.unsuspendConfirm : i18n.ts.suspendConfirm,
+			okText: user.isSuspended ? i18n.ts.unsuspend : i18n.ts.suspend,
+			dangerOkButton: true,
+		});
+		if (canceled) return;
 
 		os.apiWithDialog(user.isSuspended ? 'admin/unsuspend-user' : 'admin/suspend-user', {
 			userId: user.id,
@@ -133,16 +151,6 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 		os.popup(defineAsyncComponent(() => import('@/components/MkAbuseReportWindow.vue')), {
 			user: user,
 		}, {}, 'closed');
-	}
-
-	async function getConfirmed(text: string): Promise<boolean> {
-		const confirm = await os.confirm({
-			type: 'warning',
-			title: 'confirm',
-			text,
-		});
-
-		return !confirm.canceled;
 	}
 
 	async function invalidateFollow() {

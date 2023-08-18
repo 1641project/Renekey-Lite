@@ -98,6 +98,8 @@ async function del() {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.t('removeAreYouSure', { x: file.name }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 

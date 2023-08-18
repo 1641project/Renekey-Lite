@@ -279,6 +279,8 @@ const deleteProfile = async (): Promise<void> => {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.t('deleteAreYouSure', { x: deckStore.state.profile }),
+		okText: i18n.ts.delete,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 

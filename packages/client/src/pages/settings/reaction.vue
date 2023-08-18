@@ -98,6 +98,7 @@ async function setDefault() {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.resetAreYouSure,
+		okText: i18n.ts.yes,
 	});
 	if (canceled) return;
 

@@ -41,6 +41,8 @@ export const mainBoot = async (): Promise<void> => {
 				type: 'warning',
 				title: i18n.ts.disconnectedFromServer,
 				text: i18n.ts.reloadConfirm,
+				okText: i18n.ts.reload,
+				cancelText: i18n.ts.doNothing,
 			});
 			reloadDialogShowing = false;
 			if (!canceled) {

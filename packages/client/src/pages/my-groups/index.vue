@@ -120,6 +120,8 @@ async function leave(group) {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.t('leaveGroupConfirm', { name: group.name }),
+		okText: i18n.ts.leaveGroup,
+		dangerOkButton: true,
 	});
 
 	if (canceled) return;

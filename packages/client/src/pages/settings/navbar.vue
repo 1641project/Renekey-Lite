@@ -67,6 +67,8 @@ const reloadAsk = async (): Promise<void> => {
 	const { canceled } = await os.confirm({
 		type: 'info',
 		text: i18n.ts.reloadToApplySetting,
+		okText: i18n.ts.reload,
+		cancelText: i18n.ts.noThankYou,
 	});
 	if (canceled) return;
 

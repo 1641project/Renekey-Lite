@@ -24,6 +24,8 @@ function clear() {
 		type: 'warning',
 		title: i18n.ts.clearQueueConfirmTitle,
 		text: i18n.ts.clearQueueConfirmText,
+		okText: i18n.ts.clearQueue,
+		dangerOkButton: true,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 

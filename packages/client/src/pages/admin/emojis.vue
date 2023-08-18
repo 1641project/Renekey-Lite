@@ -262,6 +262,8 @@ const delBulk = async () => {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.deleteConfirm,
+		okText: i18n.ts.delete,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 	await os.apiWithDialog('admin/emoji/delete-bulk', {

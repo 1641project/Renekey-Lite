@@ -211,6 +211,8 @@ function del() {
 	os.confirm({
 		type: 'warning',
 		text: i18n.t('removeAreYouSure', { x: title.trim() }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 		os.api('pages/delete', {

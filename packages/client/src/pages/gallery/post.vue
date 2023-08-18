@@ -121,11 +121,14 @@ function like() {
 }
 
 async function unlike() {
-	const confirm = await os.confirm({
+	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.unlikeConfirm,
+		okText: i18n.ts._gallery.unlike,
+		dangerOkButton: true,
 	});
-	if (confirm.canceled) return;
+	if (canceled) return;
+
 	os.apiWithDialog('gallery/posts/unlike', {
 		postId: props.postId,
 	}).then(() => {

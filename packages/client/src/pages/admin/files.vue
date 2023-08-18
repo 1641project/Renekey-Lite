@@ -63,6 +63,8 @@ function clear() {
 	os.confirm({
 		type: 'warning',
 		text: i18n.ts.clearCachedFilesConfirm,
+		okText: i18n.ts.clearCachedFiles,
+		dangerOkButton: true,
 	}).then(({ canceled }) => {
 		if (canceled) return;
 

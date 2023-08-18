@@ -133,6 +133,8 @@ async function unlike() {
 	const confirm = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.unlikeConfirm,
+		okText: i18n.ts._pages.unlike,
+		dangerOkButton: true,
 	});
 	if (confirm.canceled) return;
 	os.apiWithDialog('pages/unlike', {

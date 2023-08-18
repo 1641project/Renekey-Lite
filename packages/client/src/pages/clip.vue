@@ -92,6 +92,8 @@ const headerActions = $computed(() => clip && isOwned ? [{
 		const { canceled } = await os.confirm({
 			type: 'warning',
 			text: i18n.t('deleteAreYouSure', { x: clip.name }),
+			okText: i18n.ts.delete,
+			dangerOkButton: true,
 		});
 		if (canceled) return;
 

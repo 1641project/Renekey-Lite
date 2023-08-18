@@ -21,6 +21,7 @@ const follow = async (user: UserDetailed): Promise<void> => {
 	const { canceled } = await os.confirm({
 		type: 'question',
 		text: i18n.t('followConfirm', { name: user.name || user.username }),
+		okText: i18n.ts.follow,
 	});
 
 	if (canceled) close();

@@ -83,6 +83,8 @@ const del = async (): Promise<void> => {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.t('removeAreYouSure', { x: name }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 

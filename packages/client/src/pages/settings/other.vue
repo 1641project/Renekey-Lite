@@ -95,6 +95,8 @@ const deleteAccount = async (): Promise<void> => {
 		const { canceled } = await os.confirm({
 			type: 'warning',
 			text: i18n.ts.deleteAccountConfirm,
+			okText: i18n.ts.deleteAccount,
+			dangerOkButton: true,
 		});
 		if (canceled) return;
 	}
@@ -120,6 +122,8 @@ const deleteAccount = async (): Promise<void> => {
 // 	const { canceled } = await os.confirm({
 // 		type: 'info',
 // 		text: i18n.ts.reloadToApplySetting,
+// 		okText: i18n.ts.reload,
+// 		cancelText: i18n.ts.noThankYou,
 // 	});
 // 	if (canceled) return;
 

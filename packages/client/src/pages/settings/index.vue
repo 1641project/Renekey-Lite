@@ -191,6 +191,8 @@ const menuDef = computed(() => [{
 			const { canceled } = await os.confirm({
 				type: 'warning',
 				text: i18n.ts.logoutConfirm,
+				okText: i18n.ts.logout,
+				dangerOkButton: true,
 			});
 			if (canceled) return;
 			signout();

@@ -72,6 +72,8 @@ async function onClick() {
 			const { canceled } = await os.confirm({
 				type: 'warning',
 				text: i18n.t('unfollowConfirm', { name: props.user.name || props.user.username }),
+				okText: i18n.ts.unfollow,
+				dangerOkButton: true,
 			});
 
 			if (canceled) return;

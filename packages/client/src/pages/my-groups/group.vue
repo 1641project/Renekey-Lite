@@ -113,6 +113,8 @@ async function deleteGroup() {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.t('removeAreYouSure', { x: group.value.name }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	});
 
 	if (canceled) return;

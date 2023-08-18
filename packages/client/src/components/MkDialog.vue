@@ -1,5 +1,5 @@
 <template>
-<MkModal ref="modal" prefer-type="dialog" :z-priority="'high'" @click="done(true)" @closed="emit('closed')">
+<MkModal ref="modal" prefer-type="dialog" z-priority="high" @click="onBgClick()" @closed="emit('closed')">
 	<div class="mk-dialog" :class="$style.root">
 		<div v-if="icon" :class="$style.icon">
 			<i :class="icon"></i>
@@ -28,11 +28,32 @@
 			<Mfm v-if="allowMfm" :text="text"/>
 			<span v-else>{{ text }}</span>
 		</div>
-		<MkInput v-if="input" v-model="inputValue" :max-length="input.maxLength" autofocus :type="input.type || 'text'" :placeholder="input.placeholder || undefined" :autocomplete="input.autocomplete" @keydown="onInputKeydown">
+		<MkInput
+			v-if="input"
+			v-model="inputValue"
+			:max-length="input.maxLength"
+			autofocus
+			:type="input.type || 'text'"
+			:placeholder="input.placeholder || undefined"
+			:autocomplete="input.autocomplete"
+			@keydown="onInputKeydown"
+		>
 			<template v-if="input.type === 'password'" #prefix><i class="ti ti-lock"></i></template>
 			<template #caption>
-				<span v-if="okButtonDisabled && disabledReason === 'charactersExceeded'" v-text="i18n.t('_dialog.charactersExceeded', { current: (inputValue as string).length, max: input.maxLength ?? 'NaN' })"/>
-				<span v-else-if="okButtonDisabled && disabledReason === 'charactersBelow'" v-text="i18n.t('_dialog.charactersBelow', { current: (inputValue as string).length, min: input.minLength ?? 'NaN' })"/>
+				<span
+					v-if="okButtonDisabled && disabledReason === 'charactersExceeded'"
+					v-text="i18n.t('_dialog.charactersExceeded', {
+						current: (inputValue as string).length,
+						max: input.maxLength ?? 'NaN',
+					})"
+				/>
+				<span
+					v-else-if="okButtonDisabled && disabledReason === 'charactersBelow'"
+					v-text="i18n.t('_dialog.charactersBelow', {
+						current: (inputValue as string).length,
+						min: input.minLength ?? 'NaN',
+					})"
+				/>
 			</template>
 		</MkInput>
 		<MkSelect v-if="select" v-model="selectedValue" autofocus>
@@ -46,18 +67,52 @@
 			</template>
 		</MkSelect>
 		<div v-if="(showOkButton || showCancelButton) && !actions" :class="$style.buttons">
-			<MkButton v-if="showOkButton" data-cy-modal-dialog-ok inline primary rounded :autofocus="!input && !select" :disabled="okButtonDisabled" @click="ok">{{ okText ?? ((showCancelButton || input || select) ? i18n.ts.ok : i18n.ts.gotIt) }}</MkButton>
-			<MkButton v-if="showCancelButton || input || select" data-cy-modal-dialog-cancel inline rounded @click="cancel">{{ cancelText ?? i18n.ts.cancel }}</MkButton>
+			<MkButton
+				v-if="showOkButton"
+				data-cy-modal-dialog-ok
+				inline
+				primary
+				rounded
+				:danger="dangerOkButton"
+				:autofocus="!input && !select"
+				:disabled="okButtonDisabled"
+				@click="ok"
+			>
+				{{ okText ?? ((showCancelButton || input || select) ? i18n.ts.ok : i18n.ts.gotIt) }}
+			</MkButton>
+			<MkButton
+				v-if="showCancelButton || input || select"
+				data-cy-modal-dialog-cancel
+				inline
+				rounded
+				:danger="dangerCancelButton"
+				@click="cancel"
+			>
+				{{ cancelText ?? i18n.ts.cancel }}
+			</MkButton>
 		</div>
 		<div v-if="actions" :class="$style.buttons">
-			<MkButton v-for="action in actions" :key="action.text" inline rounded :primary="action.primary" :danger="action.danger" @click="() => { action.callback(); modal?.close(); }">{{ action.text }}</MkButton>
+			<MkButton
+				v-for="action in actions"
+				:key="action.text"
+				inline
+				rounded
+				:primary="action.primary"
+				:danger="action.danger"
+				@click="() => {
+					action.callback();
+					modal?.close();
+				}"
+			>
+				{{ action.text }}
+			</MkButton>
 		</div>
 	</div>
 </MkModal>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/form/input.vue';
@@ -106,12 +161,16 @@ const props = withDefaults(defineProps<{
 	cancelableByBgClick?: boolean;
 	okText?: string;
 	cancelText?: string;
+	dangerOkButton?: boolean;
+	dangerCancelButton?: boolean;
 	allowMfm?: boolean;
 }>(), {
 	type: 'info',
 	showOkButton: true,
 	showCancelButton: false,
 	cancelableByBgClick: true,
+	dangerOkButton: false,
+	dangerCancelButton: false,
 	allowMfm: false,
 });
 
@@ -125,18 +184,18 @@ const modal = shallowRef<InstanceType<typeof MkModal>>();
 const inputValue = ref<string | number | null>(props.input?.default ?? null);
 const selectedValue = ref(props.select?.default ?? null);
 
-let disabledReason = $ref<null | 'charactersExceeded' | 'charactersBelow'>(null);
-const okButtonDisabled = $computed<boolean>(() => {
+const disabledReason = ref<null | 'charactersExceeded' | 'charactersBelow'>(null);
+const okButtonDisabled = computed<boolean>(() => {
 	if (props.input) {
 		if (props.input.minLength) {
 			if ((inputValue.value || inputValue.value === '') && (inputValue.value as string).length < props.input.minLength) {
-				disabledReason = 'charactersBelow';
+				disabledReason.value = 'charactersBelow';
 				return true;
 			}
 		}
 		if (props.input.maxLength) {
 			if (inputValue.value && (inputValue.value as string).length > props.input.maxLength) {
-				disabledReason = 'charactersExceeded';
+				disabledReason.value = 'charactersExceeded';
 				return true;
 			}
 		}
@@ -145,7 +204,7 @@ const okButtonDisabled = $computed<boolean>(() => {
 	return false;
 });
 
-const done = (canceled: boolean, result?): void => {
+const done = (canceled: boolean, result?: any): void => {
 	emit('done', { canceled, result });
 	modal.value?.close();
 };
@@ -164,9 +223,9 @@ const cancel = (): void => {
 	done(true);
 };
 
-// const onBgClick = (): void => {
-// 	if (props.cancelableByBgClick) cancel();
-// };
+const onBgClick = (): void => {
+	if (props.cancelableByBgClick) cancel();
+};
 
 const onKeydown = (evt: KeyboardEvent): void => {
 	if (evt.key === 'Escape' || evt.key === 'Esc') cancel();

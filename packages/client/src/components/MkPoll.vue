@@ -75,6 +75,7 @@ const vote = async (id) => {
 	const { canceled } = await os.confirm({
 		type: 'question',
 		text: i18n.t('voteConfirm', { choice: props.note.poll.choices[id].text }),
+		okText: i18n.ts.yes,
 	});
 	if (canceled) return;
 

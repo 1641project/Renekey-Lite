@@ -307,6 +307,8 @@ async function toggleSilence(v: boolean) {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: v ? i18n.ts.silenceConfirm : i18n.ts.unsilenceConfirm,
+		okText: v ? i18n.ts.silence : i18n.ts.unsilence,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 	
@@ -316,10 +318,12 @@ async function toggleSilence(v: boolean) {
 	refreshUser();
 }
 
-async function toggleSuspend(v) {
+async function toggleSuspend(v: boolean) {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: v ? i18n.ts.suspendConfirm : i18n.ts.unsuspendConfirm,
+		okText: v ? i18n.ts.suspend : i18n.ts.unsuspend,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 
@@ -333,6 +337,8 @@ async function deleteAllFiles() {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.deleteAllFilesConfirm,
+		okText: i18n.ts.deleteAllFiles,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 
@@ -369,6 +375,8 @@ async function deleteAccount() {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.deleteAccountConfirm,
+		okText: i18n.ts.deleteAccount,
+		dangerOkButton: true,
 	});
 	if (canceled) return;
 

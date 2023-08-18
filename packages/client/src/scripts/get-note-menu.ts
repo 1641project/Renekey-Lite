@@ -24,6 +24,8 @@ export function getNoteMenu(props: {
 		os.confirm({
 			type: 'warning',
 			text: i18n.ts.noteDeleteConfirm,
+			okText: i18n.ts.delete,
+			dangerOkButton: true,
 		}).then(({ canceled }) => {
 			if (canceled) return;
 
@@ -37,6 +39,8 @@ export function getNoteMenu(props: {
 		os.confirm({
 			type: 'warning',
 			text: i18n.ts.deleteAndEditConfirm,
+			okText: i18n.ts.deleteAndEdit,
+			dangerOkButton: true,
 		}).then(({ canceled }) => {
 			if (canceled) return;
 
@@ -228,11 +232,13 @@ export function getNoteMenu(props: {
 								null,
 								async (err) => {
 									if (err.id === '734806c4-542c-463a-9311-15c512803965') {
-										const confirm = await os.confirm({
+										const { canceled } = await os.confirm({
 											type: 'warning',
 											text: i18n.t('confirmToUnclipAlreadyClippedNote', { name: clip.name }),
+											okText: i18n.ts.unclip,
+											dangerOkButton: true,
 										});
-										if (!confirm.canceled) {
+										if (!canceled) {
 											os.apiWithDialog('clips/remove-note', { clipId: clip.id, noteId: appearNote.id });
 											if (props.currentClipPage?.value.id === clip.id) props.isDeleted.value = true;
 										}

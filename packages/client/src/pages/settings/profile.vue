@@ -135,6 +135,8 @@ const changeAvatar = (ev: MouseEvent): void => {
 		const { canceled } = await os.confirm({
 			type: 'question',
 			text: i18n.t('cropImageAsk'),
+			okText: i18n.ts.cropYes,
+			cancelText: i18n.ts.cropNo,
 		});
 
 		if (!canceled) {
@@ -160,6 +162,8 @@ const changeBanner = (ev: MouseEvent): void => {
 		const { canceled } = await os.confirm({
 			type: 'question',
 			text: i18n.t('cropImageAsk'),
+			okText: i18n.ts.cropYes,
+			cancelText: i18n.ts.cropNo,
 		});
 
 		if (!canceled) {

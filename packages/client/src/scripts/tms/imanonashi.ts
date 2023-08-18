@@ -67,6 +67,8 @@ export const imanonashi = async (note: Note): Promise<void> => {
 		? await os.confirm({
 			type: 'warning',
 			text: `${i18n.ts.noteDeleteConfirm}\n\n${notes.map(getNoteSummary).map(sum => sum.replace(/^/gm, '> ')).join('\n\n')}`,
+			okText: i18n.ts.delete,
+			dangerOkButton: true,
 			allowMfm: true,
 		}).then(({ canceled }) => !canceled)
 		: true;

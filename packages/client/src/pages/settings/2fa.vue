@@ -160,6 +160,8 @@ const unregisterKey = async (key): Promise<void> => {
 		type: 'question',
 		title: i18n.ts._2fa.removeKey,
 		text: i18n.t('_2fa.removeKeyConfirm', { name: key.name }),
+		okText: i18n.ts.remove,
+		dangerOkButton: true,
 	});
 	if (confirm.canceled) return;
 

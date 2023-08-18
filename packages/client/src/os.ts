@@ -211,10 +211,14 @@ export const confirm = (props: {
 	text?: string | null;
 	okText?: string;
 	cancelText?: string;
+	dangerOkButton?: boolean;
+	dangerCancelButton?: boolean;
+	cancelableByBgClick?: boolean;
 }): Promise<{ canceled: boolean }> => {
 	return new Promise((resolve) => {
 		popup(MkDialog, {
 			...props,
+			showOkButton: true,
 			showCancelButton: true,
 		}, {
 			done: result => {

@@ -148,7 +148,7 @@ const _nqadd = (text: PostData['text']): PostData['text'] => {
 	return text.replace(/\-?\d+$/, (n => (BigInt(n) + 1n).toString(10)));
 };
 
-const confirmNyaize = async (note: Note): Promise<boolean> => {
+const confirmNyaize = async (note: Note, okText?: string, cancelText?: string): Promise<boolean> => {
 	const iAmCat = !!$i?.isCat;
 	const isCat = 'isCat' in note.user && !!note.user.isCat;
 
@@ -157,6 +157,8 @@ const confirmNyaize = async (note: Note): Promise<boolean> => {
 	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts._tms.nyaizeWarning,
+		okText,
+		cancelText,
 	});
 
 	return !canceled;
@@ -169,7 +171,7 @@ export const pakuru = async (note: Note): Promise<{
 	canceled: true;
 	createdNote: undefined;
 }> => {
-	if (!(await confirmNyaize(note))) return { canceled: true, createdNote: undefined };
+	if (!(await confirmNyaize(note, i18n.ts.pakuru, i18n.ts.noThankYou))) return { canceled: true, createdNote: undefined };
 	const makedParams = await makeParams(note);
 	const { canceled, result } = await enqueuePendingPost(makedParams);
 	if (canceled) return { canceled, createdNote: undefined };
@@ -183,7 +185,7 @@ export const numberquote = async (note: Note): Promise<{
 	canceled: true;
 	createdNote: undefined;
 }> => {
-	if (!(await confirmNyaize(note))) return { canceled: true, createdNote: undefined };
+	if (!(await confirmNyaize(note, i18n.ts.numberquote, i18n.ts.noThankYou))) return { canceled: true, createdNote: undefined };
 	const makedParams = await makeParams(note).then(params => {
 		return { ...params, text: _nqadd(params.text) };
 	});
