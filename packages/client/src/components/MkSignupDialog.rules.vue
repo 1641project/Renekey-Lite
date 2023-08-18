@@ -25,16 +25,16 @@
 					</li>
 				</ol>
 
-				<MkSwitch :model-value="agreeServerRules" style="margin-top: 16px;" @update:model-value="updateAgreeServerRules">{{ i18n.ts.agree }}</MkSwitch>
+				<FormSwitch :model-value="agreeServerRules" style="margin-top: 16px;" @update:model-value="updateAgreeServerRules">{{ i18n.ts.agree }}</FormSwitch>
 			</MkFolder>
 
 			<MkFolder v-if="availableTos" :default-open="true">
 				<template #label>{{ i18n.ts.termsOfService }}</template>
 				<template #suffix><i v-if="agreeTos" class="ti ti-check" style="color: var(--success)"></i></template>
 
-				<a :href="instance.tosUrl" class="_link" target="_blank">{{ i18n.ts.termsOfService }} <i class="ti ti-external-link"></i></a>
+				<a :href="instance.tosUrl!" class="_link" target="_blank">{{ i18n.ts.termsOfService }} <i class="ti ti-external-link"></i></a>
 
-				<MkSwitch :model-value="agreeTos" style="margin-top: 16px;" @update:model-value="updateAgreeTos">{{ i18n.ts.agree }}</MkSwitch>
+				<FormSwitch :model-value="agreeTos" style="margin-top: 16px;" @update:model-value="updateAgreeTos">{{ i18n.ts.agree }}</FormSwitch>
 			</MkFolder>
 
 			<MkFolder :default-open="true">
@@ -43,7 +43,7 @@
 
 				<a href="https://misskey-hub.net/docs/notes.html" class="_link" target="_blank">{{ i18n.ts.basicNotesBeforeCreateAccount }} <i class="ti ti-external-link"></i></a>
 
-				<MkSwitch :model-value="agreeNote" style="margin-top: 16px;" data-cy-signup-rules-notes-agree @update:model-value="updateAgreeNote">{{ i18n.ts.agree }}</MkSwitch>
+				<FormSwitch :model-value="agreeNote" style="margin-top: 16px;" data-cy-signup-rules-notes-agree @update:model-value="updateAgreeNote">{{ i18n.ts.agree }}</FormSwitch>
 			</MkFolder>
 
 			<div v-if="!agreed" style="text-align: center;">{{ i18n.ts.pleaseAgreeAllToContinue }}</div>
@@ -61,9 +61,9 @@
 import { computed, ref } from 'vue';
 import { instance } from '@/instance';
 import { i18n } from '@/i18n';
+import FormSwitch from '@/components/form/switch.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
-import MkSwitch from '@/components/form/switch.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import * as os from '@/os';
 

@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import { shallowRef } from 'vue';
 import XSignupForm from '@/components/MkSignupDialog.form.vue';
 import XServerRules from '@/components/MkSignupDialog.rules.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
@@ -45,17 +45,17 @@ const emit = defineEmits<{
 	(ev: 'closed'): void;
 }>();
 
-const dialog = $shallowRef<InstanceType<typeof MkModalWindow>>();
+const dialog = shallowRef<InstanceType<typeof MkModalWindow>>();
 
 const isAcceptedServerRule = $ref(false);
 
 const onSignup = (res: any): void => {
 	emit('done', res);
-	dialog?.close();
+	dialog.value?.close();
 };
 
 const onSignupEmailPending = (): void => {
-	dialog?.close();
+	dialog.value?.close();
 };
 </script>
 

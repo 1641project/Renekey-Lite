@@ -5,11 +5,11 @@
 	</div>
 	<MkSpacer :margin-min="20" :margin-max="32">
 		<form class="_gaps_m" autocomplete="new-password" @submit.prevent="onSubmit">
-			<MkInput v-if="instance.disableRegistration" v-model="invitationCode" type="text" :spellcheck="false" required>
+			<FormInput v-if="instance.disableRegistration" v-model="invitationCode" type="text" :spellcheck="false" required>
 				<template #label>{{ i18n.ts.invitationCode }}</template>
 				<template #prefix><i class="ti ti-key"></i></template>
-			</MkInput>
-			<MkInput v-model="username" type="text" pattern="^[a-zA-Z0-9_]{1,20}$" :spellcheck="false" autocomplete="username" required data-cy-signup-username @update:model-value="onChangeUsername">
+			</FormInput>
+			<FormInput v-model="username" type="text" pattern="^[a-zA-Z0-9_]{1,20}$" :spellcheck="false" autocomplete="username" required data-cy-signup-username @update:model-value="onChangeUsername">
 				<template #label>{{ i18n.ts.username }} <div v-tooltip:dialog="i18n.ts.usernameInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
 				<template #prefix>@</template>
 				<template #suffix>@{{ host }}</template>
@@ -23,8 +23,8 @@
 					<span v-else-if="usernameState === 'min-range'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooShort }}</span>
 					<span v-else-if="usernameState === 'max-range'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooLong }}</span>
 				</template>
-			</MkInput>
-			<MkInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-cy-signup-email @update:model-value="onChangeEmail">
+			</FormInput>
+			<FormInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-cy-signup-email @update:model-value="onChangeEmail">
 				<template #label>{{ i18n.ts.emailAddress }} <div v-tooltip:dialog="i18n.ts._signup.emailAddressInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
 				<template #prefix><i class="ti ti-mail"></i></template>
 				<template #caption>
@@ -38,8 +38,8 @@
 					<span v-else-if="emailState === 'unavailable'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.unavailable }}</span>
 					<span v-else-if="emailState === 'error'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.error }}</span>
 				</template>
-			</MkInput>
-			<MkInput v-model="password" type="password" autocomplete="new-password" required data-cy-signup-password @update:model-value="onChangePassword">
+			</FormInput>
+			<FormInput v-model="password" type="password" autocomplete="new-password" required data-cy-signup-password @update:model-value="onChangePassword">
 				<template #label>{{ i18n.ts.password }}</template>
 				<template #prefix><i class="ti ti-lock"></i></template>
 				<template #caption>
@@ -47,17 +47,18 @@
 					<span v-if="passwordStrength == 'medium'" style="color: var(--warn)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.normalPassword }}</span>
 					<span v-if="passwordStrength == 'high'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.strongPassword }}</span>
 				</template>
-			</MkInput>
-			<MkInput v-model="retypedPassword" type="password" autocomplete="new-password" required data-cy-signup-password-retype @update:model-value="onChangePasswordRetype">
+			</FormInput>
+			<FormInput v-model="retypedPassword" type="password" autocomplete="new-password" required data-cy-signup-password-retype @update:model-value="onChangePasswordRetype">
 				<template #label>{{ i18n.ts.password }} ({{ i18n.ts.retype }})</template>
 				<template #prefix><i class="ti ti-lock"></i></template>
 				<template #caption>
 					<span v-if="passwordRetypeState == 'match'" style="color: var(--success)"><i class="ti ti-check ti-fw"></i> {{ i18n.ts.passwordMatched }}</span>
 					<span v-if="passwordRetypeState == 'not-match'" style="color: var(--error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.passwordNotMatched }}</span>
 				</template>
-			</MkInput>
+			</FormInput>
 			<MkCaptcha v-if="instance.enableHcaptcha" ref="hcaptcha" v-model="hCaptchaResponse" :class="$style.captcha" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
 			<MkCaptcha v-if="instance.enableRecaptcha" ref="recaptcha" v-model="reCaptchaResponse" :class="$style.captcha" provider="recaptcha" :sitekey="instance.recaptchaSiteKey"/>
+			<!-- <MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" :class="$style.captcha" provider="turnstile" :sitekey="instance.turnstileSiteKey"/> -->
 			<MkButton type="submit" :disabled="shouldDisableSubmitting" large gradate rounded data-cy-signup-submit style="margin: 0 auto;">
 				<template v-if="submitting">
 					<MkLoading :em="true" :colored="false"/>
@@ -73,8 +74,8 @@
 import { } from 'vue';
 import getPasswordStrength from 'syuilo-password-strength';
 import { toUnicode } from 'punycode/';
-import MkButton from './MkButton.vue';
-import MkInput from './form/input.vue';
+import FormInput from '@/components/form/input.vue';
+import MkButton from '@/components/MkButton.vue';
 import MkCaptcha, { type Captcha } from '@/components/MkCaptcha.vue';
 import * as config from '@/config';
 import * as os from '@/os';
@@ -97,6 +98,7 @@ const host = toUnicode(config.host);
 
 let hcaptcha = $ref<Captcha | undefined>();
 let recaptcha = $ref<Captcha | undefined>();
+// let turnstile = $ref<Captcha | undefined>();
 
 let username: string = $ref('');
 let password: string = $ref('');
@@ -110,6 +112,7 @@ let passwordRetypeState: null | 'match' | 'not-match' = $ref(null);
 let submitting: boolean = $ref(false);
 let hCaptchaResponse = $ref(null);
 let reCaptchaResponse = $ref(null);
+// let turnstileResponse = $ref(null);
 let usernameAbortController: null | AbortController = $ref(null);
 let emailAbortController: null | AbortController = $ref(null);
 
@@ -117,6 +120,7 @@ const shouldDisableSubmitting = $computed((): boolean => {
 	return submitting ||
 		instance.enableHcaptcha && !hCaptchaResponse ||
 		instance.enableRecaptcha && !reCaptchaResponse ||
+		// instance.enableTurnstile && !turnstileResponse ||
 		instance.emailRequiredForSignup && emailState !== 'ok' ||
 		usernameState !== 'ok' ||
 		passwordRetypeState !== 'match';
@@ -218,6 +222,7 @@ const onSubmit = async (): Promise<void> => {
 			invitationCode,
 			'hcaptcha-response': hCaptchaResponse,
 			'g-recaptcha-response': reCaptchaResponse,
+			// 'turnstile-response': turnstileResponse,
 		});
 		if (instance.emailRequiredForSignup) {
 			os.alert({
@@ -241,6 +246,7 @@ const onSubmit = async (): Promise<void> => {
 		submitting = false;
 		hcaptcha?.reset?.();
 		recaptcha?.reset?.();
+		// turnstile?.reset?.();
 
 		os.alert({
 			type: 'error',
