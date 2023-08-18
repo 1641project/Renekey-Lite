@@ -91,8 +91,8 @@
 					<option value="moderator">{{ i18n.ts.moderator }}</option>
 					<option value="users">{{ i18n.ts.users }}</option>
 				</FormSelect>
-				<FormSwitch v-if="silenced || ['moderator', 'users'].includes(userState)" v-model="silenced" class="_formBlock" @update:model-value="toggleSilence">{{ i18n.ts.silence }}</FormSwitch>
-				<FormSwitch v-if="suspended || userState === 'users'" v-model="suspended" class="_formBlock" @update:model-value="toggleSuspend">{{ i18n.ts.suspend }}</FormSwitch>
+				<FormSwitch v-if="silenced || ['moderator', 'users'].includes(userState)" :model-value="silenced" class="_formBlock" @update:model-value="toggleSilence">{{ i18n.ts.silence }}</FormSwitch>
+				<FormSwitch v-if="suspended || userState === 'users'" :model-value="suspended" class="_formBlock" @update:model-value="toggleSuspend">{{ i18n.ts.suspend }}</FormSwitch>
 				{{ i18n.ts.reflectMayTakeTime }}
 				<div class="_formBlock">
 					<FormButton v-if="user.host == null && iAmModerator" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</FormButton>
@@ -231,7 +231,7 @@ function createFetcher() {
 
 			watch($$(moderationNote), async () => {
 				await os.api('admin/update-user-note', { userId: user.id, text: moderationNote });
-				await refreshUser();
+				refreshUser();
 			});
 		});
 	} else {
@@ -299,42 +299,43 @@ async function selectUserState(v) {
 			text: `rejected:\n${userState} -> ${reqState}`,
 		});
 	} else {
-		await refreshUser();
+		refreshUser();
 	}
 }
 
-async function toggleSilence(v) {
-	const confirm = await os.confirm({
+async function toggleSilence(v: boolean) {
+	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: v ? i18n.ts.silenceConfirm : i18n.ts.unsilenceConfirm,
 	});
-	if (confirm.canceled) {
-		silenced = !v;
-	} else {
-		await os.api(v ? 'admin/silence-user' : 'admin/unsilence-user', { userId: user.id });
-		await refreshUser();
-	}
+	if (canceled) return;
+	
+	await os.api(v ? 'admin/silence-user' : 'admin/unsilence-user', { userId: user.id });
+	silenced = v;
+
+	refreshUser();
 }
 
 async function toggleSuspend(v) {
-	const confirm = await os.confirm({
+	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: v ? i18n.ts.suspendConfirm : i18n.ts.unsuspendConfirm,
 	});
-	if (confirm.canceled) {
-		suspended = !v;
-	} else {
-		await os.api(v ? 'admin/suspend-user' : 'admin/unsuspend-user', { userId: user.id });
-		await refreshUser();
-	}
+	if (canceled) return;
+
+	await os.api(v ? 'admin/suspend-user' : 'admin/unsuspend-user', { userId: user.id });
+	suspended = v;
+
+	refreshUser();
 }
 
 async function deleteAllFiles() {
-	const confirm = await os.confirm({
+	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.deleteAllFilesConfirm,
 	});
-	if (confirm.canceled) return;
+	if (canceled) return;
+
 	const process = async () => {
 		await os.api('admin/delete-all-files-of-a-user', { userId: user.id });
 		os.success();
@@ -345,7 +346,7 @@ async function deleteAllFiles() {
 			text: err.toString(),
 		});
 	});
-	await refreshUser();
+	refreshUser();
 }
 
 async function applyDriveCapacityOverride() {
@@ -355,7 +356,7 @@ async function applyDriveCapacityOverride() {
 	}
 	try {
 		await os.apiWithDialog('admin/drive-capacity-override', { userId: user.id, overrideMb: driveCapOrMb });
-		await refreshUser();
+		refreshUser();
 	} catch (err) {
 		os.alert({
 			type: 'error',
@@ -365,11 +366,11 @@ async function applyDriveCapacityOverride() {
 }
 
 async function deleteAccount() {
-	const confirm = await os.confirm({
+	const { canceled } = await os.confirm({
 		type: 'warning',
 		text: i18n.ts.deleteAccountConfirm,
 	});
-	if (confirm.canceled) return;
+	if (canceled) return;
 
 	const typed = await os.inputText({
 		text: i18n.t('typeToConfirm', { x: user?.username }),
