@@ -20,7 +20,7 @@
 			</FormSplit>
 		</div>
 		<div class="_gaps">
-			<div :class="['_button', $style.matchUser]" @click="showMatchUser ? matchUserOk : lookupUser">
+			<div :class="['_button', $style.matchUser]" @click="showMatchUser ? matchUserOk() : lookupUser()">
 				<template v-if="showMatchUser">
 					<div>{{ i18n.ts.lookup }}:</div>
 					<div><MkAcct :user="matchUser" detail/></div>
@@ -93,7 +93,7 @@ const matchUser = computed(() => {
 	};
 });
 const showMatchUser = computed(() => {
-	return inputUserName.value !== '' && inputHostName.value !== '';
+	return inputUserName.value !== '';
 });
 
 const onRejected = (err: unknown): void => {
@@ -221,6 +221,10 @@ const updateRecentlyUsedUsers = (newUser: UserDetailed): string[] => {
 </script>
 
 <style lang="scss" module>
+.form {
+	padding: 0 var(--root-margin);
+}
+
 .matchUser {
 	display: flex;
 	flex-direction: column;
