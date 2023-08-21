@@ -41,7 +41,8 @@
 					:key="selectedUser.id"
 					:user="selectedUser"
 					:selected="true"
-					@select="deselect"
+					@select="select"
+					@deselect="deselect"
 				/>
 				<div v-if="computedResult.type === 'empty'" class="_fullinfo">
 					<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
@@ -57,6 +58,7 @@
 						:user="resultUser"
 						:selected="selectedUser?.id === resultUser.id"
 						@select="select"
+						@deselect="deselect"
 					/>
 				</template>
 			</div>
