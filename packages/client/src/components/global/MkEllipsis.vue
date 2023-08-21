@@ -1,26 +1,45 @@
 <template>
-<span class="mk-ellipsis">
-	<span>.</span><span>.</span><span>.</span>
+<span
+	class="mk-ellipsis"
+	:class="[$style.root, {
+		[$style.static]: static,
+	}]"
+>
+	<span :class="[$style.dot, $style.dot1]">.</span>
+	<span :class="[$style.dot, $style.dot2]">.</span>
+	<span :class="[$style.dot, $style.dot3]">.</span>
 </span>
 </template>
 
-<style lang="scss" scoped>
+<script lang="ts" setup>
+import { } from 'vue';
+
+withDefaults(defineProps<{
+	static?: boolean;
+}>(), {
+	static: false,
+});
+</script>
+
+<style lang="scss" module>
 @layer global {
-	.mk-ellipsis {
-		> span {
-			animation: ellipsis 1.4s infinite ease-in-out both;
+	.root.static > .dot {
+		animation-play-state: paused;
+	}
 
-			&:nth-child(1) {
-				animation-delay: 0s;
-			}
+	.dot {
+		animation: ellipsis 1.4s infinite ease-in-out both;
 
-			&:nth-child(2) {
-				animation-delay: 0.16s;
-			}
+		&.dot1 {
+			animation-delay: 0s;
+		}
 
-			&:nth-child(3) {
-				animation-delay: 0.32s;
-			}
+		&.dot2 {
+			animation-delay: 0.16s;
+		}
+
+		&.dot3 {
+			animation-delay: 0.32s;
 		}
 	}
 

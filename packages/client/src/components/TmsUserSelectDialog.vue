@@ -26,7 +26,7 @@
 					<div><MkAcct :user="matchUser" detail/></div>
 				</template>
 				<template v-else>
-					<div>{{ i18n.ts.lookup }}</div>
+					<div>{{ i18n.ts.lookup }}<MkEllipsis static/></div>
 				</template>
 			</div>
 			<div v-if="showSearchUsers">
@@ -147,23 +147,30 @@ const lookupUser = async (): Promise<void> => {
 			}
 		}).catch(onRejected);
 	} else {
-		let resolved = false;
 		const { username, host } = Acct.parse(result);
 		const userId = result;
 		const usernamePromise = os.api('users/show', { username, host: host ?? undefined });
 		const userIdPromise = os.api('users/show', { userId });
-		usernamePromise.then(user => {
-			if (!resolved) {
-				resolved = true;
-				ok(user, true);
+		Promise.allSettled([usernamePromise, userIdPromise]).then(results => {
+			let resolved = false;
+			let rejected = false;
+			for (const result of results) {
+				if (!resolved && result.status === 'fulfilled') {
+					resolved = true;
+					ok(result.value, true);
+					break;
+				}
 			}
-		}).catch(onRejected);
-		userIdPromise.then(user => {
 			if (!resolved) {
-				resolved = true;
-				ok(user, true);
+				for (const result of results) {
+					if (!rejected && result.status === 'rejected') {
+						rejected = true;
+						onRejected(result.reason);
+						break;
+					}
+				}
 			}
-		}).catch(onRejected);
+		});
 	}
 };
 //#endregion
