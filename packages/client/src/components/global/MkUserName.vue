@@ -4,10 +4,10 @@
 
 <script lang="ts" setup>
 import { } from 'vue';
-import * as Misskey from 'misskey-js';
+import { User } from 'misskey-js/built/entities';
 
 withDefaults(defineProps<{
-	user: Misskey.entities.User;
+	user: Pick<User, 'name' | 'username' | 'emojis'>;
 	nowrap?: boolean;
 }>(), {
 	nowrap: true,

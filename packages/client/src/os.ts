@@ -430,10 +430,10 @@ export const selectUser = async (opts: {
 	includeSelf?: boolean;
 } = {}): Promise<Misskey.entities.UserDetailed> => {
 	return new Promise((resolve, reject) => {
-		popup(defineAsyncComponent(() => import('@/components/MkUserSelectDialog.vue')), {
+		popup(defineAsyncComponent(() => import('@/components/TmsUserSelectDialog.vue')), {
 			includeSelf: opts.includeSelf,
 		}, {
-			ok: (user) => {
+			ok: (user: Misskey.entities.UserDetailed) => {
 				resolve(user);
 			},
 			cancel: () => {

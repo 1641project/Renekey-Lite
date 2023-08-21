@@ -6,13 +6,13 @@
 </template>
 
 <script lang="ts" setup>
-import { User, UserLite, UserDetailed } from 'misskey-js/built/entities';
+import { User } from 'misskey-js/built/entities';
 import { toUnicode } from 'punycode/';
 import { host as hostRaw } from '@/config';
 import { defaultStore } from '@/store';
 
 defineProps<{
-	user: User | UserLite | UserDetailed;
+	user: Pick<User, 'username' | 'host'>;
 	detail?: boolean;
 }>();
 
