@@ -160,9 +160,12 @@ const lookupUserSelect = async (): Promise<void> => {
 	if (result === '') return;
 
 	if (result.startsWith('http://') || result.startsWith('https://')) {
-		os.api('ap/show', {
+		const promiseFromAp = os.api('ap/show', {
 			uri: result,
-		}).then(res => {
+		});
+		os.promiseDialog(promiseFromAp, null, null, i18n.ts.fetchingAsApObject);
+
+		promiseFromAp.then(res => {
 			if (res.type === 'User') {
 				select(res.object);
 			} else {
@@ -175,9 +178,13 @@ const lookupUserSelect = async (): Promise<void> => {
 	} else {
 		const { username, host } = Acct.parse(result);
 		const userId = result;
-		const usernamePromise = os.api('users/show', { username, host: host ?? undefined });
-		const userIdPromise = os.api('users/show', { userId });
-		Promise.allSettled([usernamePromise, userIdPromise]).then(results => {
+		const promiseFromUsername = os.api('users/show', { username, host: host ?? undefined });
+		const promiseFromUserId = os.api('users/show', { userId });
+
+		const promiseFromAll = Promise.allSettled([promiseFromUsername, promiseFromUserId]);
+		os.promiseDialog(promiseFromAll, null, null, i18n.ts.fetchingAsApObject);
+
+		promiseFromAll.then(results => {
 			let resolved = false;
 			let rejected = false;
 			for (const result of results) {
