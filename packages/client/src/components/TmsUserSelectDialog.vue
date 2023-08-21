@@ -39,6 +39,9 @@
 				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
 				<div>{{ i18n.ts.nothing }}</div>
 			</div>
+			<div v-else-if="computedResult.type === 'wait'">
+				<MkLoading/>
+			</div>
 			<div v-else>
 				<XUser
 					v-if="selectedUser && !computedResult.users.some(resultUser => selectedUser?.id === resultUser.id)"
@@ -203,12 +206,25 @@ type ComputedResult = {
 	users: UserDetailed[];
 } | {
 	type: 'empty';
+} | {
+	type: 'wait';
 };
 const computedResult = computed<ComputedResult>(() => {
 	if (inputUserName.value !== '' || inputHostName.value !== '') {
+		if (searchUsers.value) {
+			return {
+				type: 'search',
+				users: searchUsers.value,
+			};
+		} else {
+			return {
+				type: 'wait',
+			};
+		}
+	}
+	if (recentUsers.value == null) {
 		return {
-			type: 'search',
-			users: searchUsers.value,
+			type: 'wait',
 		};
 	}
 	if (recentUsers.value.length !== 0) {
@@ -224,14 +240,14 @@ const computedResult = computed<ComputedResult>(() => {
 //#endregion
 
 //#region searchUsers
-const searchUsers: Ref<UserDetailed[]> = ref([]);
+const searchUsers: Ref<UserDetailed[] | null> = ref(null);
 
 const inputUserName = ref('');
 const inputHostName = ref('');
 
 const search = (): void => {
 	if (inputUserName.value === '' && inputHostName.value === '') {
-		searchUsers.value = [];
+		searchUsers.value = null;
 		return;
 	}
 
@@ -249,7 +265,7 @@ const debouncedSearch = debounce(1000, search);
 //#endregion
 
 //#region recentUsers
-const recentUsers: Ref<UserDetailed[]> = ref([]);
+const recentUsers: Ref<UserDetailed[] | null> = ref(null);
 
 onMounted(() => {
 	os.api('users/show', {
