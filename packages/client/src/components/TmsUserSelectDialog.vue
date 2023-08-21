@@ -14,11 +14,11 @@
 	>
 		<div :class="$style.form">
 			<FormSplit :min-width="128">
-				<FormInput v-model="inputUserName" :autofocus="true" :disabled="isSelected" @update:model-value="search">
+				<FormInput v-model="inputUserName" :autofocus="true" :debounce="false" :disabled="isSelected" @update:model-value="debouncedSearch">
 					<template #label>{{ i18n.ts.username }}</template>
 					<template #prefix>@</template>
 				</FormInput>
-				<FormInput v-model="inputHostName" :datalist="[hostname]" :disabled="isSelected" @update:model-value="search">
+				<FormInput v-model="inputHostName" :debounce="false" :datalist="[hostname]" :disabled="isSelected" @update:model-value="debouncedSearch">
 					<template #label>{{ i18n.ts.host }}</template>
 					<template #prefix>@</template>
 				</FormInput>
@@ -66,6 +66,7 @@
 import { Ref, computed, defineAsyncComponent, onMounted, ref, shallowRef } from 'vue';
 import * as Acct from 'misskey-js/built/acct';
 import { UserDetailed } from 'misskey-js/built/entities';
+import { debounce } from 'throttle-debounce';
 import * as os from '@/os';
 import { defaultStore } from '@/store';
 import { i18n } from '@/i18n';
@@ -218,6 +219,8 @@ const search = (): void => {
 		searchUsers.value = (users as UserDetailed[]);
 	});
 };
+
+const debouncedSearch = debounce(1000, search);
 //#endregion
 
 //#region recentUsers
