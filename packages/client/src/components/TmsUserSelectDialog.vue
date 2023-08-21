@@ -41,7 +41,7 @@
 			</div>
 			<div v-else>
 				<XUser
-					v-if="selectedUser"
+					v-if="selectedUser && !computedResult.users.some(resultUser => selectedUser?.id === resultUser.id)"
 					:key="selectedUser.id"
 					:user="selectedUser"
 					:selected="true"
@@ -51,6 +51,7 @@
 					v-for="resultUser in computedResult.users"
 					:key="resultUser.id"
 					:user="resultUser"
+					:selected="selectedUser?.id === resultUser.id"
 					@select="select"
 				/>
 			</div>
@@ -204,27 +205,18 @@ type ComputedResult = {
 	type: 'empty';
 };
 const computedResult = computed<ComputedResult>(() => {
-	const excludeSelectedUser = <T extends UserDetailed[]>(users: T): T => {
-		if (selectedUser.value == null) return users;
-		return users.filter(user => selectedUser.value?.id !== user.id) as T; 
-	};
-
-	const excludedSearchUsers = excludeSelectedUser(searchUsers.value);
 	if (inputUserName.value !== '' || inputHostName.value !== '') {
 		return {
 			type: 'search',
-			users: excludedSearchUsers,
+			users: searchUsers.value,
 		};
 	}
-
-	const excludedRecentUsers = excludeSelectedUser(recentUsers.value);
-	if (excludedRecentUsers.length !== 0) {
+	if (recentUsers.value.length !== 0) {
 		return {
 			type: 'recent',
-			users: excludedRecentUsers,
+			users: recentUsers.value,
 		};
 	}
-
 	return {
 		type: 'empty',
 	};
