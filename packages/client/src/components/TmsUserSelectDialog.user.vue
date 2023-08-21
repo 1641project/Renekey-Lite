@@ -1,6 +1,8 @@
 <template>
 <div
-	:class="['_button', $style.user]"
+	:class="['_button', $style.user, {
+		[$style.selected]: selected,
+	}]"
 	@click="select()"
 >
 	<MkAvatar :user="user" :class="$style.avatar" indicator/>
@@ -16,6 +18,7 @@ import { UserDetailed } from 'misskey-js/built/entities';
 
 const props = defineProps<{
 	user: UserDetailed;
+	selected?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -37,6 +40,11 @@ const select = (): void => {
 
 	&:hover {
 		background: var(--X7);
+	}
+
+	&.selected {
+		background: var(--accent);
+		color: var(--fgOnAccent);
 	}
 }
 

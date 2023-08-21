@@ -1,24 +1,22 @@
 <template>
 <MkModalWindow
 	ref="dialogEl"
+	:with-ok-button="true"
+	:ok-button-disabled="selectedUser == null"
 	@click="cancel()"
 	@close="cancel()"
+	@ok="ok()"
 	@closed="emit('closed')"
 >
 	<template #header>{{ i18n.ts.selectUser }}</template>
-	<div
-		:class="['_gaps', $style.root, {
-			[$style.disabled]: isSelected,
-			_ghost: isSelected,
-		}]"
-	>
+	<div class="_gaps">
 		<div :class="$style.form">
 			<FormSplit :min-width="128">
-				<FormInput v-model="inputUserName" :autofocus="true" :debounce="false" :disabled="isSelected" @update:model-value="debouncedSearch">
+				<FormInput v-model="inputUserName" :autofocus="true" :debounce="false" @update:model-value="debouncedSearch">
 					<template #label>{{ i18n.ts.username }}</template>
 					<template #prefix>@</template>
 				</FormInput>
-				<FormInput v-model="inputHostName" :debounce="false" :datalist="[hostname]" :disabled="isSelected" @update:model-value="debouncedSearch">
+				<FormInput v-model="inputHostName" :debounce="false" :datalist="[hostname]" @update:model-value="debouncedSearch">
 					<template #label>{{ i18n.ts.host }}</template>
 					<template #prefix>@</template>
 				</FormInput>
@@ -27,7 +25,7 @@
 		<div class="_gaps">
 			<div
 				:class="['_button', $style.matchUser]"
-				@click="showMatchUser ? matchUserOk() : lookupUser()"
+				@click="showMatchUser ? matchUserSelect() : lookupUserSelect()"
 			>
 				<template v-if="showMatchUser">
 					<div>{{ i18n.ts.lookup }}:</div>
@@ -37,25 +35,24 @@
 					<div>{{ i18n.ts.lookup }}<MkEllipsis static/></div>
 				</template>
 			</div>
-			<div v-if="showSearchUsers">
-				<XUser
-					v-for="searchUser in searchUsers"
-					:key="searchUser.id"
-					:user="searchUser"
-					@select="ok"
-				/>
-			</div>
-			<div v-if="showRecentUsers">
-				<XUser
-					v-for="recentUser in recentUsers"
-					:key="recentUser.id"
-					:user="recentUser"
-					@select="ok"
-				/>
-			</div>
-			<div v-if="!showSearchUsers && !showRecentUsers" class="_fullinfo">
+			<div v-if="computedResult.type === 'empty'" class="_fullinfo">
 				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
 				<div>{{ i18n.ts.nothing }}</div>
+			</div>
+			<div v-else>
+				<XUser
+					v-if="selectedUser"
+					:key="selectedUser.id"
+					:user="selectedUser"
+					:selected="true"
+					@select="deselect"
+				/>
+				<XUser
+					v-for="resultUser in computedResult.users"
+					:key="resultUser.id"
+					:user="resultUser"
+					@select="select"
+				/>
 			</div>
 		</div>
 	</div>
@@ -91,15 +88,23 @@ const emit = defineEmits<{
 }>();
 
 const dialogEl = shallowRef<InstanceType<typeof MkModalWindow>>();
-const isSelected = ref(false);
 
-const ok = (newUser: UserDetailed, force?: boolean): void => {
-	if (!force && isSelected.value) return;
-	isSelected.value = true;
+const selectedUser: Ref<UserDetailed | null> = ref(null);
 
-	emit('ok', newUser);
+const ok = (): void => {
+	if (selectedUser.value == null) return;
+
+	emit('ok', selectedUser.value);
 	dialogEl.value?.close();
-	updateRecentlyUsedUsers(newUser);
+	updateRecentlyUsedUsers(selectedUser.value);
+};
+
+const select = (selectUser: UserDetailed): void => {
+	selectedUser.value = selectUser;
+};
+
+const deselect = (): void => {
+	selectedUser.value = null;
 };
 
 const cancel = (): void => {
@@ -123,45 +128,36 @@ const onRejected = (err: unknown): void => {
 		id: string;
 		message: string;
 	};
-
-	isSelected.value = false;
-
 	os.alert({
 		type: 'error',
 		text: `${message}\n${id}`,
 	});
 };
 
-const matchUserOk = async (): Promise<void> => {
-	if (isSelected.value) return;
-	isSelected.value = true;
-
+const matchUserSelect = async (): Promise<void> => {
 	const { username, host } = matchUser.value;
-	os.api('users/show', { username, host: host ?? undefined }).then(matchedUser => {
-		ok(matchedUser, true);
+	os.api('users/show', {
+		username,
+		host: host ?? undefined,
+	}).then(matchedUser => {
+		select(matchedUser);
 	}).catch(onRejected);
 };
 
-const lookupUser = async (): Promise<void> => {
-	if (isSelected.value) return;
-
+const lookupUserSelect = async (): Promise<void> => {
 	const { canceled, result } = await os.inputText({
 		title: i18n.ts.usernameOrUserId,
 	});
 	if (canceled) return;
 	if (result === '') return;
 
-	isSelected.value = true;
-
 	if (result.startsWith('http://') || result.startsWith('https://')) {
 		os.api('ap/show', {
 			uri: result,
 		}).then(res => {
 			if (res.type === 'User') {
-				ok(res.object, true);
+				select(res.object);
 			} else {
-				isSelected.value = false;
-
 				os.alert({
 					type: 'error',
 					text: `${result} is not User.`,
@@ -179,7 +175,7 @@ const lookupUser = async (): Promise<void> => {
 			for (const result of results) {
 				if (!resolved && result.status === 'fulfilled') {
 					resolved = true;
-					ok(result.value, true);
+					select(result.value);
 					break;
 				}
 			}
@@ -197,11 +193,46 @@ const lookupUser = async (): Promise<void> => {
 };
 //#endregion
 
+//#region resultUsers
+type ComputedResult = {
+	type: 'search';
+	users: UserDetailed[];
+} | {
+	type: 'recent';
+	users: UserDetailed[];
+} | {
+	type: 'empty';
+};
+const computedResult = computed<ComputedResult>(() => {
+	const excludeSelectedUser = <T extends UserDetailed[]>(users: T): T => {
+		if (selectedUser.value == null) return users;
+		return users.filter(user => selectedUser.value?.id !== user.id) as T; 
+	};
+
+	const excludedSearchUsers = excludeSelectedUser(searchUsers.value);
+	if (inputUserName.value !== '' || inputHostName.value !== '') {
+		return {
+			type: 'search',
+			users: excludedSearchUsers,
+		};
+	}
+
+	const excludedRecentUsers = excludeSelectedUser(recentUsers.value);
+	if (excludedRecentUsers.length !== 0) {
+		return {
+			type: 'recent',
+			users: excludedRecentUsers,
+		};
+	}
+
+	return {
+		type: 'empty',
+	};
+});
+//#endregion
+
 //#region searchUsers
 const searchUsers: Ref<UserDetailed[]> = ref([]);
-const showSearchUsers = computed(() => {
-	return searchUsers.value.length !== 0;
-});
 
 const inputUserName = ref('');
 const inputHostName = ref('');
@@ -227,9 +258,6 @@ const debouncedSearch = debounce(1000, search);
 
 //#region recentUsers
 const recentUsers: Ref<UserDetailed[]> = ref([]);
-const showRecentUsers = computed(() => {
-	return inputUserName.value === '' && inputHostName.value === '' && recentUsers.value.length !== 0;
-});
 
 onMounted(() => {
 	os.api('users/show', {
@@ -252,10 +280,6 @@ const updateRecentlyUsedUsers = (newUser: UserDetailed): string[] => {
 </script>
 
 <style lang="scss" module>
-.root.disabled {
-	opacity: 0.5;
-}
-
 .form {
 	padding: 0 var(--root-margin);
 }
