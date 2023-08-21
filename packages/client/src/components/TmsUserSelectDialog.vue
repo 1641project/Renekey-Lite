@@ -37,7 +37,7 @@
 			</div>
 			<div>
 				<XUser
-					v-if="selectedUser && hasSelectedUser"
+					v-if="selectedUser && !hasSelectedUser"
 					:key="selectedUser.id"
 					:user="selectedUser"
 					:selected="true"
