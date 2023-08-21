@@ -78,9 +78,11 @@ import MkModalWindow from '@/components/MkModalWindow.vue';
 
 const XUser = defineAsyncComponent(() => import('@/components/TmsUserSelectDialog.user.vue'));
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	includeSelf?: boolean;
-}>();
+}>(), {
+	includeSelf: true,
+});
 
 const emit = defineEmits<{
 	(ev: 'ok', selected: UserDetailed): void;
