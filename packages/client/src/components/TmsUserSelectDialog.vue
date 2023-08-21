@@ -6,21 +6,29 @@
 	@closed="emit('closed')"
 >
 	<template #header>{{ i18n.ts.selectUser }}</template>
-	<div class="_gaps">
+	<div
+		:class="['_gaps', $style.root, {
+			[$style.disabled]: isSelected,
+			_ghost: isSelected,
+		}]"
+	>
 		<div :class="$style.form">
 			<FormSplit :min-width="128">
-				<FormInput v-model="inputUserName" :autofocus="true" @update:model-value="search">
+				<FormInput v-model="inputUserName" :autofocus="true" :disabled="isSelected" @update:model-value="search">
 					<template #label>{{ i18n.ts.username }}</template>
 					<template #prefix>@</template>
 				</FormInput>
-				<FormInput v-model="inputHostName" :datalist="[hostname]" @update:model-value="search">
+				<FormInput v-model="inputHostName" :datalist="[hostname]" :disabled="isSelected" @update:model-value="search">
 					<template #label>{{ i18n.ts.host }}</template>
 					<template #prefix>@</template>
 				</FormInput>
 			</FormSplit>
 		</div>
 		<div class="_gaps">
-			<div :class="['_button', $style.matchUser]" @click="showMatchUser ? matchUserOk() : lookupUser()">
+			<div
+				:class="['_button', $style.matchUser]"
+				@click="showMatchUser ? matchUserOk() : lookupUser()"
+			>
 				<template v-if="showMatchUser">
 					<div>{{ i18n.ts.lookup }}:</div>
 					<div><MkAcct :user="matchUser" detail/></div>
@@ -30,10 +38,20 @@
 				</template>
 			</div>
 			<div v-if="showSearchUsers">
-				<XUser v-for="searchUser in searchUsers" :key="searchUser.id" :user="searchUser" @select="ok"/>
+				<XUser
+					v-for="searchUser in searchUsers"
+					:key="searchUser.id"
+					:user="searchUser"
+					@select="ok"
+				/>
 			</div>
 			<div v-if="showRecentUsers">
-				<XUser v-for="recentUser in recentUsers" :key="recentUser.id" :user="recentUser" @select="ok"/>
+				<XUser
+					v-for="recentUser in recentUsers"
+					:key="recentUser.id"
+					:user="recentUser"
+					@select="ok"
+				/>
 			</div>
 			<div v-if="!showSearchUsers && !showRecentUsers" class="_fullinfo">
 				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
@@ -45,7 +63,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, computed, onMounted, ref, shallowRef } from 'vue';
+import { Ref, computed, defineAsyncComponent, onMounted, ref, shallowRef } from 'vue';
 import * as Acct from 'misskey-js/built/acct';
 import { UserDetailed } from 'misskey-js/built/entities';
 import * as os from '@/os';
@@ -56,7 +74,8 @@ import { hostname } from '@/config';
 import FormInput from '@/components/form/input.vue';
 import FormSplit from '@/components/form/split.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
-import XUser from '@/components/TmsUserSelectDialog.user.vue';
+
+const XUser = defineAsyncComponent(() => import('@/components/TmsUserSelectDialog.user.vue'));
 
 const props = defineProps<{
 	includeSelf?: boolean;
@@ -204,7 +223,7 @@ const search = (): void => {
 //#region recentUsers
 const recentUsers: Ref<UserDetailed[]> = ref([]);
 const showRecentUsers = computed(() => {
-	return searchUsers.value.length === 0 && recentUsers.value.length !== 0;
+	return inputUserName.value === '' && inputHostName.value === '' && recentUsers.value.length !== 0;
 });
 
 onMounted(() => {
@@ -228,6 +247,10 @@ const updateRecentlyUsedUsers = (newUser: UserDetailed): string[] => {
 </script>
 
 <style lang="scss" module>
+.root.disabled {
+	opacity: 0.5;
+}
+
 .form {
 	padding: 0 var(--root-margin);
 }
