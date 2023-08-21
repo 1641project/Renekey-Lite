@@ -35,28 +35,30 @@
 					<div>{{ i18n.ts.lookup }}<MkEllipsis static/></div>
 				</template>
 			</div>
-			<div v-if="computedResult.type === 'empty'" class="_fullinfo">
-				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
-				<div>{{ i18n.ts.nothing }}</div>
-			</div>
-			<div v-else-if="computedResult.type === 'wait'">
-				<MkLoading/>
-			</div>
-			<div v-else>
+			<div>
 				<XUser
-					v-if="selectedUser && !computedResult.users.some(resultUser => selectedUser?.id === resultUser.id)"
+					v-if="selectedUser && hasSelectedUser"
 					:key="selectedUser.id"
 					:user="selectedUser"
 					:selected="true"
 					@select="deselect"
 				/>
-				<XUser
-					v-for="resultUser in computedResult.users"
-					:key="resultUser.id"
-					:user="resultUser"
-					:selected="selectedUser?.id === resultUser.id"
-					@select="select"
-				/>
+				<div v-if="computedResult.type === 'empty'" class="_fullinfo">
+					<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+					<div>{{ i18n.ts.nothing }}</div>
+				</div>
+				<template v-else-if="computedResult.type === 'wait'">
+					<MkLoading/>
+				</template>
+				<template v-else>
+					<XUser
+						v-for="resultUser in computedResult.users"
+						:key="resultUser.id"
+						:user="resultUser"
+						:selected="selectedUser?.id === resultUser.id"
+						@select="select"
+					/>
+				</template>
 			</div>
 		</div>
 	</div>
@@ -237,6 +239,13 @@ const computedResult = computed<ComputedResult>(() => {
 		type: 'empty',
 	};
 });
+
+const hasSelectedUser = computed(() => {
+	if (selectedUser.value == null) return false;
+	if (computedResult.value.type === 'empty') return false;
+	if (computedResult.value.type === 'wait') return false;
+	return computedResult.value.users.some(resultUser => selectedUser.value?.id === resultUser.id);
+});
 //#endregion
 
 //#region searchUsers
@@ -246,10 +255,8 @@ const inputUserName = ref('');
 const inputHostName = ref('');
 
 const search = (): void => {
-	if (inputUserName.value === '' && inputHostName.value === '') {
-		searchUsers.value = null;
-		return;
-	}
+	searchUsers.value = null;
+	if (inputUserName.value === '' && inputHostName.value === '') return;
 
 	os.api('users/search-by-username-and-host', {
 		username: inputUserName.value,
