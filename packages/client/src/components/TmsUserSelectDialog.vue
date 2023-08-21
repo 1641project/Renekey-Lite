@@ -8,7 +8,7 @@
 	<template #header>{{ i18n.ts.selectUser }}</template>
 	<div class="_gaps">
 		<div :class="$style.form">
-			<FormSplit :min-width="170">
+			<FormSplit :min-width="128">
 				<FormInput v-model="inputUserName" :autofocus="true" @update:model-value="search">
 					<template #label>{{ i18n.ts.username }}</template>
 					<template #prefix>@</template>
