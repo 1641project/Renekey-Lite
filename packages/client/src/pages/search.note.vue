@@ -6,20 +6,32 @@
 		</FormInput>
 		<MkFolder>
 			<template #label>{{ i18n.ts.options }}</template>
-
-			<MkFolder :default-open="true">
-				<template #label>{{ i18n.ts.specifyUser }}</template>
-				<template v-if="searchUser" #suffix><MkUserName :user="searchUser"/></template>
-				<div style="text-align: center;" class="_gaps">
-					<div v-if="searchUser"><MkUserName :user="searchUser"/></div>
-					<div>
-						<MkButton v-if="searchUser == null" primary rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
-						<MkButton v-else danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
+			<div>
+				<FormSection first>
+					<template #label>{{ i18n.ts.specifyUser }}</template>
+					<div v-if="searchUser" class="_gaps_s">
+						<div :class="$style.searchUser">
+							<MkAvatar :user="searchUser" :class="$style.searchUseravatar" indicator/>
+							<div :class="$style.searchUserBody">
+								<MkUserName :user="searchUser" :class="['_nowrap', $style.searchUserName]"/>
+								<MkAcct :user="searchUser" :class="['_nowrap', $style.searchUserAcct]" detail/>
+							</div>
+						</div>
+						<div class="_buttonsCenter">
+							<MkButton primary danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
+						</div>
 					</div>
-				</div>
-			</MkFolder>
+					<div v-else class="_gaps_s">
+						<div class="_buttonsCenter">
+							<MkButton primary rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+						</div>
+					</div>
+				</FormSection>
+			</div>
 		</MkFolder>
-		<MkButton large primary gradate rounded style="margin: 0 auto;" :disabled="!searchEnabled" @click="search">{{ i18n.ts.search }}</MkButton>
+		<div class="_buttonsCenter">
+			<MkButton large primary gradate rounded :disabled="!searchEnabled" @click="search">{{ i18n.ts.search }}</MkButton>
+		</div>
 	</div>
 
 	<MkFoldableSection v-if="notePagination">
@@ -33,6 +45,7 @@
 import { computed, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import FormInput from '@/components/form/input.vue';
+import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
@@ -100,3 +113,32 @@ const search = async (): Promise<void> => {
 	counter.value++;
 };
 </script>
+
+<style lang="scss" module>
+.searchUser {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	padding: 8px;
+	font-size: 14px;
+}
+
+.searchUserBody {
+	min-width: 0;
+}
+
+.searchUserAvatar {
+	width: 45px;
+	height: 45px;
+}
+
+.searchUserName {
+	display: block;
+	font-weight: bold;
+}
+
+.searchUserAcct {
+	display: block;
+	opacity: 0.5;
+}
+</style>

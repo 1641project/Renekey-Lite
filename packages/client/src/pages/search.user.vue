@@ -6,14 +6,19 @@
 		</FormInput>
 		<MkFolder>
 			<template #label>{{ i18n.ts.options }}</template>
-
-			<FormRadios v-model="searchOrigin">
-				<option value="combined">{{ i18n.ts.all }}</option>
-				<option value="local">{{ i18n.ts.local }}</option>
-				<option value="remote">{{ i18n.ts.remote }}</option>
-			</FormRadios>
+			<div>
+				<FormSection first>
+					<FormRadios v-model="searchOrigin">
+						<option value="combined">{{ i18n.ts.all }}</option>
+						<option value="local">{{ i18n.ts.local }}</option>
+						<option value="remote">{{ i18n.ts.remote }}</option>
+					</FormRadios>
+				</FormSection>
+			</div>
 		</MkFolder>
-		<MkButton large primary gradate rounded style="margin: 0 auto;" :disabled="!searchEnabled" @click="search">{{ i18n.ts.search }}</MkButton>
+		<div class="_buttonsCenter">
+			<MkButton large primary gradate rounded :disabled="!searchEnabled" @click="search">{{ i18n.ts.search }}</MkButton>
+		</div>
 	</div>
 
 	<MkFoldableSection v-if="userPagination">
@@ -27,6 +32,7 @@
 import { computed, ref } from 'vue';
 import FormInput from '@/components/form/input.vue';
 import FormRadios from '@/components/form/radios.vue';
+import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
