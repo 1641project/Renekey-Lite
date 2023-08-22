@@ -8,22 +8,20 @@
 			<template #label>{{ i18n.ts.options }}</template>
 			<div>
 				<FormSection first>
-					<template #label>{{ i18n.ts.specifyUser }}</template>
-					<div v-if="searchUser" class="_gaps_s">
-						<div :class="$style.searchUser">
+					<div class="_gaps_s">
+						<div :class="$style.optionHeader">
+							<div :class="$style.optionHeaderTitle">{{ i18n.ts.specifyUser }}</div>
+							<div :class="$style.optionHeaderButton">
+								<MkButton v-if="searchUser" primary danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
+								<MkButton v-else primary rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+							</div>
+						</div>
+						<div v-if="searchUser" :class="$style.searchUser">
 							<MkAvatar :user="searchUser" :class="$style.searchUserAvatar" indicator/>
 							<div :class="$style.searchUserBody">
 								<MkUserName :user="searchUser" :class="['_nowrap', $style.searchUserName]"/>
 								<MkAcct :user="searchUser" :class="['_nowrap', $style.searchUserAcct]" detail/>
 							</div>
-						</div>
-						<div class="_buttonsCenter">
-							<MkButton primary danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
-						</div>
-					</div>
-					<div v-else class="_gaps_s">
-						<div class="_buttonsCenter">
-							<MkButton primary rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
 						</div>
 					</div>
 				</FormSection>
@@ -115,6 +113,21 @@ const search = async (): Promise<void> => {
 </script>
 
 <style lang="scss" module>
+.optionHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+}
+
+.optionHeaderTitle {
+	font-weight: bold;
+}
+
+.optionHeaderButton {
+	flex-shrink: 0;
+}
+
 .searchUser {
 	display: flex;
 	gap: 8px;
