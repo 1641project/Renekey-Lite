@@ -3,7 +3,7 @@
 	:class="['_button', $style.user, {
 		[$style.selected]: selected,
 	}]"
-	@click="onClick()"
+	@click="select()"
 >
 	<MkAvatar :user="user" :class="$style.avatar" indicator/>
 	<div :class="$style.userBody">
@@ -23,15 +23,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	(ev: 'select', user: UserDetailed): void;
-	(ev: 'deselect', user: UserDetailed): void;
 }>();
 
-const onClick = (): void => {
-	if (props.selected) {
-		emit('deselect', props.user);
-	} else {
-		emit('select', props.user);
-	}
+const select = (): void => {
+	emit('select', props.user);
 };
 </script>
 

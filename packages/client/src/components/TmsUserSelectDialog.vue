@@ -42,7 +42,6 @@
 					:user="selectedUser"
 					:selected="true"
 					@select="select"
-					@deselect="deselect"
 				/>
 				<div v-if="computedResult.type === 'empty'" class="_fullinfo">
 					<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
@@ -58,7 +57,6 @@
 						:user="resultUser"
 						:selected="selectedUser?.id === resultUser.id"
 						@select="select"
-						@deselect="deselect"
 					/>
 				</template>
 			</div>
@@ -97,7 +95,16 @@ const emit = defineEmits<{
 
 const dialogEl = shallowRef<InstanceType<typeof MkModalWindow>>();
 
+//#region select, handler
 const selectedUser: Ref<UserDetailed | null> = ref(null);
+
+const select = (selectUser: UserDetailed): void => {
+	if (selectedUser.value?.id === selectUser.id) {
+		selectedUser.value = null;
+	} else {
+		selectedUser.value = selectUser;
+	}
+};
 
 const ok = (): void => {
 	if (selectedUser.value == null) return;
@@ -107,18 +114,11 @@ const ok = (): void => {
 	updateRecentlyUsedUsers(selectedUser.value);
 };
 
-const select = (selectUser: UserDetailed): void => {
-	selectedUser.value = selectUser;
-};
-
-const deselect = (): void => {
-	selectedUser.value = null;
-};
-
 const cancel = (): void => {
 	emit('cancel');
 	dialogEl.value?.close();
 };
+//#endregion
 
 //#region matchUser
 const matchUser = computed(() => {
@@ -208,6 +208,51 @@ const lookupUserSelect = async (): Promise<void> => {
 };
 //#endregion
 
+//#region searchUsers
+const searchUsers: Ref<UserDetailed[] | null> = ref(null);
+
+const inputUserName = ref('');
+const inputHostName = ref('');
+
+const search = (): void => {
+	searchUsers.value = null;
+	if (inputUserName.value === '' && inputHostName.value === '') return;
+
+	os.api('users/search-by-username-and-host', {
+		username: inputUserName.value,
+		host: inputHostName.value,
+		limit: 16,
+		detail: true,
+	}).then(users => {
+		searchUsers.value = (users as UserDetailed[]);
+	});
+};
+
+const debouncedSearch = debounce(1000, search);
+//#endregion
+
+//#region recentUsers
+const recentUsers: Ref<UserDetailed[] | null> = ref(null);
+
+onMounted(() => {
+	os.api('users/show', {
+		userIds: defaultStore.state.recentlyUsedUsers,
+	}).then(users => {
+		if (props.includeSelf && $i && !users.some(x => x.id === $i?.id)) {
+			recentUsers.value = [$i, ...users];
+		} else {
+			recentUsers.value = users;
+		}
+	});
+});
+
+const updateRecentlyUsedUsers = (newUser: UserDetailed): string[] => {
+	const userIds = [...new Set([newUser.id, ...defaultStore.state.recentlyUsedUsers])].splice(0, 16);
+	defaultStore.set('recentlyUsedUsers', userIds);
+	return userIds;
+};
+//#endregion
+
 //#region resultUsers
 type ComputedResult = {
 	type: 'search';
@@ -255,51 +300,6 @@ const hasSelectedUser = computed(() => {
 	if (computedResult.value.type === 'wait') return false;
 	return computedResult.value.users.some(resultUser => selectedUser.value?.id === resultUser.id);
 });
-//#endregion
-
-//#region searchUsers
-const searchUsers: Ref<UserDetailed[] | null> = ref(null);
-
-const inputUserName = ref('');
-const inputHostName = ref('');
-
-const search = (): void => {
-	searchUsers.value = null;
-	if (inputUserName.value === '' && inputHostName.value === '') return;
-
-	os.api('users/search-by-username-and-host', {
-		username: inputUserName.value,
-		host: inputHostName.value,
-		limit: 16,
-		detail: true,
-	}).then(users => {
-		searchUsers.value = (users as UserDetailed[]);
-	});
-};
-
-const debouncedSearch = debounce(1000, search);
-//#endregion
-
-//#region recentUsers
-const recentUsers: Ref<UserDetailed[] | null> = ref(null);
-
-onMounted(() => {
-	os.api('users/show', {
-		userIds: defaultStore.state.recentlyUsedUsers,
-	}).then(users => {
-		if (props.includeSelf && $i && !users.some(x => x.id === $i?.id)) {
-			recentUsers.value = [$i, ...users];
-		} else {
-			recentUsers.value = users;
-		}
-	});
-});
-
-const updateRecentlyUsedUsers = (newUser: UserDetailed): string[] => {
-	const userIds = [...new Set([newUser.id, ...defaultStore.state.recentlyUsedUsers])].splice(0, 16);
-	defaultStore.set('recentlyUsedUsers', userIds);
-	return userIds;
-};
 //#endregion
 </script>
 
