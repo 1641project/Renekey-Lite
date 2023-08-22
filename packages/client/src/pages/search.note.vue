@@ -113,7 +113,8 @@ const search = async (): Promise<void> => {
 .optionHeader {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	justify-content: center;
+	gap: 16px;
 }
 
 .optionHeaderTitle {
@@ -126,8 +127,9 @@ const search = async (): Promise<void> => {
 
 .searchUser {
 	display: flex;
-	gap: 8px;
 	align-items: center;
+	justify-content: center;
+	gap: 8px;
 	padding: 8px;
 	font-size: 14px;
 }
