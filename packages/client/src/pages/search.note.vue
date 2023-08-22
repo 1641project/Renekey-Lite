@@ -1,20 +1,20 @@
 <template>
 <div class="_gaps">
 	<div class="_gaps">
-		<MkInput v-model="searchQuery" :large="true" :autofocus="true" type="search" @enter="searchEnabled ? search() : null">
+		<FormInput v-model="searchQuery" large autofocus type="search" @enter="searchEnabled ? search() : null">
 			<template #prefix><i class="ti ti-search"></i></template>
-		</MkInput>
+		</FormInput>
 		<MkFolder>
 			<template #label>{{ i18n.ts.options }}</template>
 
 			<MkFolder :default-open="true">
 				<template #label>{{ i18n.ts.specifyUser }}</template>
-				<template v-if="user" #suffix><MkUserName :user="user"/></template>
+				<template v-if="searchUser" #suffix><MkUserName :user="searchUser"/></template>
 				<div style="text-align: center;" class="_gaps">
-					<div v-if="user"><MkUserName :user="user"/></div>
+					<div v-if="searchUser"><MkUserName :user="searchUser"/></div>
 					<div>
-						<MkButton v-if="user == null" primary rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
-						<MkButton v-else danger rounded inline @click="user = null">{{ i18n.ts.remove }}</MkButton>
+						<MkButton v-if="searchUser == null" primary rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+						<MkButton v-else danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
 					</div>
 				</div>
 			</MkFolder>
@@ -30,9 +30,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import * as Misskey from 'misskey-js';
-import MkInput from '@/components/form/input.vue';
+import FormInput from '@/components/form/input.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
@@ -43,28 +43,29 @@ import { useRouter } from '@/router';
 
 useRouter();
 
-let counter = $ref(0);
+const counter = ref(0);
 
-let searchQuery = $ref('');
-let user = $ref<Misskey.entities.UserDetailed | null>(null);
+const searchQuery = ref('');
+const searchUser = ref<Misskey.entities.UserDetailed | null>(null);
 
-let prevSearchQuery = $ref<string | null>(null);
-let prevUserId = $ref<string | null>(null);
+// TODO: 重複チェックは必要か？
+// const prevSearchQuery = ref<string | null>(null);
+// const prevSearchUserId = ref<string | null>(null);
 
 const searchEnabled = computed<boolean>(() => {
 	// 入力されていなければ無効
-	if (!searchQuery) return false;
+	if (!searchQuery.value) return false;
 
-	// 初期状態なら有効
-	if (prevSearchQuery == null) return true;
+	// // 初期状態なら有効
+	// if (prevSearchQuery.value == null) return true;
 
-	// 入力内容が同じなら無効
-	if (searchQuery === prevSearchQuery && user?.id === prevUserId) return false;
+	// // 入力内容が同じなら無効
+	// if (searchQuery.value === prevSearchQuery.value && searchUser.value?.id === prevSearchUserId.value) return false;
 
 	return true;
 });
 
-let notePagination = $ref<{
+const notePagination = ref<{
 	endpoint: 'notes/search';
 	limit: 10;
 	params: {
@@ -75,19 +76,19 @@ let notePagination = $ref<{
 
 const selectUser = (): void => {
 	os.selectUser().then(_user => {
-		user = _user;
+		searchUser.value = _user;
 	});
 };
 
 const search = async (): Promise<void> => {
 	const query = searchQuery.toString().trim();
-	const userId = user?.id ?? null;
+	const userId = searchUser.value?.id ?? null;
 
 	if (!query) {
-		notePagination = null;
+		notePagination.value = null;
 	}
 
-	notePagination = {
+	notePagination.value = {
 		endpoint: 'notes/search',
 		limit: 10,
 		params: {
@@ -96,6 +97,6 @@ const search = async (): Promise<void> => {
 		},
 	};
 
-	counter++;
+	counter.value++;
 };
 </script>
