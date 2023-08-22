@@ -8,10 +8,12 @@
 			<template #label>{{ i18n.ts.options }}</template>
 			<div class="_gaps_s">
 				<div class="_gaps_s">
-					<div>{{ i18n.ts.specifyUser }}</div>
-					<div class="_buttonsCenter">
-						<MkButton v-if="searchUser" danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
-						<MkButton v-else rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+					<div :class="$style.optionHeader">
+						<div :class="$style.optionHeaderTitle">{{ i18n.ts.specifyUser }}</div>
+						<div :class="['_buttonsCenter', $style.optionHeaderButton]">
+							<MkButton v-if="searchUser" danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
+							<MkButton v-else rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+						</div>
 					</div>
 					<div v-if="searchUser" :class="$style.searchUser">
 						<MkAvatar :user="searchUser" :class="$style.searchUserAvatar" indicator/>
@@ -108,6 +110,20 @@ const search = async (): Promise<void> => {
 </script>
 
 <style lang="scss" module>
+.optionHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.optionHeaderTitle {
+	font-weight: bold;
+}
+
+.optionHeaderButton {
+	flex-shrink: 0;
+}
+
 .searchUser {
 	display: flex;
 	gap: 8px;
