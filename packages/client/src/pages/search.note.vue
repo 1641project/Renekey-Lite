@@ -11,7 +11,7 @@
 					<template #label>{{ i18n.ts.specifyUser }}</template>
 					<div v-if="searchUser" class="_gaps_s">
 						<div :class="$style.searchUser">
-							<MkAvatar :user="searchUser" :class="$style.searchUseravatar" indicator/>
+							<MkAvatar :user="searchUser" :class="$style.searchUserAvatar" indicator/>
 							<div :class="$style.searchUserBody">
 								<MkUserName :user="searchUser" :class="['_nowrap', $style.searchUserName]"/>
 								<MkAcct :user="searchUser" :class="['_nowrap', $style.searchUserAcct]" detail/>
