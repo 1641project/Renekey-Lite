@@ -6,14 +6,12 @@
 		</FormInput>
 		<MkFolder>
 			<template #label>{{ i18n.ts.options }}</template>
-			<div>
-				<FormSection first>
-					<FormRadios v-model="searchOrigin">
-						<option value="combined">{{ i18n.ts.all }}</option>
-						<option value="local">{{ i18n.ts.local }}</option>
-						<option value="remote">{{ i18n.ts.remote }}</option>
-					</FormRadios>
-				</FormSection>
+			<div class="_gaps_s">
+				<FormRadios v-model="searchOrigin">
+					<option value="combined">{{ i18n.ts.all }}</option>
+					<option value="local">{{ i18n.ts.local }}</option>
+					<option value="remote">{{ i18n.ts.remote }}</option>
+				</FormRadios>
 			</div>
 		</MkFolder>
 		<div class="_buttonsCenter">
@@ -32,7 +30,6 @@
 import { computed, ref } from 'vue';
 import FormInput from '@/components/form/input.vue';
 import FormRadios from '@/components/form/radios.vue';
-import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
