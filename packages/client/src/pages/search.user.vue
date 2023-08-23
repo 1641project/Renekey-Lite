@@ -1,7 +1,7 @@
 <template>
 <div class="_gaps">
 	<div class="_gaps">
-		<FormInput v-model="searchQuery" large autofocus type="search" @enter="searchEnabled ? search() : null">
+		<FormInput v-model="searchQuery" large autofocus type="search" @enter="search">
 			<template #prefix><i class="ti ti-search"></i></template>
 		</FormInput>
 		<MkFolder>
@@ -42,11 +42,15 @@ useRouter();
 type SearchOrigin = 'combined' | 'local' | 'remote';
 
 const counter = ref(0);
+const searched = ref(false);
 
 const searchQuery = ref<string>('');
 const searchOrigin = ref<SearchOrigin>('combined');
 
 const searchEnabled = computed<boolean>(() => {
+	// 検索済みであれば無効
+	if (searched.value) return false;
+
 	// 入力されていなければ無効
 	if (!searchQuery.value) return false;
 
@@ -63,11 +67,14 @@ const userPagination = ref<{
 } | null>(null);
 
 const search = async (): Promise<void> => {
+	if (!searchEnabled.value) return;
+
 	const query = searchQuery.value.trim();
 	const origin = searchOrigin.value;
 
 	if (!query) {
 		userPagination.value = null;
+		return;
 	}
 
 	userPagination.value = {
@@ -80,5 +87,8 @@ const search = async (): Promise<void> => {
 	};
 
 	counter.value++;
+
+	searched.value = true;
+	window.setTimeout(() => searched.value = false, 2000);
 };
 </script>
