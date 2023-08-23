@@ -7,22 +7,20 @@
 		<MkFolder>
 			<template #label>{{ i18n.ts.options }}</template>
 			<div class="_gaps_s">
-				<div class="_gaps_s">
-					<div :class="$style.optionHeader">
-						<div :class="$style.optionHeaderTitle">{{ i18n.ts.specifyUser }}</div>
-						<div :class="['_buttonsCenter', $style.optionHeaderButton]">
-							<MkButton v-if="searchUser" danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
-							<MkButton v-else rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
-						</div>
-					</div>
-					<div v-if="searchUser" :class="$style.searchUser">
+				<TmsBorderSection :active="searchUser != null">
+					<template #label>{{ i18n.ts.specifyUser }}</template>
+					<template #button>
+						<MkButton v-if="searchUser != null" danger rounded inline @click="searchUser = null">{{ i18n.ts.remove }}</MkButton>
+						<MkButton v-else rounded inline @click="selectUser">{{ i18n.ts.selectUser }}</MkButton>
+					</template>
+					<div v-if="searchUser != null" :class="$style.searchUser">
 						<MkAvatar :user="searchUser" :class="$style.searchUserAvatar" indicator/>
 						<div :class="$style.searchUserBody">
 							<MkUserName :user="searchUser" :class="['_nowrap', $style.searchUserName]"/>
 							<MkAcct :user="searchUser" :class="['_nowrap', $style.searchUserAcct]" detail/>
 						</div>
 					</div>
-				</div>
+				</TmsBorderSection>
 			</div>
 		</MkFolder>
 		<div class="_buttonsCenter">
@@ -45,6 +43,7 @@ import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkNotes from '@/components/MkNotes.vue';
+import TmsBorderSection from '@/components/TmsBorderSection.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
 import { useRouter } from '@/router';
@@ -100,32 +99,16 @@ const search = async (): Promise<void> => {
 </script>
 
 <style lang="scss" module>
-.optionHeader {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 16px;
-}
-
-.optionHeaderTitle {
-	font-weight: bold;
-}
-
-.optionHeaderButton {
-	flex-shrink: 0;
-}
-
 .searchUser {
 	display: flex;
 	align-items: center;
-	justify-content: center;
 	gap: 8px;
 	padding: 8px;
 	font-size: 14px;
 }
 
 .searchUserBody {
-	min-width: 0;
+	min-width: 0; // SEE: https://johnykei.net/front-end/css/flex-item-with-min-width-0-to-fix-overflowed-flexbox/
 }
 
 .searchUserAvatar {
