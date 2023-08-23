@@ -73,7 +73,7 @@ const userPagination = ref<{
 } | null>(null);
 
 const search = async (): Promise<void> => {
-	const query = searchQuery.toString().trim();
+	const query = searchQuery.value.trim();
 	const origin = searchOrigin.value;
 
 	if (!query) {

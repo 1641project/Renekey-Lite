@@ -89,7 +89,7 @@ const selectUser = (): void => {
 };
 
 const search = async (): Promise<void> => {
-	const query = searchQuery.toString().trim();
+	const query = searchQuery.value.trim();
 	const userId = searchUser.value?.id ?? null;
 
 	if (!query) {
