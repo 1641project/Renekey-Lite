@@ -5,7 +5,7 @@
 	}]"
 >
 	<div :class="$style.header">
-		<div v-if="$slots.header" :class="$style.headerLabel">
+		<div v-if="$slots.label" :class="$style.headerLabel">
 			<slot name="label"></slot>
 		</div>
 		<div v-if="$slots.button" :class="['_buttonsCenter', $style.headerButton]">
