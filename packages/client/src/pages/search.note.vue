@@ -28,6 +28,11 @@
 		</div>
 	</div>
 
+	<MkFoldableSection v-if="pickupNote">
+		<template #header>{{ i18n.ts._tms.pickup }}</template>
+		<MkNote :key="pickupNote.id" :note="pickupNote"/>
+	</MkFoldableSection>
+
 	<MkFoldableSection v-if="notePagination">
 		<template #header>{{ i18n.ts.searchResult }}</template>
 		<MkNotes :key="`search.note:${counter}`" :pagination="notePagination"/>
@@ -37,11 +42,12 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import * as Misskey from 'misskey-js';
+import { Note, UserDetailed } from 'misskey-js/built/entities';
 import FormInput from '@/components/form/input.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
+import MkNote from '@/components/MkNote.vue';
 import MkNotes from '@/components/MkNotes.vue';
 import TmsBorderSection from '@/components/TmsBorderSection.vue';
 import * as os from '@/os';
@@ -54,7 +60,7 @@ const counter = ref(0);
 const searched = ref(false);
 
 const searchQuery = ref('');
-const searchUser = ref<Misskey.entities.UserDetailed | null>(null);
+const searchUser = ref<UserDetailed | null>(null);
 
 const searchEnabled = computed<boolean>(() => {
 	// 検索済みであれば無効
@@ -66,6 +72,7 @@ const searchEnabled = computed<boolean>(() => {
 	return true;
 });
 
+const pickupNote = ref<Note | null>(null);
 const notePagination = ref<{
 	endpoint: 'notes/search';
 	limit: 10;
@@ -87,13 +94,16 @@ const search = async (): Promise<void> => {
 	const query = searchQuery.value.trim();
 	const userId = searchUser.value?.id ?? null;
 
-	if (!query) {
-		notePagination.value = null;
-		return;
-	}
+	pickupNote.value = null;
+	notePagination.value = null;
+
+	if (!query) return;
+
+	counter.value++;
+	searched.value = true;
 
 	notePagination.value = {
-		endpoint: 'notes/search',
+		endpoint: 'notes/search' as const,
 		limit: 10,
 		params: {
 			query,
@@ -101,10 +111,33 @@ const search = async (): Promise<void> => {
 		},
 	};
 
-	counter.value++;
+	const promiseFromPickup = pickup(query);
+	await waitForPromiseAndDelay(promiseFromPickup, 2000);
+	pickupNote.value = await promiseFromPickup;
 
-	searched.value = true;
-	window.setTimeout(() => searched.value = false, 2000);
+	searched.value = false;
+};
+
+const pickup = async (query: string): Promise<Note | null> => {
+	const fetchFromAp = async (): Promise<Note | null> => {
+		if (!(query.startsWith('http://') || query.startsWith('https://'))) return null;
+		const result = await os.api('ap/show', {
+			uri: query,
+		}).catch(() => null);
+		return result?.type === 'Note' ? result.object : null;
+	};
+
+	const fetchFromNoteId = async (): Promise<Note | null> => {
+		return os.api('notes/show', {
+			noteId: query,
+		}).catch(() => null);
+	};
+
+	return await fetchFromAp() ?? await fetchFromNoteId();
+};
+
+const waitForPromiseAndDelay = (prom: Promise<unknown>, delay: number): Promise<void> => {
+	return new Promise(r => window.setTimeout(() => prom.finally(r), delay));
 };
 </script>
 

@@ -19,6 +19,11 @@
 		</div>
 	</div>
 
+	<MkFoldableSection v-if="pickupUser">
+		<template #header>{{ i18n.ts._tms.pickup }}</template>
+		<MkUserInfo :key="pickupUser.id" :user="pickupUser"/>
+	</MkFoldableSection>
+
 	<MkFoldableSection v-if="userPagination">
 		<template #header>{{ i18n.ts.searchResult }}</template>
 		<MkUserList :key="`search.user:${counter}`" :pagination="userPagination"/>
@@ -28,12 +33,16 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import * as Acct from 'misskey-js/built/acct';
+import { UserDetailed } from 'misskey-js/built/entities';
 import FormInput from '@/components/form/input.vue';
 import FormRadios from '@/components/form/radios.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
+import MkUserInfo from '@/components/MkUserInfo.vue';
 import MkUserList from '@/components/MkUserList.vue';
+import * as os from '@/os';
 import { i18n } from '@/i18n';
 import { useRouter } from '@/router';
 
@@ -57,6 +66,7 @@ const searchEnabled = computed<boolean>(() => {
 	return true;
 });
 
+const pickupUser = ref<UserDetailed | null>(null);
 const userPagination = ref<{
 	endpoint: 'users/search';
 	limit: 10;
@@ -72,13 +82,16 @@ const search = async (): Promise<void> => {
 	const query = searchQuery.value.trim();
 	const origin = searchOrigin.value;
 
-	if (!query) {
-		userPagination.value = null;
-		return;
-	}
+	pickupUser.value = null;
+	userPagination.value = null;
+
+	if (!query) return;
+
+	counter.value++;
+	searched.value = true;
 
 	userPagination.value = {
-		endpoint: 'users/search',
+		endpoint: 'users/search' as const,
 		limit: 10,
 		params: {
 			query,
@@ -86,9 +99,41 @@ const search = async (): Promise<void> => {
 		},
 	};
 
-	counter.value++;
+	const promiseFromPickup = pickup(query);
+	await waitForPromiseAndDelay(promiseFromPickup, 2000);
+	pickupUser.value = await promiseFromPickup;
 
-	searched.value = true;
-	window.setTimeout(() => searched.value = false, 2000);
+	searched.value = false;
+};
+
+const pickup = async (query: string): Promise<UserDetailed | null> => {
+	const fetchFromAp = async (): Promise<UserDetailed | null> => {
+		if (!(query.startsWith('http://') || query.startsWith('https://'))) return null;
+		const result = await os.api('ap/show', {
+			uri: query,
+		}).catch(() => null);
+		return result?.type === 'User' ? result.object : null;
+	};
+
+	const fetchFromUsername = async (): Promise<UserDetailed | null> => {
+		const { username, host } = Acct.parse(query);
+		return os.api('users/show', {
+			username,
+			host: host ?? undefined,
+		}).catch(() => null);
+	};
+
+	const fetchFromUserId = async (): Promise<UserDetailed | null> => {
+		if (query.startsWith('@')) return null;
+		return os.api('users/show', {
+			userId: query,
+		}).catch(() => null);
+	};
+
+	return await fetchFromAp() ?? await fetchFromUsername() ?? await fetchFromUserId();
+};
+
+const waitForPromiseAndDelay = (prom: Promise<unknown>, delay: number): Promise<void> => {
+	return new Promise(r => window.setTimeout(() => prom.finally(r), delay));
 };
 </script>
