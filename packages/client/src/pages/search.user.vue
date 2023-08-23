@@ -21,7 +21,9 @@
 
 	<MkFoldableSection v-if="pickupUser">
 		<template #header>{{ i18n.ts._tms.pickup }}</template>
-		<MkUserInfo :key="pickupUser.id" :user="pickupUser"/>
+		<div :class="$style.pickupUser">
+			<MkUserInfo :key="pickupUser.id" :user="pickupUser"/>
+		</div>
 	</MkFoldableSection>
 
 	<MkFoldableSection v-if="userPagination">
@@ -137,3 +139,12 @@ const waitForPromiseAndDelay = (prom: Promise<unknown>, delay: number): Promise<
 	return new Promise(r => window.setTimeout(() => prom.finally(r), delay));
 };
 </script>
+
+<style lang="scss" module>
+.pickupUser {
+	background: var(--panel);
+	border-radius: var(--radius);
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
+}
+</style>

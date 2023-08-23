@@ -30,7 +30,9 @@
 
 	<MkFoldableSection v-if="pickupNote">
 		<template #header>{{ i18n.ts._tms.pickup }}</template>
-		<MkNote :key="pickupNote.id" :note="pickupNote"/>
+		<div :class="$style.pickupNote">
+			<MkNote :key="pickupNote.id" :note="pickupNote"/>
+		</div>
 	</MkFoldableSection>
 
 	<MkFoldableSection v-if="notePagination">
@@ -167,5 +169,12 @@ const waitForPromiseAndDelay = (prom: Promise<unknown>, delay: number): Promise<
 .searchUserAcct {
 	display: block;
 	opacity: 0.5;
+}
+
+.pickupNote {
+	background: var(--panel);
+	border-radius: var(--radius);
+	overflow: hidden; // fallback (overflow: clip)
+	overflow: clip;
 }
 </style>
