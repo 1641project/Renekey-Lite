@@ -56,19 +56,9 @@ const counter = ref(0);
 const searchQuery = ref('');
 const searchUser = ref<Misskey.entities.UserDetailed | null>(null);
 
-// TODO: 重複チェックは必要か？
-// const prevSearchQuery = ref<string | null>(null);
-// const prevSearchUserId = ref<string | null>(null);
-
 const searchEnabled = computed<boolean>(() => {
 	// 入力されていなければ無効
 	if (!searchQuery.value) return false;
-
-	// // 初期状態なら有効
-	// if (prevSearchQuery.value == null) return true;
-
-	// // 入力内容が同じなら無効
-	// if (searchQuery.value === prevSearchQuery.value && searchUser.value?.id === prevSearchUserId.value) return false;
 
 	return true;
 });

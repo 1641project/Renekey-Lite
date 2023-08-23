@@ -46,19 +46,9 @@ const counter = ref(0);
 const searchQuery = ref<string>('');
 const searchOrigin = ref<SearchOrigin>('combined');
 
-// TODO: 重複チェックは必要か？
-// const prevSearchQuery = ref<string | null>(null);
-// const prevSearchOrigin = ref<SearchOrigin | null>(null);
-
 const searchEnabled = computed<boolean>(() => {
 	// 入力されていなければ無効
 	if (!searchQuery.value) return false;
-
-	// // 初期状態なら有効
-	// if (prevSearchQuery.value == null || prevSearchOrigin.value == null) return true;
-
-	// // 入力内容が同じなら無効
-	// if (searchQuery.value === prevSearchQuery.value && searchOrigin.value === prevSearchOrigin.value) return false;
 
 	return true;
 });
