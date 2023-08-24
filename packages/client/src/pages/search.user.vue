@@ -28,7 +28,7 @@
 
 	<MkFoldableSection v-if="userPagination">
 		<template #header>{{ i18n.ts.searchResult }}</template>
-		<MkUserList :key="`search.user:${counter}`" :pagination="userPagination"/>
+		<MkUserList :key="`search.user:${searchedCounter}`" :pagination="userPagination"/>
 	</MkFoldableSection>
 </div>
 </template>
@@ -51,22 +51,59 @@ import { checkHttpOrHttps } from '@/scripts/tms/check-url';
 import { delayedPromise } from '@/scripts/tms/promise';
 import { isMisskeyId } from '@/scripts/tms/is-misskey-id';
 
+export type SearchOrigin = 'combined' | 'local' | 'remote';
+
+const props = defineProps<{
+	initialQuery?: string | null;
+	initialOrigin?: SearchOrigin | null;
+}>();
+
+const emit = defineEmits<{
+	(ev: 'searched', queries: {
+		query: string;
+		origin: SearchOrigin;
+	}): void;
+}>();
+
 useRouter();
 
-type SearchOrigin = 'combined' | 'local' | 'remote';
+const inited = ref(false);
 
-const counter = ref(0);
 const searched = ref(false);
+const searchedCounter = ref(0);
 
 const searchQuery = ref<string>('');
 const searchOrigin = ref<SearchOrigin>('combined');
 
+const init = async () => {
+	inited.value = false;
+
+	const {
+		initialQuery: query,
+		initialOrigin: origin,
+	} = props;
+
+	if (query) {
+		searchQuery.value = query.trim();
+	}
+	if (origin) {
+		searchOrigin.value = origin;
+	}
+
+	inited.value = true;
+};
+
+init();
+
 const searchEnabled = computed<boolean>(() => {
+	// 初期化が完了していなければ無効
+	if (!inited.value) return false;
+
 	// 検索済みであれば無効
 	if (searched.value) return false;
 
 	// 入力されていなければ無効
-	if (!searchQuery.value) return false;
+	if (!searchQuery.value.trim()) return false;
 
 	return true;
 });
@@ -87,13 +124,13 @@ const search = async (): Promise<void> => {
 	const query = searchQuery.value.trim();
 	const origin = searchOrigin.value;
 
+	emit('searched', { query, origin });
+
 	pickupUser.value = null;
 	userPagination.value = null;
 
-	if (!query) return;
-
-	counter.value++;
 	searched.value = true;
+	searchedCounter.value++;
 
 	userPagination.value = {
 		endpoint: 'users/search' as const,

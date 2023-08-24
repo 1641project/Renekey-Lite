@@ -37,7 +37,7 @@
 
 	<MkFoldableSection v-if="notePagination">
 		<template #header>{{ i18n.ts.searchResult }}</template>
-		<MkNotes :key="`search.note:${counter}`" :pagination="notePagination"/>
+		<MkNotes :key="`search.note:${searchedCounter}`" :pagination="notePagination"/>
 	</MkFoldableSection>
 </div>
 </template>
@@ -59,20 +59,59 @@ import { checkHttpOrHttps } from '@/scripts/tms/check-url';
 import { delayedPromise } from '@/scripts/tms/promise';
 import { isMisskeyId } from '@/scripts/tms/is-misskey-id';
 
+const props = defineProps<{
+	initialQuery?: string | null;
+	initialUserId?: string | null;
+}>();
+
+const emit = defineEmits<{
+	(ev: 'searched', queries: {
+		query: string;
+		userId: string | null;
+	}): void;
+}>();
+
 useRouter();
 
-const counter = ref(0);
+const inited = ref(false);
+
 const searched = ref(false);
+const searchedCounter = ref(0);
 
 const searchQuery = ref('');
 const searchUser = ref<UserDetailed | null>(null);
 
+const init = async () => {
+	inited.value = false;
+
+	const {
+		initialQuery: query,
+		initialUserId: userId,
+	} = props;
+
+	if (query) {
+		searchQuery.value = query.trim();
+	}
+	if (userId && isMisskeyId(userId)) {
+		searchUser.value = await os.api('users/show', {
+			userId,
+		}).catch(() => null);
+	}
+
+	inited.value = true;
+};
+
+init();
+
 const searchEnabled = computed<boolean>(() => {
+	// 初期化が完了していなければ無効
+	if (!inited.value) return false;
+
 	// 検索済みであれば無効
 	if (searched.value) return false;
 
 	// 入力されていなければ無効
-	if (!searchQuery.value) return false;
+	if (!searchQuery.value.trim()) return false;
 
 	return true;
 });
@@ -99,13 +138,13 @@ const search = async (): Promise<void> => {
 	const query = searchQuery.value.trim();
 	const userId = searchUser.value?.id ?? null;
 
+	emit('searched', { query, userId });
+
 	pickupNote.value = null;
 	notePagination.value = null;
 
-	if (!query) return;
-
-	counter.value++;
 	searched.value = true;
+	searchedCounter.value++;
 
 	notePagination.value = {
 		endpoint: 'notes/search' as const,
