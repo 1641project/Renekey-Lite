@@ -55,6 +55,9 @@ import TmsBorderSection from '@/components/TmsBorderSection.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
 import { useRouter } from '@/router';
+import { checkHttpOrHttps } from '@/scripts/tms/check-url';
+import { delayedPromise } from '@/scripts/tms/promise';
+import { isMisskeyId } from '@/scripts/tms/is-misskey-id';
 
 useRouter();
 
@@ -114,32 +117,35 @@ const search = async (): Promise<void> => {
 	};
 
 	const promiseFromPickup = pickup(query);
-	await waitForPromiseAndDelay(promiseFromPickup, 2000);
+	const delayedPromiseFromPickup = delayedPromise(promiseFromPickup, 2000);
+
 	pickupNote.value = await promiseFromPickup;
+	await delayedPromiseFromPickup;
 
 	searched.value = false;
 };
 
 const pickup = async (query: string): Promise<Note | null> => {
-	const fetchFromAp = async (): Promise<Note | null> => {
-		if (!(query.startsWith('http://') || query.startsWith('https://'))) return null;
+	const fetchFromAp = async (q: string): Promise<Note | null> => {
 		const result = await os.api('ap/show', {
-			uri: query,
+			uri: q,
 		}).catch(() => null);
 		return result?.type === 'Note' ? result.object : null;
 	};
 
-	const fetchFromNoteId = async (): Promise<Note | null> => {
+	const fetchFromNoteId = async (q: string): Promise<Note | null> => {
 		return os.api('notes/show', {
-			noteId: query,
+			noteId: q,
 		}).catch(() => null);
 	};
 
-	return await fetchFromAp() ?? await fetchFromNoteId();
-};
-
-const waitForPromiseAndDelay = (prom: Promise<unknown>, delay: number): Promise<void> => {
-	return new Promise(r => window.setTimeout(() => prom.finally(r), delay));
+	if (checkHttpOrHttps(query)) {
+		return fetchFromAp(query);
+	}
+	if (isMisskeyId(query)) {
+		return fetchFromNoteId(query);
+	}
+	return null;
 };
 </script>
 

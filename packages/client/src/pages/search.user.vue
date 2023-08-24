@@ -47,6 +47,9 @@ import MkUserList from '@/components/MkUserList.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
 import { useRouter } from '@/router';
+import { checkHttpOrHttps } from '@/scripts/tms/check-url';
+import { delayedPromise } from '@/scripts/tms/promise';
+import { isMisskeyId } from '@/scripts/tms/is-misskey-id';
 
 useRouter();
 
@@ -102,41 +105,44 @@ const search = async (): Promise<void> => {
 	};
 
 	const promiseFromPickup = pickup(query);
-	await waitForPromiseAndDelay(promiseFromPickup, 2000);
+	const delayedPromiseFromPickup = delayedPromise(promiseFromPickup, 2000);
+
 	pickupUser.value = await promiseFromPickup;
+	await delayedPromiseFromPickup;
 
 	searched.value = false;
 };
 
 const pickup = async (query: string): Promise<UserDetailed | null> => {
-	const fetchFromAp = async (): Promise<UserDetailed | null> => {
-		if (!(query.startsWith('http://') || query.startsWith('https://'))) return null;
+	const fetchFromAp = async (q: string): Promise<UserDetailed | null> => {
 		const result = await os.api('ap/show', {
-			uri: query,
+			uri: q,
 		}).catch(() => null);
 		return result?.type === 'User' ? result.object : null;
 	};
 
-	const fetchFromUsername = async (): Promise<UserDetailed | null> => {
-		const { username, host } = Acct.parse(query);
+	const fetchFromUserId = async (q: string): Promise<UserDetailed | null> => {
+		return os.api('users/show', {
+			userId: q,
+		}).catch(() => null);
+	};
+
+	const fetchFromUsername = async (q: string): Promise<UserDetailed | null> => {
+		const { username, host } = Acct.parse(q);
+		if (!username) return null;
 		return os.api('users/show', {
 			username,
 			host: host ?? undefined,
 		}).catch(() => null);
 	};
 
-	const fetchFromUserId = async (): Promise<UserDetailed | null> => {
-		if (query.startsWith('@')) return null;
-		return os.api('users/show', {
-			userId: query,
-		}).catch(() => null);
-	};
-
-	return await fetchFromAp() ?? await fetchFromUsername() ?? await fetchFromUserId();
-};
-
-const waitForPromiseAndDelay = (prom: Promise<unknown>, delay: number): Promise<void> => {
-	return new Promise(r => window.setTimeout(() => prom.finally(r), delay));
+	if (checkHttpOrHttps(query)) {
+		return fetchFromAp(query);
+	}
+	if (isMisskeyId(query)) {
+		return fetchFromUserId(query);
+	}
+	return fetchFromUsername(query);
 };
 </script>
 
