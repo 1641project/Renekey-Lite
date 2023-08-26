@@ -244,12 +244,15 @@ let navFooterHeight = $ref(0);
 provide<Ref<number>>(CURRENT_STICKY_BOTTOM, $$(navFooterHeight));
 
 watch($$(navFooter), () => {
+	const { documentElement: html, body } = document;
 	if (navFooter) {
 		navFooterHeight = navFooter.offsetHeight;
-		document.body.style.setProperty('--stickyBottom', `${navFooterHeight}px`);
+		body.style.setProperty('--stickyBottom', `${navFooterHeight}px`);
+		html.style.setProperty('--navFooterHeight', 'var(--navFooterEnabledHeight)');
 	} else {
 		navFooterHeight = 0;
-		document.body.style.setProperty('--stickyBottom', '0px');
+		body.style.setProperty('--stickyBottom', '0px');
+		html.style.setProperty('--navFooterHeight', 'var(--navFooterDisabledHeight)');
 	}
 }, {
 	immediate: true,

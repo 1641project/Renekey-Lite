@@ -12,13 +12,17 @@
 		--radius: 12px;
 		--marginFull: 16px;
 		--marginHalf: 10px;
-
 		--margin: var(--marginFull);
-		--minBottomSpacing: calc(0px + var(--safeAreaInsetBottom));
+
+		--navFooterHeight: var(--navFooterDisabledHeight); // dynamic
+		--navFooterEnabledHeight: 72px; // static
+		--navFooterDisabledHeight: 0; // static
+
+		--minBottomSpacing: calc(var(--navFooterHeight) + var(--safeAreaInsetBottom));
 
 		@media (max-width: 500px) {
 			--margin: var(--marginHalf);
-			--minBottomSpacing: calc(72px + max(12px, var(--safeAreaInsetBottom)));
+			--navFooterHeight: var(--navFooterEnabledHeight);
 		}
 
 		// --ad: rgba(255, 169, 0, 0.1);
