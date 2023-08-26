@@ -14,15 +14,15 @@
 		--marginHalf: 10px;
 		--margin: var(--marginFull);
 
-		--navFooterHeight: var(--navFooterDisabledHeight); // dynamic
-		--navFooterEnabledHeight: 72px; // static
-		--navFooterDisabledHeight: 0; // static
+		--navFooterHeight: var(--navFooterDisabledHeight); // default
+		--navFooterEnabledHeight: 72px;
+		--navFooterDisabledHeight: 0px;
 
 		--minBottomSpacing: calc(var(--navFooterHeight) + var(--safeAreaInsetBottom));
 
 		@media (max-width: 500px) {
 			--margin: var(--marginHalf);
-			--navFooterHeight: var(--navFooterEnabledHeight);
+			--navFooterHeight: var(--navFooterEnabledHeight); // default
 		}
 
 		// --ad: rgba(255, 169, 0, 0.1);

@@ -249,6 +249,7 @@ watch($$(navFooter), () => {
 		navFooterHeight = navFooter.offsetHeight;
 		body.style.setProperty('--stickyBottom', `${navFooterHeight}px`);
 		html.style.setProperty('--navFooterHeight', 'var(--navFooterEnabledHeight)');
+		html.style.setProperty('--navFooterEnabledHeight', `${navFooterHeight}px`);
 	} else {
 		navFooterHeight = 0;
 		body.style.setProperty('--stickyBottom', '0px');
