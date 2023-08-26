@@ -187,7 +187,7 @@ watch(() => props.user.avatarBlurhash, () => {
 
 				&::after {
 					contain: strict;
-					content: '';
+					content: "";
 					display: block;
 					width: 60%;
 					height: 60%;

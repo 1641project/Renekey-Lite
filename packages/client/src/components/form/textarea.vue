@@ -132,6 +132,7 @@ onMounted(() => {
 .label {
 	font-size: 0.85em;
 	padding: 0 0 8px 0;
+	-webkit-user-select: none;
 	user-select: none;
 	min-height: 1.35em; // line-height
 	display: flex;

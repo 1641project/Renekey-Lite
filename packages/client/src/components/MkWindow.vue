@@ -511,6 +511,7 @@ defineExpose({
 	position: relative;
 	z-index: 1;
 	flex-shrink: 0;
+	-webkit-user-select: none;
 	user-select: none;
 	height: var(--height);
 	background: var(--windowHeader);

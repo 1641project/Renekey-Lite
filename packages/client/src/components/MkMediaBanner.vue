@@ -76,7 +76,7 @@ onMounted(() => {
 		}
 
 		> *:not(:last-child) {
-			margin-right: .2em;
+			margin-right: 0.2em;
 		}
 
 		> .icon {

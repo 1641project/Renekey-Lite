@@ -97,7 +97,13 @@ function reduceFrequency(): void {
 @layer global {
 	.qiivuoyo {
 		background-size: auto auto;
-		background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--ad) 8px, var(--ad) 14px );
+		background-image: repeating-linear-gradient(
+			45deg,
+			transparent,
+			transparent 8px,
+			var(--ad) 8px,
+			var(--ad) 14px
+		);
 
 		> .main {
 			text-align: center;

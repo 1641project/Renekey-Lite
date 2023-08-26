@@ -159,7 +159,7 @@ definePageMetadata(computed(() => ({
 			margin-top: var(--margin);
 			display: grid;
 			grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-			grid-gap: 12px;
+			gap: 12px;
 
 			> .user:hover {
 				text-decoration: none;

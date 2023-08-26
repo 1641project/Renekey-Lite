@@ -367,7 +367,7 @@ const readPromo = (): void => {
 	&:focus-visible {
 		outline: none;
 
-		&:after {
+		&::after {
 			content: "";
 			pointer-events: none;
 			display: block;
@@ -575,7 +575,7 @@ const readPromo = (): void => {
 								padding: 6px 10px;
 								font-size: 0.8em;
 								border-radius: 999px;
-								box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+								box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 							}
 						}
 					}
@@ -594,7 +594,11 @@ const readPromo = (): void => {
 							left: 0;
 							width: 100%;
 							height: 64px;
-							background: linear-gradient(0deg, var(--panel), var(--X15));
+							background: linear-gradient(
+								0deg,
+								var(--panel),
+								var(--X15)
+							);
 
 							> span {
 								display: inline-block;
@@ -602,7 +606,7 @@ const readPromo = (): void => {
 								padding: 6px 10px;
 								font-size: 0.8em;
 								border-radius: 999px;
-								box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+								box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 							}
 
 							&:hover {

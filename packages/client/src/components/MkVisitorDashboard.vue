@@ -124,7 +124,7 @@ const exploreOtherServers = (): void => {
 	position: relative;
 	background: var(--panel);
 	border-radius: var(--radius);
-	box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
 .main {
@@ -185,7 +185,7 @@ const exploreOtherServers = (): void => {
 .stats {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	grid-gap: 16px;
+	gap: 16px;
 }
 
 .statsItem {

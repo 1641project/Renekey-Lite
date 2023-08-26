@@ -487,7 +487,7 @@ definePageMetadata({
 			&.stats, &.federationStats {
 				> .body {
 					display: grid;
-					grid-gap: 16px;
+					gap: 16px;
 					grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
 					> .number {
@@ -513,7 +513,7 @@ definePageMetadata({
 			&.env {
 				> .body {
 					display: grid;
-					grid-gap: 16px;
+					gap: 16px;
 					grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
 					> .number {
@@ -566,7 +566,7 @@ definePageMetadata({
 			&.queue {
 				> .body {
 					display: grid;
-					grid-gap: 16px;
+					gap: 16px;
 					grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
 					> .chart {
@@ -588,7 +588,7 @@ definePageMetadata({
 			&.federationPies {
 				> .body {
 					display: grid;
-					grid-gap: 16px;
+					gap: 16px;
 					grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 
 					> .chart {

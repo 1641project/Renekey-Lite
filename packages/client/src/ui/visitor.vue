@@ -126,7 +126,7 @@ defineExpose({
 
 <style>
 .github-corner:hover .octo-arm {
-	animation: octocat-wave 560ms ease-in-out;
+	animation: octocat-wave 0.56s ease-in-out;
 }
 @keyframes octocat-wave {
 	0%,
@@ -147,7 +147,7 @@ defineExpose({
 		animation: none;
 	}
 	.github-corner .octo-arm {
-		animation: octocat-wave 560ms ease-in-out;
+		animation: octocat-wave 0.56s ease-in-out;
 	}
 }
 </style>
@@ -157,7 +157,7 @@ defineExpose({
 .tray-leave-active {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .tray-enter-from,
 .tray-leave-active {
@@ -168,7 +168,7 @@ defineExpose({
 .tray-back-enter-active,
 .tray-back-leave-active {
 	opacity: 1;
-	transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .tray-back-enter-from,
 .tray-back-leave-active {
@@ -195,8 +195,14 @@ defineExpose({
 			aspect-ratio: 1.5;
 			background-position: center;
 			background-size: cover;
-			-webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1.0), transparent);
-			mask-image: linear-gradient(rgba(0, 0, 0, 1.0), transparent);
+			-webkit-mask-image: linear-gradient(
+				rgba(0, 0, 0, 1),
+				transparent
+			);
+			mask-image: linear-gradient(
+				rgba(0, 0, 0, 1),
+				transparent
+			);
 		}
 
 		> .dashboard {

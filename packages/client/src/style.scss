@@ -21,12 +21,12 @@
 			--minBottomSpacing: calc(72px + max(12px, var(--safeAreaInsetBottom)));
 		}
 
-		// --ad: rgb(255 169 0 / 10%);
+		// --ad: rgba(255, 169, 0, 0.1);
 	}
 
 	::selection {
-		color: var(--fgOnAccent);
 		background-color: var(--accent);
+		color: var(--fgOnAccent);
 	}
 
 	html {
@@ -38,6 +38,7 @@
 		font-family: "Hiragino Maru Gothic Pro", "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
 		font-size: 14px;
 		line-height: 1.35;
+		-webkit-text-size-adjust: 100%;
 		text-size-adjust: 100%;
 		tab-size: 2;
 
@@ -86,7 +87,7 @@
 
 	html._themeChanging_ {
 		&, * {
-			transition: background 1s ease, border 1s ease !important;
+			transition: background-color 1s, border-color 1s !important;
 		}
 	}
 
@@ -102,9 +103,7 @@
 		cursor: pointer;
 		color: inherit;
 		-webkit-tap-highlight-color: transparent;
-		tap-highlight-color: transparent;
 		-webkit-touch-callout: none;
-		touch-callout: none;
 
 		&:hover {
 			text-decoration: underline;
@@ -112,13 +111,11 @@
 
 		&[target="_blank"] {
 			-webkit-touch-callout: default;
-			touch-callout: default;
 		}
 	}
 
 	textarea, input {
 		-webkit-tap-highlight-color: transparent;
-		tap-highlight-color: transparent;
 	}
 
 	optgroup, option {
@@ -137,7 +134,7 @@
 		vertical-align: -12%;
 		line-height: 1em;
 
-		&:before {
+		&::before {
 			font-size: 128%;
 		}
 	}
@@ -159,7 +156,6 @@
 		-webkit-user-select: none;
 		user-select: none;
 		-webkit-touch-callout: none;
-		touch-callout: none;
 	}
 
 	._nowrap {
@@ -191,6 +187,7 @@
 
 	._button {
 		@extend ._noSelect;
+		-webkit-appearance: none;
 		appearance: none;
 		display: inline-block;
 		padding: 0;
@@ -201,7 +198,6 @@
 		color: inherit;
 		touch-action: manipulation;
 		-webkit-tap-highlight-color: transparent;
-		tap-highlight-color: transparent;
 		font-size: 1em;
 		font-family: inherit;
 		line-height: inherit;
@@ -219,8 +215,8 @@
 
 	._buttonPrimary {
 		@extend ._button;
-		color: var(--fgOnAccent);
 		background: var(--accent);
+		color: var(--fgOnAccent);
 
 		&:not(:disabled):hover {
 			background: var(--X8);
@@ -233,21 +229,33 @@
 
 	._buttonGradate {
 		@extend ._buttonPrimary;
+		background: linear-gradient(
+			90deg,
+			var(--buttonGradateA),
+			var(--buttonGradateB)
+		);
 		color: var(--fgOnAccent);
-		background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
 
 		&:not(:disabled):hover {
-			background: linear-gradient(90deg, var(--X8), var(--X8));
+			background: linear-gradient(
+				90deg,
+				var(--X8),
+				var(--X8)
+			);
 		}
 
 		&:not(:disabled):active {
-			background: linear-gradient(90deg, var(--X8), var(--X8));
+			background: linear-gradient(
+				90deg,
+				var(--X8),
+				var(--X8)
+			);
 		}
 	}
 
 	._help {
 		color: var(--accent);
-		cursor: help
+		cursor: help;
 	}
 
 	._textButton {
@@ -471,7 +479,7 @@
 	._formLinksGrid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-		grid-gap: 12px;
+		gap: 12px;
 	}
 
 	._formLinks {
@@ -568,7 +576,7 @@
 	._zoom {
 		transition-duration: 0.5s, 0.5s;
 		transition-property: opacity, transform;
-		transition-timing-function: cubic-bezier(0,.5,.5,1);
+		transition-timing-function: cubic-bezier(0, 0.5, 0.5, 1);
 	}
 
 	// TODO: 廃止 (.zoom-enter-active, .zoom-leave-active, .zoom-enter-from, .zoom-leave-to)

@@ -153,8 +153,20 @@ function showMenu(ev) {
 			height: calc(100% - 128px);
 			overflow: hidden; // fallback (overflow: clip)
 			overflow: clip;
-			-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
-			mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
+			-webkit-mask-image: linear-gradient(
+				0deg,
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 1) 128px,
+				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 0) 100%
+			);
+			mask-image: linear-gradient(
+				0deg,
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 1) 128px,
+				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 0) 100%
+			);
 
 			@media (max-width: 1200px) {
 				display: none;
@@ -212,7 +224,7 @@ function showMenu(ev) {
 			margin: auto auto auto 128px;
 			background: var(--panel);
 			border-radius: var(--radius);
-			box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+			box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 
 			@media (max-width: 1200px) {
 				margin: auto;

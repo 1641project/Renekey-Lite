@@ -155,8 +155,20 @@ export default defineComponent({
 			height: calc(100% - 128px);
 			overflow: hidden; // fallback (overflow: clip)
 			overflow: clip;
-			-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
-			mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
+			-webkit-mask-image: linear-gradient(
+				0deg,
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 1) 128px,
+				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 0) 100%
+			);
+			mask-image: linear-gradient(
+				0deg,
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 1) 128px,
+				rgba(0, 0, 0, 1) calc(100% - 128px),
+				rgba(0, 0, 0, 0) 100%
+			);
 		}
 
 		> .shape {

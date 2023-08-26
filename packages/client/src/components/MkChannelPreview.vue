@@ -73,7 +73,11 @@ const bannerStyle = computed(() => {
 			left: 0;
 			width: 100%;
 			height: 64px;
-			background: linear-gradient(0deg, var(--panel), var(--X15));
+			background: linear-gradient(
+				0deg,
+				var(--panel),
+				var(--X15)
+			);
 		}
 
 		> .name {

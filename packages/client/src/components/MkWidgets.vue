@@ -153,7 +153,7 @@ const onContextmenu = (widget: Widget, ev: MouseEvent): void => {
 			width: 32px;
 			height: 32px;
 			color: #fff;
-			background: rgba(#000, 0.7);
+			background: rgba(0, 0, 0, 0.7);
 			border-radius: 4px;
 		}
 

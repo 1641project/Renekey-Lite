@@ -228,7 +228,7 @@ const render = () => {
 					},
 					grid: {
 						color: gridColor,
-						borderColor: 'rgb(0, 0, 0, 0)',
+						borderColor: 'rgba(0, 0, 0, 0)',
 					},
 					ticks: {
 						display: props.detailed,
@@ -248,7 +248,7 @@ const render = () => {
 					suggestedMax: 50,
 					grid: {
 						color: gridColor,
-						borderColor: 'rgb(0, 0, 0, 0)',
+						borderColor: 'rgba(0, 0, 0, 0)',
 					},
 					ticks: {
 						display: props.detailed,

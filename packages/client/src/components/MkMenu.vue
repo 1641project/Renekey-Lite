@@ -238,7 +238,7 @@ onBeforeUnmount(() => {
 		overflow: hidden;
 		text-overflow: ellipsis;
 
-		&:before {
+		&::before {
 			content: "";
 			display: block;
 			position: absolute;
@@ -259,7 +259,7 @@ onBeforeUnmount(() => {
 			color: var(--accent);
 			text-decoration: none;
 
-			&:before {
+			&::before {
 				background: var(--accentedBg);
 			}
 		}
@@ -270,7 +270,7 @@ onBeforeUnmount(() => {
 			&:hover {
 				color: #fff;
 
-				&:before {
+				&::before {
 					background: #ff4242;
 				}
 			}
@@ -278,7 +278,7 @@ onBeforeUnmount(() => {
 			&:active {
 				color: #fff;
 
-				&:before {
+				&::before {
 					background: #d42e2e;
 				}
 			}
@@ -288,7 +288,7 @@ onBeforeUnmount(() => {
 			color: var(--fgOnAccent);
 			opacity: 1;
 
-			&:before {
+			&::before {
 				background: var(--accent);
 			}
 		}
@@ -330,7 +330,7 @@ onBeforeUnmount(() => {
 				color: var(--accent);
 				text-decoration: none;
 
-				&:before {
+				&::before {
 					background: var(--accentedBg);
 				}
 			}
@@ -373,7 +373,7 @@ onBeforeUnmount(() => {
 			font-size: 1em;
 			padding: 12px 24px;
 
-			&:before {
+			&::before {
 				width: calc(100% - 24px);
 				border-radius: 12px;
 			}

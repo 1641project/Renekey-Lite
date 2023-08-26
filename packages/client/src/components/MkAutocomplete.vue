@@ -426,6 +426,7 @@ onBeforeUnmount(() => {
 	overflow: clip;
 	font-size: 0.9em;
 	cursor: default;
+	-webkit-user-select: none;
 	user-select: none;
 	text-overflow: ellipsis;
 

@@ -118,7 +118,7 @@ export default defineComponent({
 			> .items {
 				display: grid;
 				grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-				grid-gap: 8px;
+				gap: 8px;
 				padding: 0 16px;
 
 				> .item {

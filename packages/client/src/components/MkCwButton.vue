@@ -50,12 +50,12 @@ const toggle = () => {
 	> span {
 		margin-left: 4px;
 
-		&:before {
-			content: '(';
+		&::before {
+			content: "(";
 		}
 
-		&:after {
-			content: ')';
+		&::after {
+			content: ")";
 		}
 	}
 }

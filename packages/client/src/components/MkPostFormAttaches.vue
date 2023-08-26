@@ -151,7 +151,7 @@ const showFileMenu = (file: DriveFile, ev: MouseEvent): void => {
 				top: 0;
 				left: 0;
 				z-index: 2;
-				background: rgba(17, 17, 17, .7);
+				background: rgba(17, 17, 17, 0.7);
 				color: #fff;
 
 				> .icon {

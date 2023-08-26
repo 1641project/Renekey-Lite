@@ -119,7 +119,7 @@ defineExpose<WidgetComponentExpose>({
 .mkw-calendar {
 	padding: 16px 0;
 
-	&:after {
+	&::after {
 		content: "";
 		display: block;
 		clear: both;
@@ -187,7 +187,7 @@ defineExpose<WidgetComponentExpose>({
 
 				> .val {
 					height: 4px;
-					transition: width .3s cubic-bezier(0.23, 1, 0.32, 1);
+					transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 				}
 			}
 

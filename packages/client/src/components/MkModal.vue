@@ -431,7 +431,7 @@ defineExpose({
 	}
 
 	> .content {
-		transition: transform 0.2s cubic-bezier(0,.5,0,1) !important;
+		transition: transform 0.2s cubic-bezier(0, 0.5, 0, 1) !important;
 	}
 }
 .transition_modalDrawer_leaveActive {

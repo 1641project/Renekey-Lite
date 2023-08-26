@@ -207,17 +207,17 @@ const deleteFile = async (): Promise<void> => {
 	}
 
 	&:hover {
-		background: rgba(#000, 0.05);
+		background: rgba(0, 0, 0, 0.05);
 
 		> .label {
-			&:before,
-			&:after {
+			&::before,
+			&::after {
 				background: #0b65a5;
 			}
 
 			&.red {
-				&:before,
-				&:after {
+				&::before,
+				&::after {
 					background: #c12113;
 				}
 			}
@@ -225,17 +225,17 @@ const deleteFile = async (): Promise<void> => {
 	}
 
 	&:active {
-		background: rgba(#000, 0.1);
+		background: rgba(0, 0, 0, 0.1);
 
 		> .label {
-			&:before,
-			&:after {
+			&::before,
+			&::after {
 				background: #0b588c;
 			}
 
 			&.red {
-				&:before,
-				&:after {
+				&::before,
+				&::after {
 					background: #ce2212;
 				}
 			}
@@ -254,8 +254,8 @@ const deleteFile = async (): Promise<void> => {
 		}
 
 		> .label {
-			&:before,
-			&:after {
+			&::before,
+			&::after {
 				display: none;
 			}
 		}
@@ -275,8 +275,8 @@ const deleteFile = async (): Promise<void> => {
 		left: 0;
 		pointer-events: none;
 
-		&:before,
-		&:after {
+		&::before,
+		&::after {
 			content: "";
 			display: block;
 			position: absolute;
@@ -284,14 +284,14 @@ const deleteFile = async (): Promise<void> => {
 			background: #0c7ac9;
 		}
 
-		&:before {
+		&::before {
 			top: 0;
 			left: 57px;
 			width: 28px;
 			height: 8px;
 		}
 
-		&:after {
+		&::after {
 			top: 57px;
 			left: 0;
 			width: 8px;
@@ -299,8 +299,8 @@ const deleteFile = async (): Promise<void> => {
 		}
 
 		&.red {
-			&:before,
-			&:after {
+			&::before,
+			&::after {
 				background: #c12113;
 			}
 		}

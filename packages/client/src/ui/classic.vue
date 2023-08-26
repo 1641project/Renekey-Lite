@@ -183,7 +183,7 @@ onMounted(() => {
 .tray-leave-active {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .tray-enter-from,
 .tray-leave-active {
@@ -194,7 +194,7 @@ onMounted(() => {
 .tray-back-enter-active,
 .tray-back-leave-active {
 	opacity: 1;
-	transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .tray-back-enter-from,
 .tray-back-leave-active {
@@ -211,6 +211,7 @@ onMounted(() => {
 
 	&.wallpaper {
 		background: var(--wallpaperOverlay);
+		// -webkit-backdrop-filter: var(--blur, blur(4px));
 		// backdrop-filter: var(--blur, blur(4px));
 	}
 

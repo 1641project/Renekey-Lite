@@ -149,8 +149,16 @@ const more = (ev: MouseEvent): void => {
 		height: 100%;
 		background-size: cover;
 		background-position: center center;
-		-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 15%, rgba(0,0,0,0.75) 100%);
-		mask-image: linear-gradient(0deg, rgba(0,0,0,0) 15%, rgba(0,0,0,0.75) 100%);
+		-webkit-mask-image: linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0) 15%,
+			rgba(0, 0, 0, 0.75) 100%
+		);
+		mask-image: linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0) 15%,
+			rgba(0, 0, 0, 0.75) 100%
+		);
 	}
 
 	.instance {
@@ -184,7 +192,7 @@ const more = (ev: MouseEvent): void => {
 		font-weight: bold;
 		text-align: left;
 
-		&:before {
+		&::before {
 			content: "";
 			display: block;
 			width: calc(100% - 38px);
@@ -196,11 +204,15 @@ const more = (ev: MouseEvent): void => {
 			right: 0;
 			bottom: 0;
 			border-radius: 999px;
-			background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
+			background: linear-gradient(
+				90deg,
+				var(--buttonGradateA),
+				var(--buttonGradateB)
+			);
 		}
 
 		&:hover, &.active {
-			&:before {
+			&::before {
 				background: var(--accentLighten);
 			}
 		}
@@ -277,7 +289,7 @@ const more = (ev: MouseEvent): void => {
 		&:hover, &.active {
 			color: var(--accent);
 
-			&:before {
+			&::before {
 				content: "";
 				display: block;
 				width: calc(100% - 34px);
@@ -362,7 +374,7 @@ const more = (ev: MouseEvent): void => {
 		margin-bottom: 16px;
 		text-align: center;
 
-		&:before {
+		&::before {
 			content: "";
 			display: block;
 			position: absolute;
@@ -374,11 +386,15 @@ const more = (ev: MouseEvent): void => {
 			width: 52px;
 			aspect-ratio: 1/1;
 			border-radius: 100%;
-			background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
+			background: linear-gradient(
+				90deg,
+				var(--buttonGradateA),
+				var(--buttonGradateB)
+			);
 		}
 
 		&:hover, &.active {
-			&:before {
+			&::before {
 				background: var(--accentLighten);
 			}
 		}
@@ -430,7 +446,7 @@ const more = (ev: MouseEvent): void => {
 			text-decoration: none;
 			color: var(--accent);
 
-			&:before {
+			&::before {
 				content: "";
 				display: block;
 				height: 100%;

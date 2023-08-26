@@ -308,15 +308,15 @@ definePageMetadata(computed(() => !fetching ? user ? {
 			padding: 0 12px;
 			line-height: 24px;
 			color: #fff;
-			background: rgba(#000, 0.3);
+			background: rgba(0, 0, 0, 0.3);
 			border-radius: 12px;
 
 			&:hover {
-				background: rgba(#000, 0.4);
+				background: rgba(0, 0, 0, 0.4);
 			}
 
 			&:active {
-				background: rgba(#000, 0.5);
+				background: rgba(0, 0, 0, 0.5);
 			}
 
 			&.fetching {
@@ -372,12 +372,12 @@ definePageMetadata(computed(() => !fetching ? user ? {
 			color: var(--fgTransparentWeak);
 
 			> .users {
-				> .user + .user:before {
+				> .user + .user::before {
 					content: ", ";
 					font-weight: normal;
 				}
 
-				> .user:last-of-type:after {
+				> .user:last-of-type::after {
 					content: " ";
 				}
 			}

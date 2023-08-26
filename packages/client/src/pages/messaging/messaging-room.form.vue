@@ -282,8 +282,8 @@ defineExpose({
 		padding: 0 8px;
 		list-style: none;
 
-		&:after {
-			content: '';
+		&::after {
+			content: "";
 			display: block;
 			clear: both;
 		}

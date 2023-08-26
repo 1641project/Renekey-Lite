@@ -227,7 +227,11 @@ onUnmounted(() => {
 			left: 0;
 			width: 100%;
 			height: 64px;
-			background: linear-gradient(0deg, var(--panel), var(--X15));
+			background: linear-gradient(
+				0deg,
+				var(--panel),
+				var(--X15)
+			);
 
 			> .fadeLabel {
 				display: inline-block;
@@ -235,7 +239,7 @@ onUnmounted(() => {
 				padding: 6px 10px;
 				font-size: 0.8em;
 				border-radius: 999px;
-				box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 			}
 
 			&:hover {

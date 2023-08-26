@@ -375,6 +375,7 @@ const onDrop = (ev: DragEvent): void => {
 	background: var(--panelHeaderBg);
 	box-shadow: 0 1px 0 0 var(--panelHeaderDivider);
 	cursor: pointer;
+	-webkit-user-select: none;
 	user-select: none;
 
 	&.indicated {
@@ -435,6 +436,7 @@ const onDrop = (ev: DragEvent): void => {
 	box-sizing: border-box;
 	height: var(--deckColumnHeaderHeight);
 	cursor: move;
+	-webkit-user-select: none;
 	user-select: none;
 	opacity: 0.5;
 }

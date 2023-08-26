@@ -220,7 +220,7 @@ if ($i) {
 	right: 15px;
 	pointer-events: none;
 
-	&:before {
+	&::before {
 		content: "";
 		display: block;
 		width: 18px;
@@ -230,7 +230,7 @@ if ($i) {
 		border-top-color: var(--accent);
 		border-left-color: var(--accent);
 		border-radius: 50%;
-		animation: progress-spinner 400ms linear infinite;
+		animation: progress-spinner 0.4s linear infinite;
 	}
 }
 
@@ -250,6 +250,7 @@ if ($i) {
 	padding: 4px 7px;
 	font-size: 14px;
 	pointer-events: none;
+	-webkit-user-select: none;
 	user-select: none;
 
 	> span {
@@ -267,6 +268,7 @@ if ($i) {
 	padding: 4px 5px;
 	font-size: 14px;
 	pointer-events: none;
+	-webkit-user-select: none;
 	user-select: none;
 
 	> span {

@@ -63,7 +63,7 @@
 		</div>
 	</div>
 	<div :class="$style.infoList">
-		<MkInfo v-if="hasNotSpecifiedMentions" warn>{{ i18n.ts.notSpecifiedMentionWarning }}<span style="margin: 0 4px; user-select: none;">-</span><button class="_textButton" @click="addMissingMention">{{ i18n.ts.add }}</button></MkInfo>
+		<MkInfo v-if="hasNotSpecifiedMentions" warn>{{ i18n.ts.notSpecifiedMentionWarning }}<span class="_noSelect" style="margin: 0 4px;">-</span><button class="_textButton" @click="addMissingMention">{{ i18n.ts.add }}</button></MkInfo>
 		<MkInfo v-if="hasAnnoyingText" warn>{{ i18n.ts.thisPostMayBeAnnoying }}</MkInfo>
 	</div>
 	<div :class="$style.forms">
@@ -1077,7 +1077,11 @@ const insertEmoji = async (ev: MouseEvent): Promise<void> => {
 	&:not(:disabled):hover,
 	&:not(:disabled):active {
 		> .submitInner {
-			background: linear-gradient(90deg, var(--X8), var(--X8));
+			background: linear-gradient(
+				90deg,
+				var(--X8),
+				var(--X8)
+			);
 		}
 	}
 
@@ -1089,7 +1093,11 @@ const insertEmoji = async (ev: MouseEvent): Promise<void> => {
 		min-width: 90px;
 		box-sizing: border-box;
 		color: var(--fgOnAccent);
-		background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
+		background: linear-gradient(
+			90deg,
+			var(--buttonGradateA),
+			var(--buttonGradateB)
+		);
 	}
 }
 

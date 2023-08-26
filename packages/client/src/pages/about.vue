@@ -160,7 +160,10 @@ definePageMetadata(computed(() => ({
 			padding: 16px;
 			color: #fff;
 			text-shadow: 0 0 8px #000;
-			background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+			background: linear-gradient(
+				transparent,
+				rgba(0, 0, 0, 0.7)
+			);
 		}
 	}
 }

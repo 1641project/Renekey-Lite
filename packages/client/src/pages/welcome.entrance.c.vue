@@ -207,7 +207,7 @@ export default defineComponent({
 
 			> .form {
 				position: relative;
-				box-shadow: 0 12px 32px rgb(0 0 0 / 25%);
+				box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 
 				> .bg {
 					position: absolute;
@@ -225,7 +225,11 @@ export default defineComponent({
 						left: 0;
 						width: 100%;
 						height: 128px;
-						background: linear-gradient(0deg, var(--panel), var(--X15));
+						background: linear-gradient(
+							0deg,
+							var(--panel),
+							var(--X15)
+						);
 					}
 				}
 

@@ -47,7 +47,7 @@ const hide = ref((defaultStore.state.nsfw === 'force') ? true : props.video.isSe
 		background-color: var(--fg);
 		color: var(--accentLighten);
 		font-size: 14px;
-		opacity: .5;
+		opacity: 0.5;
 		padding: 3px 6px;
 		text-align: center;
 		cursor: pointer;

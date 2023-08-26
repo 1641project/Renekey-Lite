@@ -125,6 +125,7 @@ const tickerColor = {
 	&.bottomright {
 		--ticker-bg-deg: 135deg;
 		pointer-events: none;
+		-webkit-user-select: none;
 		user-select: none;
 		position: absolute;
 		z-index: -1;

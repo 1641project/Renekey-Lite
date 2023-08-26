@@ -52,6 +52,7 @@ const toggle = () => {
 	transition: all 0.2s ease;
 
 	> * {
+		-webkit-user-select: none;
 		user-select: none;
 	}
 
@@ -78,6 +79,7 @@ const toggle = () => {
 		border-radius: 999px;
 		cursor: pointer;
 		transition: inherit;
+		-webkit-user-select: none;
 		user-select: none;
 
 		> .knob {

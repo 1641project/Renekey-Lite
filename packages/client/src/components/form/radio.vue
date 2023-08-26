@@ -55,6 +55,7 @@ function toggle(): void {
 	transition: all 0.2s;
 
 	> * {
+		-webkit-user-select: none;
 		user-select: none;
 	}
 
@@ -82,7 +83,7 @@ function toggle(): void {
 		> .button {
 			border-color: var(--accent);
 
-			&:after {
+			&::after {
 				background-color: var(--accent);
 				transform: scale(1);
 				opacity: 1;
@@ -107,8 +108,8 @@ function toggle(): void {
 		border-radius: 100%;
 		transition: inherit;
 
-		&:after {
-			content: '';
+		&::after {
+			content: "";
 			display: block;
 			position: absolute;
 			top: 3px;

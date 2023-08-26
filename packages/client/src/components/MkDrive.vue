@@ -667,6 +667,7 @@ onBeforeUnmount(() => {
 		box-shadow: 0 1px 0 var(--divider);
 
 		&, * {
+			-webkit-user-select: none;
 			user-select: none;
 		}
 
@@ -725,6 +726,7 @@ onBeforeUnmount(() => {
 		padding: var(--margin);
 
 		&, * {
+			-webkit-user-select: none;
 			user-select: none;
 		}
 

@@ -90,7 +90,7 @@ onUnmounted(() => {
 .transition_tooltip_leaveActive {
 	opacity: 1;
 	transform: scale(1);
-	transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_tooltip_enterFrom,
 .transition_tooltip_leaveTo {

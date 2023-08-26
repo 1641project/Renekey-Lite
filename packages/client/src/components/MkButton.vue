@@ -122,7 +122,7 @@ const onMousedown = (evt: MouseEvent): void => {
 	overflow: hidden; // fallback (overflow: clip)
 	overflow: clip;
 	box-sizing: border-box;
-	transition: background 0.1s ease;
+	transition: background-color 0.1s ease;
 
 	&:not(:disabled):hover {
 		background: var(--buttonHoverBg);
@@ -162,14 +162,26 @@ const onMousedown = (evt: MouseEvent): void => {
 	&.gradate {
 		font-weight: bold;
 		color: var(--fgOnAccent) !important;
-		background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
+		background: linear-gradient(
+			90deg,
+			var(--buttonGradateA),
+			var(--buttonGradateB)
+		);
 
 		&:not(:disabled):hover {
-			background: linear-gradient(90deg, var(--X8), var(--X8));
+			background: linear-gradient(
+				90deg,
+				var(--X8),
+				var(--X8)
+			);
 		}
 
 		&:not(:disabled):active {
-			background: linear-gradient(90deg, var(--X8), var(--X8));
+			background: linear-gradient(
+				90deg,
+				var(--X8),
+				var(--X8)
+			);
 		}
 	}
 
@@ -224,7 +236,7 @@ const onMousedown = (evt: MouseEvent): void => {
 			background: rgba(0, 0, 0, 0.1);
 			opacity: 1;
 			transform: scale(1);
-			transition: all 0.5s cubic-bezier(0,.5,0,1);
+			transition: all 0.5s cubic-bezier(0, 0.5, 0, 1);
 		}
 	}
 

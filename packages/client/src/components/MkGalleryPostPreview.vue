@@ -51,7 +51,7 @@ const leaveHover = (): void => {
 
 <style lang="scss" module>
 .transition_toggle_leaveActive {
-	transition: opacity .5s;
+	transition: opacity 0.5s;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -78,7 +78,7 @@ const leaveHover = (): void => {
 
 		> article {
 			> footer {
-				&:before {
+				&::before {
 					opacity: 1;
 				}
 			}
@@ -132,9 +132,12 @@ const leaveHover = (): void => {
 			box-sizing: border-box;
 			color: #fff;
 			text-shadow: 0 0 8px #000;
-			background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+			background: linear-gradient(
+				transparent,
+				rgba(0, 0, 0, 0.7)
+			);
 
-			&:before {
+			&::before {
 				content: "";
 				display: block;
 				position: absolute;
@@ -143,7 +146,10 @@ const leaveHover = (): void => {
 				left: 0;
 				width: 100%;
 				height: 100%;
-				background: linear-gradient(rgba(0, 0, 0, 0.4), transparent);
+				background: linear-gradient(
+					rgba(0, 0, 0, 0.4),
+					transparent
+				);
 				opacity: 0;
 				transition: opacity 0.5s ease;
 			}

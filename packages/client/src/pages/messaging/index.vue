@@ -181,6 +181,7 @@ definePageMetadata({
 
 			* {
 				pointer-events: none;
+				-webkit-user-select: none;
 				user-select: none;
 			}
 
@@ -190,8 +191,8 @@ definePageMetadata({
 				}
 			}
 
-			&:active {
-			}
+			// &:active {
+			// }
 
 			&.isRead,
 			&.isMe {
@@ -206,7 +207,7 @@ definePageMetadata({
 				}
 			}
 
-			&:after {
+			&::after {
 				content: "";
 				display: block;
 				clear: both;
@@ -215,7 +216,7 @@ definePageMetadata({
 			> div {
 				padding: 20px 30px;
 
-				&:after {
+				&::after {
 					content: "";
 					display: block;
 					clear: both;

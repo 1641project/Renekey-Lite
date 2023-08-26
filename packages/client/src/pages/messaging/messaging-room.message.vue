@@ -89,7 +89,7 @@ function del(): void {
 			border-radius: 16px;
 			max-width: 100%;
 
-			&:before {
+			&::before {
 				content: "";
 				pointer-events: none;
 				display: block;
@@ -141,7 +141,7 @@ function del(): void {
 					overflow: clip;
 					overflow-wrap: break-word;
 					font-size: 1em;
-					color: rgba(#000, 0.5);
+					color: rgba(0, 0, 0, 0.5);
 				}
 
 				> .text {
@@ -153,7 +153,7 @@ function del(): void {
 					overflow-wrap: break-word;
 					word-break: break-word;
 					font-size: 1em;
-					color: rgba(#000, 0.8);
+					color: rgba(0, 0, 0, 0.8);
 
 					& + .file {
 						> a {
@@ -229,7 +229,7 @@ function del(): void {
 					background: transparent;
 				}
 
-				&:not(.noText):before {
+				&:not(.noText)::before {
 					left: -14px;
 					border-top: solid 8px transparent;
 					border-right: solid 8px $color;
@@ -273,7 +273,7 @@ function del(): void {
 					background: transparent;
 				}
 
-				&:not(.noText):before {
+				&:not(.noText)::before {
 					right: -14px;
 					left: auto;
 					border-top: solid 8px transparent;
@@ -285,7 +285,7 @@ function del(): void {
 				> .content {
 
 					> p.is-deleted {
-						color: rgba(#fff, 0.5);
+						color: rgba(255, 255, 255, 0.5);
 					}
 
 					> .text {
@@ -300,6 +300,7 @@ function del(): void {
 				text-align: right;
 
 				> .read {
+					-webkit-user-select: none;
 					user-select: none;
 				}
 			}

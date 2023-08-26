@@ -140,7 +140,7 @@ onBeforeUnmount(() => {
 	}
 
 	&:focus-visible {
-		&:after {
+		&::after {
 			content: "";
 			pointer-events: none;
 			position: absolute;

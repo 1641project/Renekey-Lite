@@ -150,6 +150,7 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 	> .label {
 		font-size: 0.85em;
 		padding: 0 0 8px 0;
+		-webkit-user-select: none;
 		user-select: none;
 
 		&:empty {
@@ -246,12 +247,12 @@ const onMousedown = (ev: MouseEvent | TouchEvent) => {
 			> .container {
 				> .track {
 					> .highlight {
-						transition: width 0.2s cubic-bezier(0,0,0,1);
+						transition: width 0.2s cubic-bezier(0, 0, 0, 1);
 					}
 				}
 
 				> .thumb {
-					transition: left 0.2s cubic-bezier(0,0,0,1);
+					transition: left 0.2s cubic-bezier(0, 0, 0, 1);
 				}
 			}
 		}

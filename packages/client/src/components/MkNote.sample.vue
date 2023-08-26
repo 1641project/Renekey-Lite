@@ -174,7 +174,7 @@ const react = ({ reaction, canToggle }: {
 .name {
 	flex-shrink: 1;
 	display: block;
-	margin: 0 .5em 0 0;
+	margin: 0 0.5em 0 0;
 	padding: 0;
 	overflow: hidden;
 	font-size: 1em;
@@ -189,7 +189,7 @@ const react = ({ reaction, canToggle }: {
 
 .username {
 	flex-shrink: 9999999;
-	margin: 0 .5em 0 0;
+	margin: 0 0.5em 0 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }

@@ -265,7 +265,7 @@ $widgets-hide-threshold: 1090px;
 .transition_menuDrawerBg_enterActive,
 .transition_menuDrawerBg_leaveActive {
 	opacity: 1;
-	transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_menuDrawerBg_enterFrom,
 .transition_menuDrawerBg_leaveTo {
@@ -276,7 +276,7 @@ $widgets-hide-threshold: 1090px;
 .transition_menuDrawer_leaveActive {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_menuDrawer_enterFrom,
 .transition_menuDrawer_leaveTo {
@@ -287,7 +287,7 @@ $widgets-hide-threshold: 1090px;
 .transition_widgetsDrawerBg_enterActive,
 .transition_widgetsDrawerBg_leaveActive {
 	opacity: 1;
-	transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_widgetsDrawerBg_enterFrom,
 .transition_widgetsDrawerBg_leaveTo {
@@ -298,7 +298,7 @@ $widgets-hide-threshold: 1090px;
 .transition_widgetsDrawer_leaveActive {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_widgetsDrawer_enterFrom,
 .transition_widgetsDrawer_leaveTo {
@@ -389,7 +389,7 @@ $widgets-hide-threshold: 1090px;
 	padding: 12px 12px max(12px, var(--safeAreaInsetBottom)) 12px;
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-	grid-gap: 8px;
+	gap: 8px;
 	width: 100%;
 	box-sizing: border-box;
 	-webkit-backdrop-filter: var(--blur, blur(24px));
@@ -420,15 +420,27 @@ $widgets-hide-threshold: 1090px;
 
 .postButton {
 	composes: navButton;
-	background: linear-gradient(90deg, var(--buttonGradateA), var(--buttonGradateB));
+	background: linear-gradient(
+		90deg,
+		var(--buttonGradateA),
+		var(--buttonGradateB)
+	);
 	color: var(--fgOnAccent);
 
 	&:hover {
-		background: linear-gradient(90deg, var(--X8), var(--X8));
+		background: linear-gradient(
+			90deg,
+			var(--X8),
+			var(--X8)
+		);
 	}
 
 	&:active {
-		background: linear-gradient(90deg, var(--X8), var(--X8));
+		background: linear-gradient(
+			90deg,
+			var(--X8),
+			var(--X8)
+		);
 	}
 }
 

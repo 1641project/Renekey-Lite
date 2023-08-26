@@ -1,7 +1,7 @@
 <template>
 <div
 	:class="hide ? $style.hidden : $style.visible"
-	:style="darkMode ? '--c: rgb(255 255 255 / 2%);' : '--c: rgb(0 0 0 / 2%);'"
+	:style="darkMode ? '--c: rgba(255, 255, 255, 0.02);' : '--c: rgba(0, 0, 0, 0.02);'"
 	@click="onClick"
 >
 	<a
@@ -147,7 +147,16 @@ const showMenu = (ev: MouseEvent): void => {
 	position: relative;
 	// box-shadow: 0 0 0 1px var(--divider) inset;
 	background: var(--bg);
-	background-image: linear-gradient(45deg, var(--c) 16.67%, var(--bg) 16.67%, var(--bg) 50%, var(--c) 50%, var(--c) 66.67%, var(--bg) 66.67%, var(--bg) 100%);
+	background-image: linear-gradient(
+		45deg,
+		var(--c) 16.67%,
+		var(--bg) 16.67%,
+		var(--bg) 50%,
+		var(--c) 50%,
+		var(--c) 66.67%,
+		var(--bg) 66.67%,
+		var(--bg) 100%
+	);
 	background-size: 16px 16px;
 }
 
