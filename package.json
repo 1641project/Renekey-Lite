@@ -1,10 +1,10 @@
 {
 	"name": "misskey",
-	"version": "12.119.2-taiyme-v1.2.0",
+	"version": "0.0.1-12.119.2",
 	"codename": "indigo",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/taiyme/misskey.git"
+		"url": "https://github.com/1641project/Renekey-Lite"
 	},
 	"private": true,
 	"packageManager": "pnpm@8.6.0",
