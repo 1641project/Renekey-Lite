@@ -8,7 +8,7 @@
 	<FormSection>
 		<MkKeyValue class="_formBlock" :copy="version">
 			<template #key>{{ i18n.ts.version }}</template>
-			<template #value>{{ version }}</template>
+			<template #value>12.119.2-taiyme-v1.2.0</template>
 		</MkKeyValue>
 	</FormSection>
 
