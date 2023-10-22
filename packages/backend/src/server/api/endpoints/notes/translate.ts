@@ -1,6 +1,7 @@
 import { URLSearchParams } from 'node:url';
 import fetch from 'node-fetch';
 import config from '@/config/index.js';
+import googletr from '@vitalets/google-translate-api';
 import { getAgentByUrl } from '@/misc/fetch.js';
 import { fetchMeta } from '@/misc/fetch-meta.js';
 import { Notes } from '@/models/index.js';
@@ -24,6 +25,11 @@ export const meta = {
 			code: 'NO_SUCH_NOTE',
 			id: 'bea9b03f-36e0-49c5-a4db-627a029f8971',
 		},
+		noTranslateService: {
+			message: 'Translate service is not available.',
+			code: 'NO_TRANSLATE_SERVICE',
+			id: 'bef6e895-c05d-4499-9815-035ed18b0e31',
+		},
 	},
 } as const;
 
@@ -43,6 +49,11 @@ export default define(meta, paramDef, async (ps, user) => {
 		throw e;
 	});
 
+	const translatorServices = [
+		'DeepL',
+		'GoogleNoAPI',
+	];
+
 	if (!(await Notes.isVisibleForMe(note, user ? user.id : null))) {
 		return 204; // TODO: 良い感じのエラー返す
 	}
@@ -53,42 +64,62 @@ export default define(meta, paramDef, async (ps, user) => {
 
 	const instance = await fetchMeta();
 
-	if (instance.deeplAuthKey == null) {
-		return 204; // TODO: 良い感じのエラー返す
+	if (instance.translatorType == null || !translatorServices.includes(instance.translatorType)) {
+		throw new ApiError(meta.errors.noTranslateService);
 	}
 
-	let targetLang = ps.targetLang;
-	if (targetLang.includes('-')) targetLang = targetLang.split('-')[0];
+	if (instance.translatorType === 'DeepL') {
+		if (instance.deeplAuthKey == null) {
+			return 204; // TODO: 良い感じのエラー返す
+		}
 
-	const params = new URLSearchParams();
-	params.append('auth_key', instance.deeplAuthKey);
-	params.append('text', note.text);
-	params.append('target_lang', targetLang);
+		let targetLang = ps.targetLang;
+		if (targetLang.includes('-')) targetLang = targetLang.split('-')[0];
 
-	const endpoint = instance.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
+		const params = new URLSearchParams();
+		params.append('auth_key', instance.deeplAuthKey);
+		params.append('text', note.text);
+		params.append('target_lang', targetLang);
 
-	const res = await fetch(endpoint, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-			'User-Agent': config.userAgent,
-			Accept: 'application/json, */*',
-		},
-		body: params,
-		// TODO
-		//timeout: 10000,
-		agent: getAgentByUrl,
-	});
+		const endpoint = instance.deeplIsPro ? 'https://api.deepl.com/v2/translate' : 'https://api-free.deepl.com/v2/translate';
 
-	const json = (await res.json()) as {
-		translations: {
-			detected_source_language: string;
-			text: string;
-		}[];
-	};
+		const res = await fetch(endpoint, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'User-Agent': config.userAgent,
+				Accept: 'application/json, */*',
+			},
+			body: params,
+			// TODO
+			//timeout: 10000,
+			agent: getAgentByUrl,
+		});
 
-	return {
-		sourceLang: json.translations[0].detected_source_language,
-		text: json.translations[0].text,
-	};
+		const json = (await res.json()) as {
+			translations: {
+				detected_source_language: string;
+				text: string;
+			}[];
+		};	
+
+		return {
+			sourceLang: json.translations[0].detected_source_language,
+			text: json.translations[0].text,
+			translator: translatorServices,
+		};
+	} else if (instance.translatorType === 'GoogleNoAPI') {
+		let targetLang = ps.targetLang;
+		if (targetLang.includes('-')) targetLang = targetLang.split('-')[0];
+
+		const json = await googletr(note.text, { to: targetLang });
+
+		return {
+			sourceLang: json.from.language.iso,
+			text: json.text,
+			translator: translatorServices,
+		};
+	}
+
+	return 204; // TODO: 良い感じのエラー返す
 });
