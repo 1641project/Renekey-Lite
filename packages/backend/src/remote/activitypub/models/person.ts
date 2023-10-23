@@ -173,6 +173,51 @@ export async function createPerson(uri: string, resolver?: Resolver): Promise<Us
 		throw new Error('unexpected schema of person url: ' + url);
 	}
 
+	let followersCount: number | undefined;
+
+	if (typeof person.followers === 'string') {
+		try {
+			const data = await fetch(person.followers, {
+				headers: { Accept: 'application/json' },
+			});
+			const jsonData = JSON.parse(await data.text());
+
+			followersCount = jsonData.totalItems;
+		} catch {
+			followersCount = undefined;
+		}
+	}
+
+	let followingCount: number | undefined;
+
+	if (typeof person.following === 'string') {
+		try {
+			const data = await fetch(person.following, {
+				headers: { Accept: 'application/json' },
+			});
+			const jsonData = JSON.parse(await data.text());
+
+			followingCount = jsonData.totalItems;
+		} catch (e) {
+			followingCount = undefined;
+		}
+	}
+
+	let notesCount: number | undefined;
+
+	if (typeof person.outbox === 'string') {
+		try {
+			const data = await fetch(person.outbox, {
+				headers: { Accept: 'application/json' },
+			});
+			const jsonData = JSON.parse(await data.text());
+
+			notesCount = jsonData.totalItems;
+		} catch (e) {
+			notesCount = undefined;
+		}
+	}
+
 	// Create user
 	let user: IRemoteUser;
 	try {
@@ -193,6 +238,30 @@ export async function createPerson(uri: string, resolver?: Resolver): Promise<Us
 				inbox: person.inbox,
 				sharedInbox: person.sharedInbox || (person.endpoints ? person.endpoints.sharedInbox : undefined),
 				followersUri: person.followers ? getApId(person.followers) : undefined,
+				followersCount:
+						followersCount !== undefined
+							? followersCount
+							: person.followers &&
+							typeof person.followers !== 'string' &&
+							isCollectionOrOrderedCollection(person.followers)
+								? person.followers.totalItems
+								: undefined,
+					followingCount:
+						followingCount !== undefined
+							? followingCount
+							: person.following &&
+							typeof person.following !== 'string' &&
+							isCollectionOrOrderedCollection(person.following)
+								? person.following.totalItems
+								: undefined,
+					notesCount:
+						notesCount !== undefined
+							? notesCount
+							: person.outbox &&
+							typeof person.outbox !== 'string' &&
+							isCollectionOrOrderedCollection(person.outbox)
+								? person.outbox.totalItems
+								: undefined,
 				featured: person.featured ? getApId(person.featured) : undefined,
 				uri: person.id,
 				tags,
@@ -351,11 +420,80 @@ export async function updatePerson(uri: string, resolver?: Resolver | null, hint
 		throw new Error('unexpected schema of person url: ' + url);
 	}
 
+	let followersCount: number | undefined;
+
+	if (typeof person.followers === 'string') {
+		try {
+			const data = await fetch(person.followers, {
+				headers: { Accept: 'application/json' },
+			});
+			const jsonData = JSON.parse(await data.text());
+
+			followersCount = jsonData.totalItems;
+		} catch {
+			followersCount = undefined;
+		}
+	}
+
+	let followingCount: number | undefined;
+
+	if (typeof person.following === 'string') {
+		try {
+			const data = await fetch(person.following, {
+				headers: { Accept: 'application/json' },
+			});
+			const jsonData = JSON.parse(await data.text());
+
+			followingCount = jsonData.totalItems;
+		} catch {
+			followingCount = undefined;
+		}
+	}
+
+	let notesCount: number | undefined;
+
+	if (typeof person.outbox === 'string') {
+		try {
+			const data = await fetch(person.outbox, {
+				headers: { Accept: 'application/json' },
+			});
+			const jsonData = JSON.parse(await data.text());
+
+			notesCount = jsonData.totalItems;
+		} catch (e) {
+			notesCount = undefined;
+		}
+	}
+
 	const updates = {
 		lastFetchedAt: new Date(),
 		inbox: person.inbox,
 		sharedInbox: person.sharedInbox || (person.endpoints ? person.endpoints.sharedInbox : undefined),
 		followersUri: person.followers ? getApId(person.followers) : undefined,
+		followersCount:
+		followersCount !== undefined
+			? followersCount
+			: person.followers &&
+			typeof person.followers !== 'string' &&
+			isCollectionOrOrderedCollection(person.followers)
+				? person.followers.totalItems
+				: undefined,
+	followingCount:
+		followingCount !== undefined
+			? followingCount
+			: person.following &&
+			typeof person.following !== 'string' &&
+			isCollectionOrOrderedCollection(person.following)
+				? person.following.totalItems
+				: undefined,
+	notesCount:
+		notesCount !== undefined
+			? notesCount
+			: person.outbox &&
+			typeof person.outbox !== 'string' &&
+			isCollectionOrOrderedCollection(person.outbox)
+				? person.outbox.totalItems
+				: undefined,
 		featured: person.featured,
 		emojis: emojiNames,
 		name: truncate(person.name, nameLength),
@@ -497,7 +635,7 @@ export async function updateFeatured(userId: User['id'], resolver?: Resolver) {
 
 	// Resolve to Object(may be Note) arrays
 	const unresolvedItems = isCollection(collection) ? collection.items : collection.orderedItems;
-	const items = await Promise.all(toArray(unresolvedItems).map(x => resolver.resolve(x)));
+	const items = await Promise.all(toArray(unresolvedItems).map(x => resolver?.resolve(x)));
 
 	// Resolve and regist Notes
 	const limit = promiseLimit<Note | null>(2);
